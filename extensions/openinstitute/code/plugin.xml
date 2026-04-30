@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans projectname="openinstitute" depends="entermedia-server">
+	<bean id="OiModule" class="org.openinstitute.server.OpenInstituteModule">
+		<property name="searcherManager">
+			<ref bean="searcherManager" />
+		</property>
+	</bean>
+	<bean id="SiteModule" class="org.entermedia.sitemanager.SiteModule">
+	</bean>
+	<bean id="siteManager" class="org.entermedia.sitemanager.SiteManager" scope="prototype">
+		<property name="moduleManager">
+			<ref bean="moduleManager" />
+		</property>
+		<property name="exec">
+			<ref bean="exec" />
+		</property>
+	</bean>
+	
+		<bean id="projectLoader" class="org.openinstitute.community.ProjectLoader" scope="prototype">
+		<property name="moduleManager">
+			<ref bean="moduleManager" />
+		</property>
+		<property name="pageManager">
+			<ref bean="pageManager" />
+		</property>
+	</bean>
+	
+	
+	<bean id="AutoFailoverModule" class="org.entermedia.autofailover.AutoFailoverModule">
+	</bean>
+	<bean id="autoFailoverManager" class="org.entermedia.autofailover.AutoFailoverManager" scope="prototype">
+		<property name="moduleManager">
+			<ref bean="moduleManager" />
+		</property>
+	</bean>
+	<bean id="SSLModule" class="org.entermedia.sslcertificates.SSLModule">
+	</bean>
+	<bean id="sslManager" class="org.entermedia.sslcertificates.SSLManager" scope="prototype">
+	</bean>
+	<bean id="SpeedModule" class="org.entermedia.speedtest.SpeedModule">
+	</bean>
+	<bean id="speedManager" class="org.entermedia.speedtest.SpeedManager" scope="prototype">
+	</bean>
+	<bean id="InvoiceModule" class="org.entermedia.invoice.InvoiceModule">
+	</bean>
+	<bean id="invoiceManager" class="org.entermedia.invoice.InvoiceManager" scope="prototype">
+		<property name="moduleManager">
+			<ref bean="moduleManager" />
+		</property>
+	</bean>
+
+	<bean id="AssetCountModule" class="org.entermedia.assetcount.AssetCountModule">
+	</bean>
+
+	<bean id="assetCountManager" class="org.entermedia.assetcount.AssetCountManager" scope="prototype">
+		<property name="moduleManager">
+			<ref bean="moduleManager" />
+		</property>
+	</bean>
+
+	<bean id="oiServer" class="org.entermediadb.server.sockets.OIServer" scope="singleton">
+		<property name="moduleManager">
+			<ref bean="moduleManager" />
+		</property>
+	</bean>
+	
+
+	<bean id="TransactionModule" class="org.entermedia.transactions.TransactionModule">
+	</bean>
+
+	<bean id="PaymentModule" class="org.entermedia.stripe.PaymentModule">
+		<property name="cacheManager"><ref bean="systemExpireCacheManager"/></property>
+	</bean>
+
+	<bean id="transactionManager" class="org.entermedia.transactions.TransactionManager">
+		<property name="moduleManager">
+			<ref bean="moduleManager" />
+		</property>
+	</bean>
+
+	<bean id="FinanceModule" class="org.openinstitute.finance.FinanceModule">
+	</bean>
+
+	<bean id="financeManager" class="org.openinstitute.finance.FinanceManager">
+		<property name="moduleManager">
+			<ref bean="moduleManager" />
+		</property>
+	</bean>
+
+	<bean id="BankAccountModule" class="org.openinstitute.finance.BankAccountModule">
+	</bean>
+
+	<bean id="bankAccountManager" class="org.openinstitute.finance.BankAccountManager">
+		<property name="moduleManager">
+			<ref bean="moduleManager" />
+		</property>
+	</bean>
+
+	
+	<bean id="qrCreator" class="org.openinstitute.finance.QrCreator">
+		<property name="moduleManager">
+			<ref bean="moduleManager" />
+		</property>
+	</bean>
+
+</beans>
