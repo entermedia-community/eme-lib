@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="extensions/emediabase/code"/>
-	<classpathentry kind="src" path="extensions/openedit/code"/>
-	<classpathentry kind="src" path="extensions/openinstitute/code"/>
+	<classpathentry kind="src" path="skills/emediabase/code"/>
+	<classpathentry kind="src" path="skills/openedit/code"/>
+	<classpathentry kind="src" path="skills/openinstitute/code"/>
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
 		<attributes>
 			<attribute name="module" value="true"/>
@@ -12,101 +12,101 @@
 	<classpathentry exported="true" kind="con" path="GROOVY_DSL_SUPPORT"/>
 
 
-	<classpathentry exported="true" kind="lib" path="extensions/openedit/lib/commons-collections-3.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/openedit/lib/json-simple-1.1.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/openedit/lib/guava-18.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/openedit/lib/commons-logging-1.2.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/openedit/lib/commons-codec-1.9.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/openedit/lib/httpclient-4.5.2.jar" sourcepath="~/git/entermedia-core/resources/httpcomponents-client-4.5.2-src.zip"/>
-	<classpathentry exported="true" kind="lib" path="extensions/openedit/lib/httpcore-4.4.4.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/openedit/lib/httpmime-4.5.2.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/openedit/lib/jaxen-1.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/openedit/lib/commons-collections-3.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/openedit/lib/json-simple-1.1.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/openedit/lib/guava-18.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/openedit/lib/commons-logging-1.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/openedit/lib/commons-codec-1.9.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/openedit/lib/httpclient-4.5.2.jar" sourcepath="~/git/entermedia-core/resources/httpcomponents-client-4.5.2-src.zip"/>
+	<classpathentry exported="true" kind="lib" path="skills/openedit/lib/httpcore-4.4.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/openedit/lib/httpmime-4.5.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/openedit/lib/jaxen-1.1.jar"/>
 	<classpathentry exported="true" kind="con" path="GROOVY_SUPPORT"/>
-	<classpathentry exported="true" kind="lib" path="extensions/openedit/lib/slf4j-jdk14-1.7.25.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/openedit/lib/slf4j-api-1.7.25.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/openedit/lib/groovy-all-2.4.11.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/openedit/lib/dom4j-1.6.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/openedit/lib/commons-lang3-3.7.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/openedit/lib/compile/junit-4.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/openedit/lib/compile/servlet-api.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/openedit/lib/commons-io-2.6.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/openedit/lib/velocity-engine-core-2.3.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/openedit/lib/commons-math3-3.6.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/openedit/lib/slf4j-jdk14-1.7.25.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/openedit/lib/slf4j-api-1.7.25.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/openedit/lib/groovy-all-2.4.11.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/openedit/lib/dom4j-1.6.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/openedit/lib/commons-lang3-3.7.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/openedit/lib/compile/junit-4.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/openedit/lib/compile/servlet-api.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/openedit/lib/commons-io-2.6.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/openedit/lib/velocity-engine-core-2.3.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/openedit/lib/commons-math3-3.6.1.jar"/>
 
 
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/activation-1.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/antlr-runtime-3.5.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/apache-log4j-extras-1.2.17.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/asm-4.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/asm-commons-4.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/bsf.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/bsh-bsf-2.0b4.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/bsh-core-2.0b4.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/commons-cli-1.3.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/commons-fileupload-1.2.1-patched.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/commons-net-3.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/compiler-0.8.13.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/compress-lzf-1.0.2.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/elasticsearch-2.4.6.jar" sourcepath="etc/elasticsearch-2.4.6-sources.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/guava-18.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/HdrHistogram-2.1.6.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/hppc-0.7.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/isoparser-1.1.22.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/jackson-annotations-2.8.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/jackson-core-2.8.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/jackson-databind-2.8.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/jackson-dataformat-cbor-2.8.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/jackson-dataformat-smile-2.8.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/jackson-dataformat-yaml-2.8.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/java-version-checker-5.6.3.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/javax.mail.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/jcifs-1.3.15.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/jna-4.1.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/jna-4.4.0-1.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/joda-convert-1.2.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/joda-time-2.9.5.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/jopt-simple-5.0.2.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/js.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/jsch-0.1.43.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/jsr166e-1.1.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/jts-1.13.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/log4j-1.2.17.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/lucene-analyzers-common-5.5.4.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/lucene-backward-codecs-5.5.4.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/lucene-core-5.5.4.jar" sourcepath="~/git/fast-elasticsearch-vector-scoring/src/main/java"/>
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/lucene-grouping-5.5.4.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/lucene-highlighter-5.5.4.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/lucene-join-5.5.4.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/lucene-memory-5.5.4.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/lucene-misc-5.5.4.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/lucene-queries-5.5.4.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/lucene-queryparser-5.5.4.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/lucene-sandbox-5.5.4.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/lucene-spatial-5.5.4.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/lucene-spatial3d-5.5.4.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/lucene-suggest-5.5.4.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/netty-3.10.6.Final.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/org.apache.oltu.oauth2.client-1.0.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/pdfbox-app-2.0.6.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/plugin-cli-5.6.3.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/securesm-1.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/snakeyaml-1.15.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/spatial4j-0.5.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/t-digest-3.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/compile/websocket-api.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/commons-io-2.6.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/gson-2.10.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/velocity-tools-generic-3.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="extensions/emediabase/lib/poi-5.3.0.jar"/>
-	<classpathentry kind="lib" path="extensions/emediabase/lib/googleauth-1.5.0.jar"/>
-	<classpathentry kind="lib" path="extensions/emediabase/lib/jsoup-1.18.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/activation-1.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/antlr-runtime-3.5.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/apache-log4j-extras-1.2.17.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/asm-4.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/asm-commons-4.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/bsf.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/bsh-bsf-2.0b4.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/bsh-core-2.0b4.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/commons-cli-1.3.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/commons-fileupload-1.2.1-patched.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/commons-net-3.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/compiler-0.8.13.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/compress-lzf-1.0.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/elasticsearch-2.4.6.jar" sourcepath="etc/elasticsearch-2.4.6-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/guava-18.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/HdrHistogram-2.1.6.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/hppc-0.7.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/isoparser-1.1.22.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/jackson-annotations-2.8.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/jackson-core-2.8.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/jackson-databind-2.8.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/jackson-dataformat-cbor-2.8.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/jackson-dataformat-smile-2.8.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/jackson-dataformat-yaml-2.8.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/java-version-checker-5.6.3.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/javax.mail.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/jcifs-1.3.15.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/jna-4.1.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/jna-4.4.0-1.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/joda-convert-1.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/joda-time-2.9.5.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/jopt-simple-5.0.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/js.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/jsch-0.1.43.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/jsr166e-1.1.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/jts-1.13.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/log4j-1.2.17.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/lucene-analyzers-common-5.5.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/lucene-backward-codecs-5.5.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/lucene-core-5.5.4.jar" sourcepath="~/git/fast-elasticsearch-vector-scoring/src/main/java"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/lucene-grouping-5.5.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/lucene-highlighter-5.5.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/lucene-join-5.5.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/lucene-memory-5.5.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/lucene-misc-5.5.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/lucene-queries-5.5.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/lucene-queryparser-5.5.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/lucene-sandbox-5.5.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/lucene-spatial-5.5.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/lucene-spatial3d-5.5.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/lucene-suggest-5.5.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/netty-3.10.6.Final.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/org.apache.oltu.oauth2.client-1.0.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/pdfbox-app-2.0.6.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/plugin-cli-5.6.3.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/securesm-1.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/snakeyaml-1.15.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/spatial4j-0.5.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/t-digest-3.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/compile/websocket-api.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/commons-io-2.6.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/gson-2.10.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/velocity-tools-generic-3.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="skills/emediabase/lib/poi-5.3.0.jar"/>
+	<classpathentry kind="lib" path="skills/emediabase/lib/googleauth-1.5.0.jar"/>
+	<classpathentry kind="lib" path="skills/emediabase/lib/jsoup-1.18.1.jar"/>
 
 
-	<classpathentry kind="lib" path="extensions/openinstitute/lib/openedit-money-5.626.jar"/>
-	<classpathentry kind="lib" path="extensions/openinstitute/lib/stripe-java-5.25.0.jar"/>
+	<classpathentry kind="lib" path="skills/openinstitute/lib/openedit-money-5.626.jar"/>
+	<classpathentry kind="lib" path="skills/openinstitute/lib/stripe-java-5.25.0.jar"/>
 
-	<classpathentry kind="lib" path="extensions/openinstitute/lib/zxingcore-3.5.4.jar"/>
-	<classpathentry kind="lib" path="extensions/openinstitute/lib/zxingjavase-3.5.4.jar"/>
+	<classpathentry kind="lib" path="skills/openinstitute/lib/zxingcore-3.5.4.jar"/>
+	<classpathentry kind="lib" path="skills/openinstitute/lib/zxingjavase-3.5.4.jar"/>
 
 	<classpathentry kind="output" path="bin"/>
 </classpath>

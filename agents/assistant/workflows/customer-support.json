@@ -1,0 +1,19 @@
+{
+	"read-email": {
+		"settings": {},
+		"instructions": "Read the email and extract the relevant information for classification.",
+		"parameterstructure": {}
+	},
+	"find-embeddings": {
+		"settings": {},
+		"instructions": "Use the extracted information to find relevant embeddings for classification.",
+		"parameterstructure": {},
+		"runafter": ["read-email"]
+	},
+	"answer-question": {
+		"settings": {},
+		"instructions": "Use the found embeddings to answer the classification question.",
+		"parameterstructure": {},
+		"runafter": ["find-embeddings"]
+	}
+}

@@ -15,17 +15,14 @@
  * limitations under the License.
  */
 
-
 package org.apache.catalina.util;
 
-
 import java.util.StringTokenizer;
-
 
 /**
  * Utility class that represents either an available "Optional Package"
  * (formerly known as "Standard Extension") as described in the manifest
- * of a JAR file, or the requirement for such an optional package.  It is
+ * of a JAR file, or the requirement for such an optional package. It is
  * used to support the requirements of the Servlet Specification, version
  * 2.3, related to providing shared extensions to all webapps.
  * <p>
@@ -36,7 +33,7 @@ import java.util.StringTokenizer;
  * For more information about optional packages, see the document
  * <em>Optional Package Versioning</em> in the documentation bundle for your
  * Java2 Standard Edition package, in file
- * <code>guide/extensions/versioning.html</code>.
+ * <code>guide/skills/versioning.html</code>.
  *
  * @author Craig McClanahan
  * @author Justyna Horwat
@@ -44,15 +41,12 @@ import java.util.StringTokenizer;
  */
 public final class Extension {
 
-
     // ------------------------------------------------------------- Properties
-
 
     /**
      * The name of the optional package being made available, or required.
      */
     private String extensionName = null;
-
 
     public String getExtensionName() {
         return this.extensionName;
@@ -76,7 +70,6 @@ public final class Extension {
         this.implementationURL = implementationURL;
     }
 
-
     /**
      * The name of the company or organization that produced this
      * implementation of this optional package.
@@ -90,7 +83,6 @@ public final class Extension {
     public void setImplementationVendor(String implementationVendor) {
         this.implementationVendor = implementationVendor;
     }
-
 
     /**
      * The unique identifier of the company that produced the optional
@@ -106,7 +98,6 @@ public final class Extension {
         this.implementationVendorId = implementationVendorId;
     }
 
-
     /**
      * The version number (dotted decimal notation) for this implementation
      * of the optional package.
@@ -120,7 +111,6 @@ public final class Extension {
     public void setImplementationVersion(String implementationVersion) {
         this.implementationVersion = implementationVersion;
     }
-
 
     /**
      * The name of the company or organization that originated the
@@ -136,7 +126,6 @@ public final class Extension {
         this.specificationVendor = specificationVendor;
     }
 
-
     /**
      * The version number (dotted decimal notation) of the specification
      * to which this optional package conforms.
@@ -150,7 +139,6 @@ public final class Extension {
     public void setSpecificationVersion(String specificationVersion) {
         this.specificationVersion = specificationVersion;
     }
-
 
     /**
      * fulfilled is true if all the required extension dependencies have been
@@ -172,7 +160,7 @@ public final class Extension {
      * Return <code>true</code> if the specified <code>Extension</code>
      * (which represents an optional package required by this application)
      * is satisfied by this <code>Extension</code> (which represents an
-     * optional package that is already installed.  Otherwise, return
+     * optional package that is already installed. Otherwise, return
      * <code>false</code>.
      *
      * @param required Extension of the required optional package
@@ -189,7 +177,7 @@ public final class Extension {
         // If specified, available specification version must be >= required
         if (required.getSpecificationVersion() != null) {
             if (!isNewer(specificationVersion,
-                         required.getSpecificationVersion()))
+                    required.getSpecificationVersion()))
                 return false;
         }
 
@@ -205,7 +193,7 @@ public final class Extension {
         // If specified, Implementation version must be >= required
         if (required.getImplementationVersion() != null) {
             if (!isNewer(implementationVersion,
-                         required.getImplementationVersion()))
+                    required.getImplementationVersion()))
                 return false;
         }
 
@@ -246,22 +234,19 @@ public final class Extension {
         return sb.toString();
     }
 
-
     // -------------------------------------------------------- Private Methods
-
-
 
     /**
      * Return <code>true</code> if the first version number is greater than
      * or equal to the second; otherwise return <code>false</code>.
      *
-     * @param first First version number (dotted decimal)
+     * @param first  First version number (dotted decimal)
      * @param second Second version number (dotted decimal)
      *
      * @exception NumberFormatException on a malformed version number
      */
     private boolean isNewer(String first, String second)
-        throws NumberFormatException {
+            throws NumberFormatException {
 
         if ((first == null) || (second == null))
             return false;
@@ -285,15 +270,14 @@ public final class Extension {
                 return false;
             else if (fVersion > sVersion)
                 return true;
-            if (fTok.hasMoreTokens())   // Swallow the periods
+            if (fTok.hasMoreTokens()) // Swallow the periods
                 fTok.nextToken();
             if (sTok.hasMoreTokens())
                 sTok.nextToken();
         }
 
-        return true;  // Exact match
+        return true; // Exact match
 
     }
-
 
 }
