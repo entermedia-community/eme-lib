@@ -8,6 +8,9 @@
 /webapp/WEB-INF/data/assets/*
 /webapp/WEB-INF/logs/*
 
+tomcat/logs/*
+tomcat/work/*
+
 *.db
 *.DS_Store
 
