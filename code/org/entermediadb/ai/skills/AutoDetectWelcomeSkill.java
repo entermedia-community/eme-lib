@@ -12,22 +12,21 @@ import org.openedit.MultiValued;
 
 public class AutoDetectWelcomeSkill extends BaseSkill
 {
-	private static final Log log = LogFactory.getLog(AutoDetectWelcomeSkill.class);
 
 	@Override
 	public void process(AgentContext inAgentContext)
 	{
 		ChatMessageContext messageContext = (ChatMessageContext) inAgentContext;
+
 		MultiValued agentmessage = messageContext.getAgentMessage();
 		if (messageContext.getContextValue("sentwelcome") == null)
 		{
 			messageContext.putContextValue("sentwelcome", true);
 			agentmessage.setValue("chatmessagestatus", "completed");
 
-			LlmConnection llmconnection = getMediaArchive().getLlmConnection("localrender"); // Should stay
-			// search_start
+			LlmConnection llmconnection = getMediaArchive().getLlmConnection("localrender");
 			LlmResponse response = llmconnection.renderLocalAction(inAgentContext, "chat_detection_welcome");
-			// response.setNextSkillEnabled("auto_detect_conversation");
+
 			messageContext.setLastResponse(response);
 			messageContext.log("sent" + response.getMessagePlain());
 		}
