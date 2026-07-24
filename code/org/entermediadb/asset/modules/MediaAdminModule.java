@@ -489,7 +489,7 @@ public class MediaAdminModule extends BaseMediaModule
 		if (exports.size() > 0)
 		{
 			inReq.putPageValue("status", "Snapshots are already pending");
-			manager.runSharedPathEvent("/system/events/snapshot/exportsite.html");
+			//manager.runSharedPathEvent("/system/events/snapshot/exportsite.html");
 			return;
 		}
 		boolean configonly = Boolean.valueOf(inReq.getRequestParameter("configonly"));
