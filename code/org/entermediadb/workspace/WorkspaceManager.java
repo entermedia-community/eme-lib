@@ -1050,10 +1050,16 @@ public class WorkspaceManager
 		Element thedata = data.getElement();// .asXML();
 		return thedata;
 	}
+
+	// When users press save default data we will copy the current data to a backup location so they can
+	// restore it later if needed
 	public void saveDefaultData(String catalogid)
 	{
 		// Implementation of saveDefaultData
 	}
+
+	// If a user needs to start over they can
+
 	public void restoreDefaultData(String catalogid)
 	{
 		// Implementation of restoreDefaultData

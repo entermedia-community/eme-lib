@@ -11,6 +11,7 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.lucene.search.SearcherManager;
 import org.entermediadb.asset.Category;
 import org.entermediadb.asset.MediaArchive;
 import org.entermediadb.asset.upload.FileUpload;
@@ -509,8 +510,17 @@ public class MediaAdminModule extends BaseMediaModule
 
 		log.info("Saving new snapshot with a status of pendingexport " + siteid);
 
-		manager.runSharedPathEvent("/system/events/snapshot/exportsite.html");
-
+		// manager.runSharedPathEvent("/system/events/snapshot/exportsite.html");
+		SiteSnapshotManager snapshotmanager = (SiteSnapshotManager) getModuleManager().getBean("system", "siteSnapshotManager");
+		try
+		{
+			String catalogid = site.get("catalogid");
+			snapshotmanager.export(catalogid, snapshot, configonly);
+		}
+		catch (Exception ex)
+		{
+			log.error("Error exporting snapshot: " + snapshot.getId(), ex);
+		}
 		// PathEvent event =
 		// manager.getPathEvent("/system/events/data/exportsite.html");
 		inReq.putPageValue("site", site);
@@ -1283,15 +1293,15 @@ public class MediaAdminModule extends BaseMediaModule
 		getWorkspaceManager().createMediaDbAiFunctionEndPoints(catalogid);
 	}
 
-
-	//This is used to backup xml lists to be checked in one time
+	// This is used to backup xml lists to be checked in one time
 	public void saveDefaultData(WebPageRequest inReq)
 	{
 		String catalogid = inReq.findValue("catalogid");
 		getWorkspaceManager().saveDefaultData(catalogid);
 	}
 
-	//This is to restore the default data that was checked in. This will add to the live data and not remove any data. It will only add missing data.
+	// This is to restore the default data that was checked in. This will add to the live data and not
+	// remove any data. It will only add missing data.
 	public void restoreDefaultData(WebPageRequest inReq)
 	{
 		String catalogid = inReq.findValue("catalogid");

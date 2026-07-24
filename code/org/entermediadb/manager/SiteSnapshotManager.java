@@ -1,36 +1,39 @@
 package org.entermediadb.manager;
 
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.dom4j.Attribute;
-import org.dom4j.Element;
+import org.elasticsearch.action.admin.indices.mapping.get.GetMappingsRequest;
+import org.elasticsearch.action.admin.indices.mapping.get.GetMappingsResponse;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
-import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
 import org.elasticsearch.action.bulk.BulkProcessor;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.client.AdminClient;
 import org.elasticsearch.client.Requests;
+import org.elasticsearch.cluster.metadata.MappingMetaData;
+import org.elasticsearch.common.collect.ImmutableOpenMap;
 import org.entermediadb.asset.MediaArchive;
 import org.entermediadb.asset.modules.BaseMediaModule;
 import org.entermediadb.asset.util.CSVReader;
 import org.entermediadb.asset.util.ImportFile;
 import org.entermediadb.asset.util.Row;
 import org.entermediadb.elasticsearch.ElasticNodeManager;
-import org.entermediadb.elasticsearch.searchers.ElasticListSearcher;
+import org.openedit.MultiValued;
 import org.openedit.Data;
 import org.openedit.OpenEditException;
 import org.openedit.WebPageRequest;
+import org.openedit.data.NonExportable;
 import org.openedit.data.PropertyDetail;
 import org.openedit.data.PropertyDetails;
 import org.openedit.data.PropertyDetailsArchive;
@@ -38,14 +41,11 @@ import org.openedit.data.Searcher;
 import org.openedit.data.SearcherManager;
 import org.openedit.hittracker.HitTracker;
 import org.openedit.modules.translations.LanguageMap;
-import org.openedit.node.NodeManager;
 import org.openedit.page.Page;
-import org.openedit.page.PageSettings;
 import org.openedit.page.manage.PageManager;
 import org.openedit.util.DateStorageUtil;
 import org.openedit.util.FileUtils;
 import org.openedit.util.PathUtilities;
-import org.openedit.util.XmlUtil;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -106,6 +106,7 @@ public class SiteSnapshotManager extends BaseMediaModule
 		String catalogid = mediaarchive.getCatalogId();
 		String rootfolder = "/WEB-INF/data/exports/" + mediaarchive.getCatalogId() + "/" + folder;
 
+		@SuppressWarnings("unchecked")
 		Collection<String> files = mediaarchive.getPageManager().getChildrenPaths(rootfolder);
 		if (files.isEmpty())
 		{
@@ -173,6 +174,7 @@ public class SiteSnapshotManager extends BaseMediaModule
 
 			List<String> childrennames = pdarchive.findChildTablesNames();
 
+			@SuppressWarnings("unchecked")
 			List<String> jsonfiles = pdarchive.getPageManager().getChildrenPaths(rootfolder + "/json/");
 			List<String> mappings = new ArrayList<>();
 			List<String> orderedJsontypes = new ArrayList<>();
@@ -246,6 +248,7 @@ public class SiteSnapshotManager extends BaseMediaModule
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	public void importCsv(Data site, MediaArchive mediaarchive, String searchtype, Page upload, String tempindex) throws Exception
 	{
 		Boolean fastmode = Boolean.parseBoolean(mediaarchive.getPageManager().getPage("/WEB-INF/data/system/configuration/testimportmode.xml").get("testimportmode"));
@@ -253,7 +256,6 @@ public class SiteSnapshotManager extends BaseMediaModule
 		log.info("Importing data " + upload.getPath());
 		Row trow = null;
 		ArrayList<Data> tosave = new ArrayList<>();
-		String catalogid = mediaarchive.getCatalogId();
 
 		Reader reader = upload.getReader();
 		ImportFile file = new ImportFile();
@@ -280,9 +282,9 @@ public class SiteSnapshotManager extends BaseMediaModule
 			Data newdata = searcher.createNewData();
 			newdata.setId(id);
 
-			for (Iterator<String> iterator = file.getHeader().getHeaderNames().iterator(); iterator.hasNext();)
+			for (Object headerObj : file.getHeader().getHeaderNames())
 			{
-				String header = iterator.next();
+				String header = String.valueOf(headerObj);
 				String detailid = header;
 				String value = trow.get(header);
 
@@ -391,10 +393,10 @@ public class SiteSnapshotManager extends BaseMediaModule
 	public void importJson(Data site, MediaArchive mediaarchive, String searchtype, Page upload, String tempindex) throws Exception
 	{
 		Searcher searcher = mediaarchive.getSearcher(searchtype);
-		if (searcher instanceof ElasticListSearcher)
-		{
-			return;
-		}
+		// if (searcher instanceof ElasticListSearcher)
+		// {
+		// return;
+		// }
 
 		ElasticNodeManager manager = (ElasticNodeManager) mediaarchive.getNodeManager();
 		BulkProcessor processor = manager.getBulkProcessor();
@@ -402,7 +404,11 @@ public class SiteSnapshotManager extends BaseMediaModule
 		try
 		{
 			ZipInputStream unzip = new ZipInputStream(upload.getInputStream());
-			ZipEntry entry = unzip.getNextEntry();
+			if (unzip.getNextEntry() == null)
+			{
+				log.info("No zip entries found in " + upload.getPath());
+				return;
+			}
 
 			MappingJsonFactory f = new MappingJsonFactory();
 			JsonParser jp = f.createParser(new InputStreamReader(unzip, "UTF-8"));
@@ -484,6 +490,188 @@ public class SiteSnapshotManager extends BaseMediaModule
 		PutMappingRequest req = Requests.putMappingRequest(tempindex).updateAllTypes(true).type(searchtype);
 		req = req.source(upload.getContent());
 		req.validate();
-		PutMappingResponse pres = admin.indices().putMapping(req).actionGet();
+		admin.indices().putMapping(req).actionGet();
 	}
+
+	// EXPORTIRNG
+	public void export()
+	{
+		Searcher snapshotsearcher = getSearcherManager().getSearcher("system", "sitesnapshot");
+		@SuppressWarnings("unchecked")
+		HitTracker<Data> exports = snapshotsearcher.query().match("snapshotstatus", "pendingexport").search();
+		if (exports.isEmpty())
+		{
+			throw new OpenEditException("No pending snapshotstatus  = pendingexport");
+		}
+		// Link files in the FileManager. Keep exports in data/system
+		@SuppressWarnings("rawtypes")
+		Iterator iterator = exports.iterator();
+		while (iterator.hasNext())
+		{
+			Data snapshot = (Data) iterator.next();
+			snapshot.setValue("snapshotstatus", "exporting"); // Like a lock
+			snapshotsearcher.saveData(snapshot);
+			Searcher sitesearcher = getSearcherManager().getSearcher("system", "site");
+			Data site = sitesearcher.query().match("id", snapshot.get("site")).searchOne();
+			String catalogid = site.get("catalogid");
+
+			snapshotsearcher.saveData(snapshot);
+
+			boolean configonly = Boolean.parseBoolean(String.valueOf(snapshot.getValue("configonly")));
+			export(catalogid, snapshot, configonly);
+			snapshot.setValue("snapshotstatus", "complete");
+			snapshotsearcher.saveData(snapshot);
+		}
+	}
+
+	public void export(String inCatalogId, Data inSnap, boolean configonly)
+	{
+		MediaArchive mediaarchive = (MediaArchive) getModuleManager().getBean(inCatalogId, "mediaArchive");
+		PropertyDetailsArchive archive = mediaarchive.getPropertyDetailsArchive();
+		List<String> searchtypes = archive.listSearchTypes();
+		searchtypes.remove("modulesearch");
+		searchtypes.remove("modulesearchkeyword");
+
+		String rootfolder = "/WEB-INF/data/exports/" + mediaarchive.getCatalogId() + "/" + inSnap.get("folder");
+		String catalogid = mediaarchive.getCatalogId();
+		log.info("Exporting " + rootfolder);
+		if (!configonly)
+		{
+			exportDatabase(mediaarchive, searchtypes, rootfolder);
+		}
+		Page fields = mediaarchive.getPageManager().getPage("/WEB-INF/data/" + catalogid + "/fields/");
+		if (fields.exists())
+		{
+			Page target = mediaarchive.getPageManager().getPage(rootfolder + "/fields/");
+			mediaarchive.getPageManager().copyPage(fields, target);
+		}
+
+		Page lists = mediaarchive.getPageManager().getPage("/WEB-INF/data/" + catalogid + "/lists/");
+		if (lists.exists())
+		{
+			Page target = mediaarchive.getPageManager().getPage(rootfolder + "/lists/");
+			mediaarchive.getPageManager().copyPage(lists, target);
+		}
+
+		Page views = mediaarchive.getPageManager().getPage("/WEB-INF/data/" + catalogid + "/views/");
+		if (views.exists())
+		{
+			Page target = mediaarchive.getPageManager().getPage(rootfolder + "/views/");
+			mediaarchive.getPageManager().copyPage(views, target);
+		}
+
+		// Collection apps = mediaarchive.getList("app");
+		// for(Data app in apps)
+		// {
+		// String deploypath = app.get("deploypath");
+		// if(deploypath != null)
+		// {
+		// Page page = mediaarchive.getPageManager().getPage(deploypath);
+		// if (page.exists()){
+		// Page target = mediaarchive.getPageManager().getPage(rootfolder + "/application/" + deploypath);
+		// mediaarchive.getPageManager().copyPage(page, target);
+		// }
+		// }
+		// }
+
+	}
+
+	@SuppressWarnings("rawtypes")
+	public void exportDatabase(MediaArchive mediaarchive, List<String> searchtypes, String rootfolder)
+	{
+		String catalogid = mediaarchive.getCatalogId();
+		ElasticNodeManager nodeManager = (ElasticNodeManager) mediaarchive.getNodeManager();
+
+		String cat = mediaarchive.getCatalogId().replace("/", "_");
+		String indexid = nodeManager.getIndexNameFromAliasName(cat);
+
+		ImmutableOpenMap<String, ImmutableOpenMap<String, MappingMetaData>> indexToMappings = null;
+		if (indexid != null)
+		{
+			GetMappingsResponse getMappingsResponse = nodeManager.getClient().admin().indices().getMappings(new GetMappingsRequest().indices(indexid)).actionGet();
+			indexToMappings = getMappingsResponse.getMappings();
+		}
+
+		SearcherManager searcherManager = mediaarchive.getSearcherManager();
+		for (String searchtype : searchtypes)
+		{
+			Searcher searcher = searcherManager.getSearcher(catalogid, searchtype);
+			// if (searcher instanceof ElasticListSearcher)
+			// {
+			// continue;
+			// }
+			if (searcher instanceof NonExportable)
+			{
+				continue;
+			}
+
+			HitTracker hits = searcher.getAllHits();
+			hits.enableBulkOperations();
+			if (hits.size() <= 0)
+			{
+				continue;
+			}
+
+			Page output = mediaarchive.getPageManager().getPage(rootfolder + "/json/" + searchtype + ".zip");
+			OutputStream os = output.getContentItem().getOutputStream();
+			ZipOutputStream finalZip = new ZipOutputStream(os);
+			try
+			{
+				ZipEntry ze = new ZipEntry(searchtype + ".json");
+				finalZip.putNextEntry(ze);
+				IOUtils.write("{ \"" + searchtype + "\": [", finalZip, "UTF-8");
+				int size = hits.size();
+				int count = 0;
+				for (Iterator iterator = hits.iterator(); iterator.hasNext();)
+				{
+					count++;
+					MultiValued hit = (MultiValued) iterator.next();
+					IOUtils.write(hit.toJsonString(), finalZip, "UTF-8");
+					if (size != count)
+					{
+						IOUtils.write(",", finalZip, "UTF-8");
+					}
+				}
+				IOUtils.write("]}", finalZip, "UTF-8");
+				finalZip.flush();
+				finalZip.closeEntry();
+			}
+			catch (Exception ex)
+			{
+				throw new OpenEditException("Could not export data for " + searchtype, ex);
+			}
+			finally
+			{
+				FileUtils.safeClose(finalZip);
+				FileUtils.safeClose(os);
+			}
+
+			if (indexToMappings != null)
+			{
+				ImmutableOpenMap<String, MappingMetaData> typeMappings = indexToMappings.get(indexid);
+				if (typeMappings != null)
+				{
+					MappingMetaData actualMapping = typeMappings.get(searchtype);
+					if (actualMapping != null)
+					{
+						try
+						{
+							String json = actualMapping.source().string();
+							Page mappings = mediaarchive.getPageManager().getPage(rootfolder + "/json/" + searchtype + "-mapping.json");
+							mediaarchive.getPageManager().saveContent(mappings, null, json, "Saved mapping");
+						}
+						catch (Exception ex)
+						{
+							log.error("Could not save mapping for " + searchtype, ex);
+						}
+					}
+					else
+					{
+						log.info("No mapping found for " + searchtype);
+					}
+				}
+			}
+		}
+	}
+
 }
