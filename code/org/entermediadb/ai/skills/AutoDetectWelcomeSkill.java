@@ -1,7 +1,5 @@
 package org.entermediadb.ai.skills;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.entermediadb.ai.AgentContext;
 import org.entermediadb.ai.BaseSkill;
 import org.entermediadb.ai.ChatMessageContext;
