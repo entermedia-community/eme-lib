@@ -6,6 +6,7 @@ import java.util.Map;
 import org.entermediadb.ai.AgentContext;
 import org.entermediadb.ai.BaseSkill;
 import org.entermediadb.ai.ChatMessageContext;
+import org.entermediadb.ai.automation.RunningScenario;
 import org.entermediadb.ai.llm.AgentEnabled;
 import org.entermediadb.ai.llm.LlmConnection;
 import org.entermediadb.ai.llm.LlmResponse;
@@ -24,6 +25,7 @@ public class AdaptiveTutorialAnswerSkill extends BaseSkill
 		String confidence = (String) messageContext.getContextValue("confidence");
 		String selectedoption = (String) messageContext.getContextValue("selectedoption");
 		String sectionid = (String) messageContext.getContextValue("sectionid");
+		Data section = getMediaArchive().getData("componentsection", sectionid);
 		String componentid = (String) messageContext.getContextValue("componentid");
 
 		if (channelid == null || questionid == null || selectedoption == null)
@@ -72,6 +74,19 @@ public class AdaptiveTutorialAnswerSkill extends BaseSkill
 			endTutorial(messageContext);
 		}
 
+		Data agentmessage = messageContext.getAgentMessage();
+		agentmessage.setValue("id", section.get("playbackentityid") + "_progressupdate");
+		agentmessage.setValue("messagetype", "system");
+
+		Map<String, String> broadcastpayload = new HashMap<String, String>();
+		broadcastpayload.put("messageid", section.get("playbackentityid") + "_progressupdate");
+		messageContext.setValue("broadcastpayload", broadcastpayload);
+
+		RunningScenario scenario = messageContext.getCurrentScenario();
+
+		AgentEnabled nextAgentEnabled = scenario.findEnabled("chat_tutor_progress");
+		AgentContext nextContext = scenario.createAgentContext(messageContext, nextAgentEnabled);
+		scenario.runProcess(nextAgentEnabled, nextContext);
 	}
 
 	public void endTutorial(ChatMessageContext messageContext)
