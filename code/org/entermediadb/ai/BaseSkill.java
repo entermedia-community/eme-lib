@@ -2,9 +2,7 @@ package org.entermediadb.ai;
 
 import java.util.Collection;
 import org.entermediadb.ai.llm.AgentEnabled;
-import org.entermediadb.ai.llm.LlmConnection;
 import org.openedit.CatalogEnabled;
-import org.openedit.MultiValued;
 
 public class BaseSkill extends BaseAiManager implements Skill, CatalogEnabled
 {

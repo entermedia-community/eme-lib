@@ -64,6 +64,11 @@ public class RunningScenario extends BaseMediaObject implements CatalogEnabled
 
 	public boolean runProcess(AgentEnabled inSkillEnabled, AgentContext inContext)
 	{
+		return runProcess(inSkillEnabled, inContext, false);
+	}
+
+	public boolean runProcess(AgentEnabled inSkillEnabled, AgentContext inContext, boolean skipStatusStart)
+	{
 		inContext.setCurrentAgentEnable(inSkillEnabled);
 		Skill agent = inSkillEnabled.getAgent();
 		if (agent == null)
@@ -71,7 +76,10 @@ public class RunningScenario extends BaseMediaObject implements CatalogEnabled
 			log.error("No agent found for enabled " + inSkillEnabled.getEnabledId());
 			return false;
 		}
-		inContext.fireStatusStarting(inSkillEnabled);
+		if (!skipStatusStart)
+		{
+			inContext.fireStatusStarting(inSkillEnabled);
+		}
 		inSkillEnabled.getAgent().process(inContext);
 
 		LlmResponse response = inContext.getLastResponse();
@@ -121,7 +129,10 @@ public class RunningScenario extends BaseMediaObject implements CatalogEnabled
 			log.error("Could not find enabled agent " + inEnabledId + " for scenario " + getId());
 			return false;
 		}
-		return runProcess(enabled, inContext);
+
+		AgentContext inCurrentContext = createAgentContext(inContext, enabled);
+
+		return runProcess(enabled, inCurrentContext);
 	}
 
 	public AgentEnabled findEnabled(String inEnabledId)

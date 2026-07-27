@@ -5,28 +5,22 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import org.entermediadb.ai.AgentContext;
-import org.entermediadb.ai.BaseSkill;
-import org.entermediadb.ai.ChatMessageContext;
+import org.entermediadb.ai.TutorMessageContext;
 import org.entermediadb.ai.llm.AgentEnabled;
 import org.openedit.Data;
 import org.openedit.MultiValued;
 import org.openedit.data.Searcher;
 
-public class AdaptiveTutorialProgressSkill extends BaseSkill
+public class AdaptiveTutorialProgressSkill extends AdaptiveTutorialBaseSkill
 {
 	@Override
 	public void process(AgentContext inAgentContext)
 	{
-		ChatMessageContext messageContext = (ChatMessageContext) inAgentContext;
+		TutorMessageContext messageContext = (TutorMessageContext) inAgentContext;
 
 		String userid = messageContext.getUserProfile().getUser().getId();
-
-		// String channelid = (String) messageContext.getContextValue("channelid");
-		String sectionid = (String) messageContext.getContextValue("sectionid");
-
-		Data section = getMediaArchive().getData("componentsection", sectionid);
-
-		String tutorialid = section.get("playbackentityid");
+		String tutorialid = messageContext.getTutorialId();
+		String channelid = messageContext.getChannel().getId();
 
 		Collection<Data> allsections = getMediaArchive().query("componentsection").exact("playbackentitymoduleid", "entitytutorial").exact("playbackentityid", tutorialid).search();
 
@@ -36,7 +30,7 @@ public class AdaptiveTutorialProgressSkill extends BaseSkill
 
 		Collection<String> questionids = allcomponentwithquestions.stream().map(a -> a.get("questionid")).distinct().toList();
 		Collection<Data> allquestions = getMediaArchive().query("entityquestion").ids(questionids).search();
-		Collection<Data> allanswers = getMediaArchive().query("tutoranswer").orgroup("entityquestion", questionids).exact("user", userid).search();
+		Collection<Data> allanswers = getMediaArchive().query("tutoranswer").orgroup("entityquestion", questionids).exact("user", userid).exact("channel", channelid).search();
 
 		Collection<Map<String, Object>> combined = allquestions.stream().map(q -> {
 			Map<String, Object> map = new HashMap<>();
@@ -46,101 +40,65 @@ public class AdaptiveTutorialProgressSkill extends BaseSkill
 			return map;
 		}).toList();
 
-		Collection<MultiValued> mcqcognitivelevels = getMediaArchive().query("mcqcognitivelevel").all().search();
-		Map<String, Double> cognitivelevelweights = new HashMap<>();
-		for (MultiValued level : mcqcognitivelevels)
+		Map<String, Double> cognitivelevelpoints = getCognitiveLevelPoints();
+		Map<String, Double> answerconfidencebonus = getAnswerConfidenceBonus();
+
+		double confidentbonus = answerconfidencebonus.getOrDefault("confident", 0.0);
+
+		double beginnerpoints_pq = cognitivelevelpoints.getOrDefault("beginner", 0.0);
+		beginnerpoints_pq += beginnerpoints_pq * (confidentbonus / 100.0);
+
+		double competentpoints_pq = cognitivelevelpoints.getOrDefault("competent", 0.0);
+		competentpoints_pq += competentpoints_pq * (confidentbonus / 100.0);
+
+		double expertpoints_pq = cognitivelevelpoints.getOrDefault("expert", 0.0);
+		expertpoints_pq += expertpoints_pq * (confidentbonus / 100.0);
+
+		double outof_batch = Math.max(Math.min(allquestions.size(), 10), allanswers.size() + 1);
+
+		double outof_beginnerpoints = beginnerpoints_pq * outof_batch;
+		double outof_competentpoints = competentpoints_pq * outof_batch;
+		double outof_expertpoints = expertpoints_pq * outof_batch;
+
+		if (outof_beginnerpoints == 0.0 || outof_competentpoints == 0.0 || outof_expertpoints == 0.0)
 		{
-			cognitivelevelweights.put(level.getId(), level.getDouble("weight"));
+			throw new IllegalStateException("Out of points for one or more cognitive levels is zero. This should not happen.");
 		}
 
-		Collection<MultiValued> answerconfidences = getMediaArchive().query("answerconfidence").all().search();
-		Map<String, Double> answerconfidenceweights = new HashMap<>();
-		for (MultiValued confidence : answerconfidences)
-		{
-			answerconfidenceweights.put(confidence.getId(), confidence.getDouble("weight"));
-		}
-
-		double beginnerpoints = 0;
-		double competentpoints = 0;
-		double expertpoints = 0;
-
-		double max_beginnerpoints = cognitivelevelweights.getOrDefault("beginner", 0.0) * answerconfidenceweights.getOrDefault("confident", 0.0);
-		double max_competentpoints = cognitivelevelweights.getOrDefault("competent", 0.0) * answerconfidenceweights.getOrDefault("confident", 0.0);
-		double max_expertpoints = cognitivelevelweights.getOrDefault("expert", 0.0) * answerconfidenceweights.getOrDefault("confident", 0.0);
-
-		double total_beginnerpoints = 0;
-		double total_competentpoints = 0;
-		double total_expertpoints = 0;
+		double total_beginnerpoints = 0.0;
+		double total_competentpoints = 0.0;
+		double total_expertpoints = 0.0;
 
 		for (Map<String, Object> map : combined)
 		{
 			Data question = (Data) map.get("question");
-			String cognitivelevel = question.get("mcqcognitivelevel");
+			MultiValued answer = (MultiValued) map.get("answer");
 
-			if ("beginner".equals(cognitivelevel))
+			if (answer != null)
 			{
-				total_beginnerpoints += max_beginnerpoints;
-			}
-			else if ("competent".equals(cognitivelevel))
-			{
-				total_competentpoints += max_competentpoints;
-			}
-			else if ("expert".equals(cognitivelevel))
-			{
-				total_expertpoints += max_expertpoints;
-			}
+				double pointsearned = answer.getDouble("pointsearned");
+				double bonusearned = answer.getDouble("bonusearned");
+				double totalpoints = pointsearned + bonusearned;
 
-			Data answer = (Data) map.get("answer");
-			if (answer == null)
-			{
-				continue;
-			}
-
-			boolean correct = answer.get("selectedoption").equals(question.get("correctoption"));
-			String answerconfidence = answer.get("answerconfidence");
-
-			double cognitivelevelweight = cognitivelevelweights.getOrDefault(cognitivelevel, 0.0);
-			double answerconfidenceweight = answerconfidenceweights.getOrDefault(answerconfidence, 0.0);
-
-			double points = cognitivelevelweight * (answerconfidenceweight * (correct ? 1 : -1));
-
-			double bonus = 0;
-			if (correct && "confident".equals(answerconfidence))
-			{
-				bonus = answerconfidenceweight * 0.5;
-			}
-			else if (correct && "noidea".equals(answerconfidence))
-			{
-				bonus = answerconfidenceweight * -0.25;
-			}
-			else if (!correct && "confident".equals(answerconfidence))
-			{
-				bonus = answerconfidenceweight * -0.5;
-			}
-			else if (!correct && "noidea".equals(answerconfidence))
-			{
-				bonus = answerconfidenceweight * 0.5;
-			}
-
-			points += bonus;
-
-			if ("beginner".equals(cognitivelevel))
-			{
-				beginnerpoints += points;
-			}
-			else if ("competent".equals(cognitivelevel))
-			{
-				competentpoints += points;
-			}
-			else if ("expert".equals(cognitivelevel))
-			{
-				expertpoints += points;
+				String cognitivelevel = question.get("mcqcognitivelevel");
+				if ("beginner".equals(cognitivelevel))
+				{
+					total_beginnerpoints += totalpoints;
+				}
+				else if ("competent".equals(cognitivelevel))
+				{
+					total_competentpoints += totalpoints;
+				}
+				else if ("expert".equals(cognitivelevel))
+				{
+					total_expertpoints += totalpoints;
+				}
 			}
 		}
 
-		double average_beginnerpoints = total_beginnerpoints > 0 ? beginnerpoints / total_beginnerpoints : 0;
-		double average_competentpoints = total_competentpoints > 0 ? competentpoints / total_competentpoints : 0;
-		double average_expertpoints = total_expertpoints > 0 ? expertpoints / total_expertpoints : 0;
+		double average_beginnerpoints = total_beginnerpoints / outof_beginnerpoints;
+		double average_competentpoints = total_competentpoints / outof_competentpoints;
+		double average_expertpoints = total_expertpoints / outof_expertpoints;
 
 		Searcher progresssearcher = getMediaArchive().getSearcher("tutorialprogress");
 

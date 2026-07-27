@@ -6,7 +6,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import org.entermediadb.ai.AgentContext;
 import org.entermediadb.ai.SkillStatusListener;
@@ -254,14 +253,13 @@ public class BaseAgentContext extends BaseData implements CatalogEnabled, AgentC
 				value = getChannel().get("dataid");
 			}
 		}
-		else
-			if (value == null && inId.equals("entitymoduleid"))
+		else if (value == null && inId.equals("entitymoduleid"))
+		{
+			if (!inId.equals("channel") && getChannel() != null)
 			{
-				if (!inId.equals("channel") && getChannel() != null)
-				{
-					value = getChannel().get("searchtype");
-				}
+				value = getChannel().get("searchtype");
 			}
+		}
 		if (value == null && getParentContext() != null)
 		{
 			return getParentContext().get(inId);

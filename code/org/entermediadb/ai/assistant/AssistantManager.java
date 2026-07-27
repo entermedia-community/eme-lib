@@ -13,7 +13,6 @@ import java.util.Map;
 import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.oltu.oauth2.common.utils.JSONUtils;
 import org.entermediadb.ai.AgentContext;
 import org.entermediadb.ai.BaseAiManager;
 import org.entermediadb.ai.ChatMessageContext;
@@ -348,8 +347,8 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 		String apphome = "/" + channel.get("chatapplicationid");
 		chatMessageContext.putContextValue("apphome", apphome);
 
-		LlmResponse response = null;
-		String messagePrefix = chatMessageContext.getMessagePrefix();
+		// LlmResponse response = null;
+		// String messagePrefix = chatMessageContext.getMessagePrefix();
 
 		// ChatMessageContext messageContext = new ChatMessageContext(chatMessageContext);// Needed?
 		chatMessageContext.setAgentMessage(agentmessage);
@@ -369,12 +368,12 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 		catch (HttpException e)
 		{
 			log.error("Error from " + chatMessageContext.getCurrentScenario() + " running " + chatMessageContext.getCurrentAgentEnable().getEnabledId(), e);
-			response = handleError(chatMessageContext, e.getMessage(), e.getErrorcode());
+			handleError(chatMessageContext, e.getMessage(), e.getErrorcode());
 		}
 		catch (Exception e)
 		{
 			log.error("Error from " + chatMessageContext.getCurrentScenario() + " running " + chatMessageContext.getCurrentAgentEnable().getEnabledId(), e);
-			response = handleError(chatMessageContext, e.getMessage());
+			handleError(chatMessageContext, e.getMessage());
 		}
 		// agentmessage.setValue("functionresponse", e.toString());
 		// agentmessage.setValue("chatmessagestatus", "failed");
