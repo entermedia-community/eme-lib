@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -29,8 +30,10 @@ import org.entermediadb.asset.util.CSVReader;
 import org.entermediadb.asset.util.ImportFile;
 import org.entermediadb.asset.util.Row;
 import org.entermediadb.elasticsearch.ElasticNodeManager;
-import org.openedit.MultiValued;
+import org.entermediadb.elasticsearch.searchers.ElasticListSearcher;
+import org.entermediadb.scripts.ScriptLogger;
 import org.openedit.Data;
+import org.openedit.MultiValued;
 import org.openedit.OpenEditException;
 import org.openedit.WebPageRequest;
 import org.openedit.data.NonExportable;
@@ -46,6 +49,7 @@ import org.openedit.page.manage.PageManager;
 import org.openedit.util.DateStorageUtil;
 import org.openedit.util.FileUtils;
 import org.openedit.util.PathUtilities;
+
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -80,8 +84,8 @@ public class SiteSnapshotManager extends BaseMediaModule
 
 			String logstring = String.format("restoring: %s config= %s ", site.get("rootpath"), configonly);
 			log.info(logstring);
-
-			restore(mediaarchive, site, snapshot, configonly);
+			ScriptLogger scriptLogger = (ScriptLogger) inReq.getPageValue("log");
+			restore(scriptLogger, mediaarchive, site, snapshot, configonly);
 			snapshot.setValue("snapshotstatus", "complete");
 		}
 		catch (Exception ex)
@@ -100,7 +104,7 @@ public class SiteSnapshotManager extends BaseMediaModule
 
 	}
 
-	public void restore(MediaArchive mediaarchive, Data site, Data inSnap, boolean configonly) throws Exception
+	public void restore(ScriptLogger scriptLogger, MediaArchive mediaarchive, Data site, Data inSnap, boolean configonly) throws Exception
 	{
 		String folder = inSnap.get("folder");
 		String catalogid = mediaarchive.getCatalogId();
@@ -115,7 +119,10 @@ public class SiteSnapshotManager extends BaseMediaModule
 
 		Date date = new Date();
 		ElasticNodeManager nodeManager = (ElasticNodeManager) mediaarchive.getNodeManager();
+
+		
 		String tempindex = nodeManager.toId(mediaarchive.getCatalogId().replaceAll("_", "") + date.getTime());
+		
 
 		Page lists = mediaarchive.getPageManager().getPage(rootfolder + "/lists/");
 		if (lists.exists())
@@ -148,7 +155,7 @@ public class SiteSnapshotManager extends BaseMediaModule
 		}
 
 		mediaarchive.getPageManager().clearCache();
-		log.info("Clearing property definitions");
+		scriptLogger.info("Clearing property definitions");
 		PropertyDetailsArchive pdarchive = mediaarchive.getPropertyDetailsArchive();
 
 		Page fields = mediaarchive.getPageManager().getPage(rootfolder + "/fields/");
@@ -162,81 +169,90 @@ public class SiteSnapshotManager extends BaseMediaModule
 
 		if (!configonly)
 		{
-			log.info("Preparing index " + tempindex);
+			scriptLogger.info("Preparing index " + tempindex);
 			nodeManager.prepareIndex(tempindex);
-			log.info("Index " + tempindex + " prepared");
+			scriptLogger.info("Index " + tempindex + " prepared");
 		}
 
+		
+		List<String> orderedtypes = new ArrayList<>();
+		orderedtypes.add("category");
+
+		List<String> childrennames = pdarchive.findChildTablesNames();
+
+		@SuppressWarnings("unchecked")
+		List<String> jsonfiles = pdarchive.getPageManager().getChildrenPaths(rootfolder + "/json/");
+		List<String> mappings = new ArrayList<>();
+		List<String> orderedJsontypes = new ArrayList<>();
+
+		for (String it : jsonfiles)
+		{
+			if (it.endsWith(".zip"))
+			{
+				String searchtype = PathUtilities.extractPageName(it);
+				if (!childrennames.contains(searchtype))
+				{
+					orderedJsontypes.add(searchtype);
+				}
+			}
+			if (it.endsWith(".json"))
+			{
+				String filename = PathUtilities.extractPageName(it);
+				mappings.add(filename);
+			}
+		}
+
+		orderedJsontypes.addAll(childrennames);
+		orderedJsontypes.remove("propertydetail");
+		orderedJsontypes.remove("lock");
+		orderedJsontypes.remove("user");
+		orderedJsontypes.remove("group");
+		String databaseIndex = tempindex;
+		if (configonly)
+		{
+			databaseIndex = nodeManager.getIndexNameFromAliasName(mediaarchive.getCatalogId().replaceAll("/", "_"));
+		}
+		for (String it : mappings)
+		{
+			Page upload = mediaarchive.getPageManager().getPage(rootfolder + "/json/" + it + ".json");
+			String searchtype = it.substring(0, it.indexOf("-"));
+			scriptLogger.info("Restore - Put Mappings: " + searchtype);
+			
+			putMapping(mediaarchive, searchtype, upload, databaseIndex);
+		}
+
+		/*
+			* Searcher categories = mediaarchive.getSearcher("category");
+			* categories.setAlternativeIndex(tempindex); log.info("Restore - Put Mappings: category");
+			* categories.putMappings(); categories.setAlternativeIndex(null);
+			*/
+		scriptLogger.info("Importing Data for " + orderedJsontypes.size() + " types");
+		scriptLogger.info(orderedJsontypes);
+		for (String type : orderedJsontypes)
+		{
+			Page upload = mediaarchive.getPageManager().getPage(rootfolder + "/json/" + type + ".zip");
+			try
+			{
+				if (upload.exists())
+				{
+					scriptLogger.info("Restore - Importing: " + type);
+					importJson(site, mediaarchive, type, upload, databaseIndex);
+				}
+			}
+			catch (Exception e)
+			{
+				scriptLogger.error("Exception thrown importing upload: " + upload, e);
+				break;
+			}
+
+		}
 		if (!configonly)
 		{
-			List<String> orderedtypes = new ArrayList<>();
-			orderedtypes.add("category");
-
-			List<String> childrennames = pdarchive.findChildTablesNames();
-
-			@SuppressWarnings("unchecked")
-			List<String> jsonfiles = pdarchive.getPageManager().getChildrenPaths(rootfolder + "/json/");
-			List<String> mappings = new ArrayList<>();
-			List<String> orderedJsontypes = new ArrayList<>();
-
-			for (String it : jsonfiles)
-			{
-				if (it.endsWith(".zip"))
-				{
-					String searchtype = PathUtilities.extractPageName(it);
-					if (!childrennames.contains(searchtype))
-					{
-						orderedJsontypes.add(searchtype);
-					}
-				}
-				if (it.endsWith(".json"))
-				{
-					String filename = PathUtilities.extractPageName(it);
-					mappings.add(filename);
-				}
-			}
-
-			orderedJsontypes.addAll(childrennames);
-			orderedJsontypes.remove("propertydetail");
-			orderedJsontypes.remove("lock");
-			orderedJsontypes.remove("user");
-			orderedJsontypes.remove("group");
-
-			for (String it : mappings)
-			{
-				Page upload = mediaarchive.getPageManager().getPage(rootfolder + "/json/" + it + ".json");
-				String searchtype = it.substring(0, it.indexOf("-"));
-				log.info("Restore - Put Mappings: " + searchtype);
-				putMapping(mediaarchive, searchtype, upload, tempindex);
-			}
-
-			/*
-			 * Searcher categories = mediaarchive.getSearcher("category");
-			 * categories.setAlternativeIndex(tempindex); log.info("Restore - Put Mappings: category");
-			 * categories.putMappings(); categories.setAlternativeIndex(null);
-			 */
-			log.info("Importing Data for " + orderedJsontypes.size() + " types");
-			log.info(orderedJsontypes);
-			for (String type : orderedJsontypes)
-			{
-				Page upload = mediaarchive.getPageManager().getPage(rootfolder + "/json/" + type + ".zip");
-				try
-				{
-					if (upload.exists())
-					{
-						log.info("Restore - Importing: " + type);
-						importJson(site, mediaarchive, type, upload, tempindex);
-					}
-				}
-				catch (Exception e)
-				{
-					log.error("Exception thrown importing upload: " + upload, e);
-					break;
-				}
-
-			}
-			log.info("Import Data completed");
+			scriptLogger.info("Switching alias " + catalogid + " to " + databaseIndex);
+			nodeManager.loadIndex(catalogid, databaseIndex, true);
 		}
+		scriptLogger.info("Import Data completed");
+		
 	}
 
 	public void archiveFolder(PageManager inManager, Page inPage, String inIndex)
@@ -417,7 +433,7 @@ public class SiteSnapshotManager extends BaseMediaModule
 			current = jp.nextToken();
 			if (current != JsonToken.START_OBJECT)
 			{
-				System.out.println("Error: root should be object: quiting.");
+				log.info("Error: root should be object: quiting.");
 				return;
 			}
 
@@ -460,13 +476,13 @@ public class SiteSnapshotManager extends BaseMediaModule
 					}
 					else
 					{
-						System.out.println("Error: records should be an array: skipping.");
+						log.info("Error: records should be an array: skipping.");
 						jp.skipChildren();
 					}
 				}
 				else
 				{
-					System.out.println("Unprocessed property: " + fieldName);
+					log.info("Unprocessed property: " + fieldName);
 					jp.skipChildren();
 				}
 
@@ -479,8 +495,8 @@ public class SiteSnapshotManager extends BaseMediaModule
 		finally
 		{
 			manager.flushBulk();
-			log.info("Imported: " + searchtype + " " + count + " records");
 		}
+		log.info("Imported: " + searchtype + " " + count + " records");
 	}
 
 	public void putMapping(MediaArchive mediaarchive, String searchtype, Page upload, String tempindex) throws Exception
@@ -494,7 +510,7 @@ public class SiteSnapshotManager extends BaseMediaModule
 	}
 
 	// EXPORTIRNG
-	public void export()
+	public void export(ScriptLogger scriptLogger)
 	{
 		Searcher snapshotsearcher = getSearcherManager().getSearcher("system", "sitesnapshot");
 		@SuppressWarnings("unchecked")
@@ -518,13 +534,13 @@ public class SiteSnapshotManager extends BaseMediaModule
 			snapshotsearcher.saveData(snapshot);
 
 			boolean configonly = Boolean.parseBoolean(String.valueOf(snapshot.getValue("configonly")));
-			export(catalogid, snapshot, configonly);
+			export(scriptLogger, catalogid, snapshot);
 			snapshot.setValue("snapshotstatus", "complete");
 			snapshotsearcher.saveData(snapshot);
 		}
 	}
 
-	public void export(String inCatalogId, Data inSnap, boolean configonly)
+	public void export(ScriptLogger scriptLogger, String inCatalogId, Data inSnap)
 	{
 		MediaArchive mediaarchive = (MediaArchive) getModuleManager().getBean(inCatalogId, "mediaArchive");
 		PropertyDetailsArchive archive = mediaarchive.getPropertyDetailsArchive();
@@ -534,11 +550,11 @@ public class SiteSnapshotManager extends BaseMediaModule
 
 		String rootfolder = "/WEB-INF/data/exports/" + mediaarchive.getCatalogId() + "/" + inSnap.get("folder");
 		String catalogid = mediaarchive.getCatalogId();
-		log.info("Exporting " + rootfolder);
-		if (!configonly)
-		{
-			exportDatabase(mediaarchive, searchtypes, rootfolder);
-		}
+		
+		scriptLogger.info("Exporting " + rootfolder);
+
+		boolean configonly = Boolean.parseBoolean(inSnap.get("configonly") );
+		exportDatabase(scriptLogger, mediaarchive, searchtypes, rootfolder, configonly);
 		Page fields = mediaarchive.getPageManager().getPage("/WEB-INF/data/" + catalogid + "/fields/");
 		if (fields.exists())
 		{
@@ -574,10 +590,12 @@ public class SiteSnapshotManager extends BaseMediaModule
 		// }
 		// }
 
+		scriptLogger.info("Finished Exporting" );
+
 	}
 
 	@SuppressWarnings("rawtypes")
-	public void exportDatabase(MediaArchive mediaarchive, List<String> searchtypes, String rootfolder)
+	public void exportDatabase(ScriptLogger scriptLogger, MediaArchive mediaarchive, List<String> searchtypes, String rootfolder, boolean configonly)
 	{
 		String catalogid = mediaarchive.getCatalogId();
 		ElasticNodeManager nodeManager = (ElasticNodeManager) mediaarchive.getNodeManager();
@@ -588,18 +606,25 @@ public class SiteSnapshotManager extends BaseMediaModule
 		ImmutableOpenMap<String, ImmutableOpenMap<String, MappingMetaData>> indexToMappings = null;
 		if (indexid != null)
 		{
+			scriptLogger.info("Creating Index");
 			GetMappingsResponse getMappingsResponse = nodeManager.getClient().admin().indices().getMappings(new GetMappingsRequest().indices(indexid)).actionGet();
 			indexToMappings = getMappingsResponse.getMappings();
+			scriptLogger.info("Complete creating Index");
 		}
+		
 
 		SearcherManager searcherManager = mediaarchive.getSearcherManager();
+		scriptLogger.info("Exporting " + searchtypes.size() + " tables" );
 		for (String searchtype : searchtypes)
 		{
 			Searcher searcher = searcherManager.getSearcher(catalogid, searchtype);
-			// if (searcher instanceof ElasticListSearcher)
-			// {
-			// continue;
-			// }
+			if (configonly )
+			{
+				if(!(searcher instanceof ElasticListSearcher))
+				{
+					continue;
+				}
+			}
 			if (searcher instanceof NonExportable)
 			{
 				continue;
@@ -611,7 +636,12 @@ public class SiteSnapshotManager extends BaseMediaModule
 			{
 				continue;
 			}
-
+			if (hits.size() > 200)
+			{
+				scriptLogger.info("Large Table Export " + hits.size() + " records for " + searchtype);
+			}
+			
+			
 			Page output = mediaarchive.getPageManager().getPage(rootfolder + "/json/" + searchtype + ".zip");
 			OutputStream os = output.getContentItem().getOutputStream();
 			ZipOutputStream finalZip = new ZipOutputStream(os);
@@ -662,12 +692,12 @@ public class SiteSnapshotManager extends BaseMediaModule
 						}
 						catch (Exception ex)
 						{
-							log.error("Could not save mapping for " + searchtype, ex);
+							scriptLogger.error("Could not save mapping for " + searchtype, ex);
 						}
 					}
 					else
 					{
-						log.info("No mapping found for " + searchtype);
+						scriptLogger.info("No mapping found for " + searchtype);
 					}
 				}
 			}

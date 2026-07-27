@@ -20,6 +20,7 @@ import org.entermediadb.elasticsearch.ElasticNodeManager;
 import org.entermediadb.events.PathEventManager;
 import org.entermediadb.manager.SiteSnapshotManager;
 import org.entermediadb.modules.update.Downloader;
+import org.entermediadb.scripts.ScriptLogger;
 import org.entermediadb.workspace.WorkspaceManager;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -479,7 +480,7 @@ public class MediaAdminModule extends BaseMediaModule
 	{
 		// Use the archive
 		String siteid = inReq.getRequestParameter("id");
-		Data site = getSearcherManager().getData("system", "site", siteid);
+		
 
 		Searcher snaps = getSearcherManager().getSearcher("system", "sitesnapshot");
 
@@ -489,7 +490,7 @@ public class MediaAdminModule extends BaseMediaModule
 		if (exports.size() > 0)
 		{
 			inReq.putPageValue("status", "Snapshots are already pending");
-			//manager.runSharedPathEvent("/system/events/snapshot/exportsite.html");
+			manager.runSharedPathEvent("/system/events/snapshot/exportsite.html");
 			return;
 		}
 		boolean configonly = Boolean.valueOf(inReq.getRequestParameter("configonly"));
@@ -510,24 +511,38 @@ public class MediaAdminModule extends BaseMediaModule
 
 		log.info("Saving new snapshot with a status of pendingexport " + siteid);
 
-		// manager.runSharedPathEvent("/system/events/snapshot/exportsite.html");
+		manager.runSharedPathEvent("/system/events/snapshot/exportsite.html");
+
+	}
+
+
+	public void runExport(WebPageRequest inReq)
+	{
 		SiteSnapshotManager snapshotmanager = (SiteSnapshotManager) getModuleManager().getBean("system", "siteSnapshotManager");
+		Searcher searcher = getSearcherManager().getSearcher("system", "sitesnapshot");
+		Data snapshot = (Data) searcher.query().exact("snapshotstatus", "pendingexport").searchOne();
+		Data site = getSearcherManager().getData("system", "site", snapshot.get("site"));
 		try
 		{
 			String catalogid = site.get("catalogid");
-			snapshotmanager.export(catalogid, snapshot, configonly);
+			ScriptLogger scriptLogger = (ScriptLogger) inReq.getPageValue("log");
+			snapshotmanager.export(scriptLogger, catalogid, snapshot);
+			snapshot.setValue("snapshotstatus", "exported");
 		}
 		catch (Exception ex)
 		{
 			log.error("Error exporting snapshot: " + snapshot.getId(), ex);
+			snapshot.setValue("snapshotstatus", "error");
 		}
 		// PathEvent event =
 		// manager.getPathEvent("/system/events/data/exportsite.html");
-		inReq.putPageValue("site", site);
+	
+		searcher.saveData(snapshot);
+		inReq.putPageValue("site", snapshot.get("site"));
 
 		inReq.putPageValue("snapshot", snapshot);
-
 	}
+
 
 	public void restoreSiteSnapshot(WebPageRequest inReq)
 	{
@@ -543,22 +558,32 @@ public class MediaAdminModule extends BaseMediaModule
 		snap.setValue("configonly", configonly);
 		snaps.saveData(snap);
 
+		manager.runSharedPathEvent("/system/events/snapshot/restoresite.html");
+
+	}
+
+	public void runRestore(WebPageRequest inReq)
+	{
 		SiteSnapshotManager snapshotmanager = (SiteSnapshotManager) getModuleManager().getBean("system", "siteSnapshotManager");
+		Searcher searcher = getSearcherManager().getSearcher("system", "sitesnapshot");
+		Data snapshot = (Data) searcher.query().exact("snapshotstatus", "pendingrestore").searchOne();
+		Data site = getSearcherManager().getData("system", "site", snapshot.get("site"));
 		try
 		{
-			snapshotmanager.restoreSnapshot(inReq, snap);
+			snapshotmanager.restoreSnapshot(inReq, snapshot);
+			snapshot.setValue("snapshotstatus", "restored");
 		}
 		catch (Exception ex)
 		{
-			log.error("Error restoring snapshot: " + snapid, ex);
+			log.error("Error restoring snapshot: " + snapshot.getId(), ex);
+			snapshot.setValue("snapshotstatus", "error");
 		}
 
-		inReq.putPageValue("snapshot", snap);
+		searcher.saveData(snapshot);
 
-		Data site = getSearcherManager().getData("system", "site", snap.get("site"));
+		inReq.putPageValue("snapshot", snapshot);
 
 		inReq.putPageValue("site", site);
-
 	}
 
 	public void deploySite(WebPageRequest inReq) throws Exception

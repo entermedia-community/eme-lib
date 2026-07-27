@@ -29,7 +29,7 @@ public class ElasticListSearcher extends BaseElasticSearcher implements Reloadab
 	// protected XmlFile fieldXmlFile;
 	protected XmlSearcher fieldXmlSearcher;
 
-	protected boolean fieldSaveToXml = true;
+	protected boolean fieldSaveToXml = false;
 
 	public boolean isSaveToXml()
 	{
@@ -115,10 +115,15 @@ public class ElasticListSearcher extends BaseElasticSearcher implements Reloadab
 		}
 		return (Data) getModuleManager().getBean(getNewDataName());
 	}
-
+/*
 	@Override
 	public void reindexInternal() throws OpenEditException
 	{
+		if (isSaveToXml())
+		{
+			super.reindexInternal();
+			return;
+		}
 		setReIndexing(true);
 		try
 		{
@@ -150,8 +155,8 @@ public class ElasticListSearcher extends BaseElasticSearcher implements Reloadab
 			clearIndex();
 		}
 	}
-
-	public synchronized void reIndexAll() throws OpenEditException
+*/
+	public synchronized void reindexXml() throws OpenEditException
 	{
 		// setReIndexing(false);
 		if (isReIndexing())
@@ -218,14 +223,14 @@ public class ElasticListSearcher extends BaseElasticSearcher implements Reloadab
 			getXmlSearcher().getXmlArchive().deleteXmlFile(file);
 		}
 
-		reIndexAll(); // this will go back
+		reindexXml(); // this will go back
 	}
 
 	@Override
 	public void reloadSettings()
 	{
 		super.reloadSettings();
-		reIndexAll();
+		reindexXml();
 	}
 
 	@Override
@@ -261,6 +266,10 @@ public class ElasticListSearcher extends BaseElasticSearcher implements Reloadab
 			{
 				getLockManager().release(lock);
 			}
+		}
+		else
+		{
+			super.delete(inData, inUser);
 		}
 		// Remove from Index
 	}
@@ -326,7 +335,7 @@ public class ElasticListSearcher extends BaseElasticSearcher implements Reloadab
 	{
 		if (!tableExists())
 		{
-			reIndexAll();
+			reindexXml();
 			return true;
 		}
 		return false;
