@@ -177,7 +177,7 @@ public class SiteSnapshotManager extends BaseMediaModule
 
 		if (!configonly)
 		{
-			if (jsonfiles.size() < 440)
+			if (jsonfiles.size() < 300)
 			{
 				throw new OpenEditException("Not enough json files found in " + rootfolder + "/json/ only found " + jsonfiles.size());
 
