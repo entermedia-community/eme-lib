@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.entermediadb.scripts.ScriptLogger;
 import org.openedit.OpenEditException;
 import org.openedit.WebPageRequest;
 import org.openedit.event.WebEvent;
@@ -217,6 +218,19 @@ public class TaskRunner extends java.util.TimerTask
 			{
 				executeNow(getWebPageRequest(), event);
 			}
+		}
+		catch (Throwable ex)
+		{
+			ScriptLogger logger = (ScriptLogger) getWebPageRequest().getPageValue("log");
+			if (logger != null)
+			{
+				logger.error("Error from action " + ex.getMessage(), ex);
+			}
+			else
+			{
+				log.error("Error from action " + ex.getMessage(), ex);
+			}
+
 		}
 		finally
 		{

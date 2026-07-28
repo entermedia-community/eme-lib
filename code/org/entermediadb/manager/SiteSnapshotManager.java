@@ -90,7 +90,15 @@ public class SiteSnapshotManager extends BaseMediaModule
 		}
 		catch (Exception ex)
 		{
-			log.error("Could not restore", ex);
+			ScriptLogger scriptLogger = (ScriptLogger) inReq.getPageValue("log");
+			if (scriptLogger != null)
+			{
+				scriptLogger.error("Could not restore " + ex.getMessage(), ex);
+			}
+			else
+			{
+				log.error("Could not restore", ex);
+			}
 			snapshot.setValue("snapshotstatus", "error");
 		}
 		finally
@@ -120,9 +128,7 @@ public class SiteSnapshotManager extends BaseMediaModule
 		Date date = new Date();
 		ElasticNodeManager nodeManager = (ElasticNodeManager) mediaarchive.getNodeManager();
 
-		
 		String tempindex = nodeManager.toId(mediaarchive.getCatalogId().replaceAll("_", "") + date.getTime());
-		
 
 		Page lists = mediaarchive.getPageManager().getPage(rootfolder + "/lists/");
 		if (lists.exists())
@@ -167,21 +173,27 @@ public class SiteSnapshotManager extends BaseMediaModule
 		}
 		pdarchive.clearCache();
 
+		List<String> jsonfiles = pdarchive.getPageManager().getChildrenPaths(rootfolder + "/json/");
+
 		if (!configonly)
 		{
+			if (jsonfiles.size() < 440)
+			{
+				throw new OpenEditException("Not enough json files found in " + rootfolder + "/json/ only found " + jsonfiles.size());
+
+			}
 			scriptLogger.info("Preparing index " + tempindex);
 			nodeManager.prepareIndex(tempindex);
 			scriptLogger.info("Index " + tempindex + " prepared");
 		}
 
-		
 		List<String> orderedtypes = new ArrayList<>();
 		orderedtypes.add("category");
 
 		List<String> childrennames = pdarchive.findChildTablesNames();
 
 		@SuppressWarnings("unchecked")
-		List<String> jsonfiles = pdarchive.getPageManager().getChildrenPaths(rootfolder + "/json/");
+
 		List<String> mappings = new ArrayList<>();
 		List<String> orderedJsontypes = new ArrayList<>();
 
@@ -217,15 +229,15 @@ public class SiteSnapshotManager extends BaseMediaModule
 			Page upload = mediaarchive.getPageManager().getPage(rootfolder + "/json/" + it + ".json");
 			String searchtype = it.substring(0, it.indexOf("-"));
 			scriptLogger.info("Restore - Put Mappings: " + searchtype);
-			
+
 			putMapping(mediaarchive, searchtype, upload, databaseIndex);
 		}
 
 		/*
-			* Searcher categories = mediaarchive.getSearcher("category");
-			* categories.setAlternativeIndex(tempindex); log.info("Restore - Put Mappings: category");
-			* categories.putMappings(); categories.setAlternativeIndex(null);
-			*/
+		 * Searcher categories = mediaarchive.getSearcher("category");
+		 * categories.setAlternativeIndex(tempindex); log.info("Restore - Put Mappings: category");
+		 * categories.putMappings(); categories.setAlternativeIndex(null);
+		 */
 		scriptLogger.info("Importing Data for " + orderedJsontypes.size() + " types");
 		scriptLogger.info(orderedJsontypes);
 		for (String type : orderedJsontypes)
@@ -252,7 +264,7 @@ public class SiteSnapshotManager extends BaseMediaModule
 			nodeManager.loadIndex(catalogid, databaseIndex, true);
 		}
 		scriptLogger.info("Import Data completed");
-		
+
 	}
 
 	public void archiveFolder(PageManager inManager, Page inPage, String inIndex)
@@ -550,10 +562,10 @@ public class SiteSnapshotManager extends BaseMediaModule
 
 		String rootfolder = "/WEB-INF/data/exports/" + mediaarchive.getCatalogId() + "/" + inSnap.get("folder");
 		String catalogid = mediaarchive.getCatalogId();
-		
+
 		scriptLogger.info("Exporting " + rootfolder);
 
-		boolean configonly = Boolean.parseBoolean(inSnap.get("configonly") );
+		boolean configonly = Boolean.parseBoolean(inSnap.get("configonly"));
 		exportDatabase(scriptLogger, mediaarchive, searchtypes, rootfolder, configonly);
 		Page fields = mediaarchive.getPageManager().getPage("/WEB-INF/data/" + catalogid + "/fields/");
 		if (fields.exists())
@@ -590,7 +602,7 @@ public class SiteSnapshotManager extends BaseMediaModule
 		// }
 		// }
 
-		scriptLogger.info("Finished Exporting" );
+		scriptLogger.info("Finished Exporting");
 
 	}
 
@@ -611,16 +623,15 @@ public class SiteSnapshotManager extends BaseMediaModule
 			indexToMappings = getMappingsResponse.getMappings();
 			scriptLogger.info("Complete creating Index");
 		}
-		
 
 		SearcherManager searcherManager = mediaarchive.getSearcherManager();
-		scriptLogger.info("Exporting " + searchtypes.size() + " tables" );
+		scriptLogger.info("Exporting " + searchtypes.size() + " tables");
 		for (String searchtype : searchtypes)
 		{
 			Searcher searcher = searcherManager.getSearcher(catalogid, searchtype);
-			if (configonly )
+			if (configonly)
 			{
-				if(!(searcher instanceof ElasticListSearcher))
+				if (!(searcher instanceof ElasticListSearcher))
 				{
 					continue;
 				}
@@ -640,8 +651,7 @@ public class SiteSnapshotManager extends BaseMediaModule
 			{
 				scriptLogger.info("Large Table Export " + hits.size() + " records for " + searchtype);
 			}
-			
-			
+
 			Page output = mediaarchive.getPageManager().getPage(rootfolder + "/json/" + searchtype + ".zip");
 			OutputStream os = output.getContentItem().getOutputStream();
 			ZipOutputStream finalZip = new ZipOutputStream(os);

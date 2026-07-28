@@ -115,93 +115,45 @@ public class ElasticListSearcher extends BaseElasticSearcher implements Reloadab
 		}
 		return (Data) getModuleManager().getBean(getNewDataName());
 	}
-/*
-	@Override
-	public void reindexInternal() throws OpenEditException
-	{
-		if (isSaveToXml())
-		{
-			super.reindexInternal();
-			return;
-		}
-		setReIndexing(true);
-		try
-		{
-			getXmlSearcher().clearIndex();
-			HitTracker allhits = getXmlSearcher().getAllHits();
-			allhits.enableBulkOperations();
-			ArrayList tosave = new ArrayList();
-			for (Iterator iterator2 = allhits.iterator(); iterator2.hasNext();)
-			{
-				Data hit = (Data) iterator2.next();
-				if (hit.getId() == null || hit.getId().isEmpty())
-				{
-					continue;
-				}
-				Data real = (Data) loadData(hit);
-				tosave.add(real);
-				if (tosave.size() > 1000)
-				{
-					updateInBatch(tosave, null);
 
-					tosave.clear();
-				}
-			}
-			updateInBatch(tosave, null);
-		}
-		finally
-		{
-			setReIndexing(false);
-			clearIndex();
-		}
-	}
-*/
+	/*
+	 * @Override public void reindexInternal() throws OpenEditException { if (isSaveToXml()) {
+	 * super.reindexInternal(); return; } setReIndexing(true); try { getXmlSearcher().clearIndex();
+	 * HitTracker allhits = getXmlSearcher().getAllHits(); allhits.enableBulkOperations(); ArrayList
+	 * tosave = new ArrayList(); for (Iterator iterator2 = allhits.iterator(); iterator2.hasNext();) {
+	 * Data hit = (Data) iterator2.next(); if (hit.getId() == null || hit.getId().isEmpty()) { continue;
+	 * } Data real = (Data) loadData(hit); tosave.add(real); if (tosave.size() > 1000) {
+	 * updateInBatch(tosave, null);
+	 * 
+	 * tosave.clear(); } } updateInBatch(tosave, null); } finally { setReIndexing(false); clearIndex();
+	 * } }
+	 */
 	public synchronized void reindexXml() throws OpenEditException
 	{
-		// setReIndexing(false);
-		if (isReIndexing())
+		getXmlSearcher().reIndexAll();
+		HitTracker settings = getXmlSearcher().getAllHits();
+
+		log.info("Reindex XML " + settings.size() + " " + getSearchType());
+		Collection toindex = new ArrayList();
+		for (Iterator iterator = settings.iterator(); iterator.hasNext();)
 		{
-			log.info("Reaready reindexing" + getSearchType());
-			return;
-		}
-		setReIndexing(true);
-		try
-		{
-			// TODO: delete all before reindexing
-
-			// Someone is forcing a reindex
-			// deleteOldMapping();
-			putMappings();
-
-			getXmlSearcher().reIndexAll();
-			HitTracker settings = getXmlSearcher().getAllHits();
-
-			log.info("settings " + settings.size() + " " + getSearchType());
-			Collection toindex = new ArrayList();
-			for (Iterator iterator = settings.iterator(); iterator.hasNext();)
+			ElementData data = (ElementData) iterator.next();
+			if (data.getId() == null || data.getId().isEmpty())
 			{
-				ElementData data = (ElementData) iterator.next();
-				if (data.getId() == null || data.getId().isEmpty())
-				{
-					continue;
-				}
-				toindex.add(data); // loadData? nah
-				// log.info(data.getName());
-				if (toindex.size() > 1000)
-				{
-					updateIndex(toindex, null);
-					toindex.clear();
-				}
+				continue;
 			}
-			updateIndex(toindex, null);
-
-			flushChanges();
-
+			toindex.add(data); // loadData? nah
+			// log.info(data.getName());
+			if (toindex.size() > 1000)
+			{
+				updateIndex(toindex, null);
+				toindex.clear();
+			}
 		}
-		finally
-		{
-			setReIndexing(false);
-		}
+		updateIndex(toindex, null);
+
+		flushChanges();
+
 	}
 
 	public void restoreSettings()
