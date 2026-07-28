@@ -4,8 +4,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import org.entermediadb.ai.AgentContext;
-import org.entermediadb.ai.BaseSkill;
-import org.entermediadb.ai.ChatMessageContext;
+import org.entermediadb.ai.TutorMessageContext;
 import org.entermediadb.ai.automation.RunningScenario;
 import org.entermediadb.ai.llm.AgentEnabled;
 import org.entermediadb.ai.llm.LlmConnection;
@@ -13,25 +12,45 @@ import org.entermediadb.ai.llm.LlmResponse;
 import org.openedit.Data;
 import org.openedit.data.Searcher;
 
-public class AdaptiveTutorialAnswerSkill extends BaseSkill
+public class AdaptiveTutorialAnswerSkill extends AdaptiveTutorialBaseSkill
 {
 	@Override
 	public void process(AgentContext inAgentContext)
 	{
-		ChatMessageContext messageContext = (ChatMessageContext) inAgentContext;
+		TutorMessageContext messageContext = (TutorMessageContext) inAgentContext;
 
 		String channelid = (String) messageContext.getContextValue("channelid");
 		String questionid = (String) messageContext.getContextValue("questionid");
 		String confidence = (String) messageContext.getContextValue("confidence");
 		String selectedoption = (String) messageContext.getContextValue("selectedoption");
-		String sectionid = (String) messageContext.getContextValue("sectionid");
-		Data section = getMediaArchive().getData("componentsection", sectionid);
-		String componentid = (String) messageContext.getContextValue("componentid");
+
+		Data section = getMediaArchive().getData("componentsection", messageContext.getLastSectionId());
 
 		if (channelid == null || questionid == null || selectedoption == null)
 		{
 			return;
 		}
+
+		Data question = getMediaArchive().getData("entityquestion", questionid);
+		if (question == null)
+		{
+			return;
+		}
+
+		boolean iscorrect = selectedoption.equals(question.get("correctoption"));
+
+		Map<String, Double> cognitivelevelpoints = getCognitiveLevelPoints();
+		Map<String, Double> answerconfidencebonus = getAnswerConfidenceBonus();
+
+		double allottedpoints = cognitivelevelpoints.getOrDefault(question.get("mcqcognitivelevel"), 0.0);
+
+		double points = 0.0;
+		if (iscorrect)
+		{
+			points = allottedpoints;
+		}
+
+		double bonus = allottedpoints * (answerconfidencebonus.getOrDefault(confidence, 0.0) / 100.0);
 
 		Searcher searcher = getMediaArchive().getSearcher("tutoranswer");
 
@@ -40,60 +59,41 @@ public class AdaptiveTutorialAnswerSkill extends BaseSkill
 		answer.setValue("entityquestion", questionid);
 		answer.setValue("answerconfidence", confidence);
 		answer.setValue("selectedoption", selectedoption);
+		answer.setValue("iscorrect", iscorrect);
+		answer.setValue("pointsearned", points);
+		answer.setValue("bonusearned", bonus);
 		answer.setValue("user", messageContext.getUserProfile().getUser().getId());
 		answer.setValue("datecreated", new Date());
 
 		searcher.saveData(answer);
 
-		// TODO: recalculate progress
+		messageContext.putContextValue("iscorrect", iscorrect);
+		messageContext.putContextValue("correctoptiontext", question.get(question.get("correctoption")));
+		messageContext.putContextValue("confidence", confidence);
 
-		Data question = getMediaArchive().getData("entityquestion", questionid);
-		if (question != null)
-		{
-			messageContext.putContextValue("question", question);
-			messageContext.putContextValue("answer", answer);
+		LlmConnection llmconnection = getMediaArchive().getLlmConnection("localrender");
+		LlmResponse response = llmconnection.renderLocalAction(messageContext, "chat_tutor_answer");
 
-			LlmConnection llmconnection = getMediaArchive().getLlmConnection("localrender");
-			LlmResponse response = llmconnection.renderLocalAction(messageContext, "chat_tutor_answer");
+		messageContext.setLastResponse(response);
+		messageContext.log("sent" + response.getMessagePlain());
 
-			messageContext.setLastResponse(response);
-			messageContext.log("sent" + response.getMessagePlain());
+		Map<String, String> broadcastpayload = new HashMap<String, String>();
+		broadcastpayload.put("sectionid", messageContext.getLastSectionId());
+		broadcastpayload.put("componentid", messageContext.getLastComponentId());
 
-			Map<String, String> broadcastpayload = new HashMap<String, String>();
-			// broadcastpayload.put("messageid", answer.getId());
-			broadcastpayload.put("sectionid", sectionid);
-			broadcastpayload.put("componentid", componentid);
+		messageContext.setValue("broadcastpayload", broadcastpayload);
 
-			messageContext.setValue("broadcastpayload", broadcastpayload);
-
-			AgentEnabled skillEnabled = messageContext.getCurrentAgentEnable();
-			messageContext.fireStatusComplete(skillEnabled);
-		}
-		else
-		{
-			endTutorial(messageContext);
-		}
+		AgentEnabled skillEnabled = messageContext.getCurrentAgentEnable();
+		messageContext.fireStatusComplete(skillEnabled);
 
 		Data agentmessage = messageContext.getAgentMessage();
 		agentmessage.setValue("id", section.get("playbackentityid") + "_progressupdate");
 		agentmessage.setValue("messagetype", "system");
 
-		Map<String, String> broadcastpayload = new HashMap<String, String>();
-		broadcastpayload.put("messageid", section.get("playbackentityid") + "_progressupdate");
-		messageContext.setValue("broadcastpayload", broadcastpayload);
-
 		RunningScenario scenario = messageContext.getCurrentScenario();
 
 		AgentEnabled nextAgentEnabled = scenario.findEnabled("chat_tutor_progress");
 		AgentContext nextContext = scenario.createAgentContext(messageContext, nextAgentEnabled);
-		scenario.runProcess(nextAgentEnabled, nextContext);
-	}
-
-	public void endTutorial(ChatMessageContext messageContext)
-	{
-		AgentEnabled currentAgentEnabled = messageContext.getCurrentScenario().findEnabled("chat_tutor_end");
-
-		messageContext.setCurrentAgentEnable(currentAgentEnabled);
-		messageContext.fireStatusComplete(currentAgentEnabled);
+		scenario.runProcess(nextAgentEnabled, nextContext, true);
 	}
 }

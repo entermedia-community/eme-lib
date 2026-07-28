@@ -1,24 +1,25 @@
 package org.entermediadb.ai.skills;
 
 import org.entermediadb.ai.AgentContext;
-import org.entermediadb.ai.BaseSkill;
-import org.entermediadb.ai.ChatMessageContext;
+import org.entermediadb.ai.TutorMessageContext;
 import org.entermediadb.ai.automation.RunningScenario;
 import org.entermediadb.ai.llm.AgentEnabled;
 import org.entermediadb.ai.llm.LlmConnection;
 import org.entermediadb.ai.llm.LlmResponse;
 import org.openedit.MultiValued;
 
-public class AdaptiveTutorialWelcomeSkill extends BaseSkill
+public class AdaptiveTutorialWelcomeSkill extends AdaptiveTutorialBaseSkill
 {
 	@Override
 	public void process(AgentContext inAgentContext)
 	{
-		ChatMessageContext messageContext = (ChatMessageContext) inAgentContext;
+		TutorMessageContext messageContext = (TutorMessageContext) inAgentContext;
 
 		messageContext.putContextValue("skiploader", Boolean.TRUE);
 
 		String tutorialid = (String) messageContext.getContextValue("tutorialid");
+		messageContext.setTutorialId(tutorialid);
+
 		MultiValued tutorial = (MultiValued) getMediaArchive().query("entitytutorial").exact("id", tutorialid).searchOne();
 
 		messageContext.putContextValue("tutorial", tutorial);
@@ -32,6 +33,9 @@ public class AdaptiveTutorialWelcomeSkill extends BaseSkill
 		// }
 		// super.process(messageContext);
 
+		messageContext.setLastSectionId(null);
+		messageContext.setLastComponentId(null);
+
 		AgentEnabled skillEnabled = messageContext.getCurrentAgentEnable();
 		messageContext.fireStatusComplete(skillEnabled);
 
@@ -39,7 +43,7 @@ public class AdaptiveTutorialWelcomeSkill extends BaseSkill
 
 		AgentEnabled nextAgentEnabled = scenario.findEnabled("chat_tutor_continue");
 		AgentContext nextContext = scenario.createAgentContext(messageContext, nextAgentEnabled);
-		scenario.runProcess(nextAgentEnabled, nextContext);
+		scenario.runProcess(nextAgentEnabled, nextContext, true);
 	}
 
 }

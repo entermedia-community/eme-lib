@@ -162,7 +162,8 @@ public class AutomationManager extends BaseAiManager implements WebEventListener
 			enabled = running.getEnabledAgents().iterator().next();
 			inContext.setCurrentAgentEnable(enabled);
 		}
-		running.runProcess(enabled, inContext);
+		AgentContext inCurrentContext = running.createAgentContext(inContext, enabled);
+		running.runProcess(enabled, inCurrentContext);
 	}
 
 	public Map<String, MultiValued> getAllPositions()

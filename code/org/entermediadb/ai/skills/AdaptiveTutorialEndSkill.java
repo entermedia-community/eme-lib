@@ -1,15 +1,13 @@
 package org.entermediadb.ai.skills;
 
 import org.entermediadb.ai.AgentContext;
-import org.entermediadb.ai.BaseSkill;
 import org.entermediadb.ai.ChatMessageContext;
-import org.entermediadb.ai.automation.RunningScenario;
 import org.entermediadb.ai.llm.AgentEnabled;
 import org.entermediadb.ai.llm.LlmConnection;
 import org.entermediadb.ai.llm.LlmResponse;
 import org.openedit.MultiValued;
 
-public class AdaptiveTutorialEndSkill extends BaseSkill
+public class AdaptiveTutorialEndSkill extends AdaptiveTutorialBaseSkill
 {
 	@Override
 	public void process(AgentContext inAgentContext)

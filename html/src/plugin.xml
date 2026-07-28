@@ -2882,6 +2882,12 @@
 		</property>
 	</bean>
 
+	<bean id="tutorMessageContext" class="org.entermediadb.ai.TutorMessageContext" scope="prototype">
+		<property name="moduleManager">
+			<ref bean="moduleManager" />
+		</property>
+	</bean>
+
 
 	<bean id="AgentModule" class="org.entermediadb.ai.assistant.AgentModule">
 		<property name="moduleManager">

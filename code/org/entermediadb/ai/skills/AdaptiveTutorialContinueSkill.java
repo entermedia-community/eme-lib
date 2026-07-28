@@ -3,25 +3,23 @@ package org.entermediadb.ai.skills;
 import java.util.HashMap;
 import java.util.Map;
 import org.entermediadb.ai.AgentContext;
-import org.entermediadb.ai.BaseSkill;
-import org.entermediadb.ai.ChatMessageContext;
+import org.entermediadb.ai.TutorMessageContext;
 import org.entermediadb.ai.llm.AgentEnabled;
 import org.entermediadb.ai.llm.LlmConnection;
 import org.entermediadb.ai.llm.LlmResponse;
 import org.openedit.Data;
 import org.openedit.MultiValued;
 
-public class AdaptiveTutorialContinueSkill extends BaseSkill
+public class AdaptiveTutorialContinueSkill extends AdaptiveTutorialBaseSkill
 {
 	@Override
 	public void process(AgentContext inAgentContext)
 	{
-		ChatMessageContext messageContext = (ChatMessageContext) inAgentContext;
+		TutorMessageContext messageContext = (TutorMessageContext) inAgentContext;
 
-		String tutorialid = (String) messageContext.getContextValue("tutorialid");
-
-		String sectionid = (String) messageContext.getContextValue("sectionid");
-		String componentid = (String) messageContext.getContextValue("componentid");
+		String tutorialid = messageContext.getTutorialId();
+		String sectionid = (String) messageContext.getLastSectionId();
+		String componentid = (String) messageContext.getLastComponentId();
 
 		Map<String, Data> next = getNextSectionAndComponent(tutorialid, sectionid, componentid);
 		if (next == null)
@@ -29,6 +27,7 @@ public class AdaptiveTutorialContinueSkill extends BaseSkill
 			endTutorial(messageContext);
 			return;
 		}
+
 		Data topsection = next.get("section");
 		Data topcomponent = next.get("component");
 
@@ -43,9 +42,12 @@ public class AdaptiveTutorialContinueSkill extends BaseSkill
 			throw new IllegalStateException("Next component is the same as the current component. This should not happen.");
 		}
 
-		messageContext.putContextValue("sectionid", topsection.getId());
-		messageContext.putContextValue("componentid", topcomponent.getId());
-		messageContext.putContextValue("topsection", topsection);
+		messageContext.setLastSectionId(topsection.getId());
+		messageContext.setLastComponentId(topcomponent.getId());
+
+		messageContext.putContextValue("sectionid", messageContext.getLastSectionId());
+		messageContext.putContextValue("componentid", messageContext.getLastComponentId());
+
 		messageContext.putContextValue("topcomponent", topcomponent);
 
 		LlmConnection llmconnection = getMediaArchive().getLlmConnection("localrender");
@@ -57,8 +59,8 @@ public class AdaptiveTutorialContinueSkill extends BaseSkill
 		Map<String, String> broadcastpayload = new HashMap<String, String>();
 		// broadcastpayload.put("messageid", topcomponent.getId());Continuing
 
-		broadcastpayload.put("sectionid", topsection.getId());
-		broadcastpayload.put("componentid", topcomponent.getId());
+		broadcastpayload.put("sectionid", messageContext.getLastSectionId());
+		broadcastpayload.put("componentid", messageContext.getLastComponentId());
 
 		if ("mcq".equals(topcomponent.get("componenttype")))
 		{
@@ -77,14 +79,6 @@ public class AdaptiveTutorialContinueSkill extends BaseSkill
 
 		AgentEnabled skillEnabled = messageContext.getCurrentAgentEnable();
 		messageContext.fireStatusComplete(skillEnabled);
-	}
-
-	public void endTutorial(ChatMessageContext messageContext)
-	{
-		AgentEnabled currentAgentEnabled = messageContext.getCurrentScenario().findEnabled("chat_tutor_end");
-
-		messageContext.setCurrentAgentEnable(currentAgentEnabled);
-		messageContext.fireStatusComplete(currentAgentEnabled);
 	}
 
 	public Map<String, Data> getNextSectionAndComponent(String tutorialid, String sectionid, String componentid)
