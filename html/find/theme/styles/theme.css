@@ -11492,7 +11492,7 @@ a.action-link:hover {
 	align-items: flex-start;
 	padding: 8px;
 	border: var(--1px-light);
-	margin: 0 4px 8px;
+	margin: 0 4px 10px;
 	border-radius: 4px;
 	cursor: pointer;
 	position: relative;
@@ -11808,7 +11808,7 @@ a.action-link:hover {
 .title-actions.action-btn-container {
 	position: absolute;
 	right: 0;
-	bottom: 16px;
+	bottom: 26px;
 	z-index: 1;
 	justify-content: flex-end;
 	margin-bottom: -52px;

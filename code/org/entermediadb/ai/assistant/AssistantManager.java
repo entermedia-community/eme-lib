@@ -980,7 +980,6 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 
 		JsonUtil jsonUtil = (JsonUtil) getMediaArchive().getBean("jsonUtil");
 
-		String loader = jsonUtil.escape("<i class=\"fas fa-spinner fa-spin mr-2\"></i> ");
 		String processingmessage = null;
 		if (function != null)
 		{
@@ -996,8 +995,9 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 		{
 			processingmessage += " " + processingtype;
 		}
-
+		String loader = jsonUtil.escape("<i class='fas fa-spinner fa-spin'></i> ");
 		processingmessage = loader + processingmessage + "...";
+		processingmessage = "<span class='processing-message'>" + processingmessage + "</span>";
 
 		MultiValued agentmessage = chatMessageContext.getAgentMessage();
 
