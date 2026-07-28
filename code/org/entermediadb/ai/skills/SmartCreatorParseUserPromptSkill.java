@@ -29,10 +29,6 @@ public class SmartCreatorParseUserPromptSkill extends BaseSkill
 		String prompt = usermessage.get("message");
 
 		LlmResponse response = parseCreationPrompt(messageContext, prompt);
-
-		// response.setRunSkillEnabled("chat_smartcreator_findmemory");
-		// messageContext.setLastResponse(response);
-
 		return response;
 	}
 

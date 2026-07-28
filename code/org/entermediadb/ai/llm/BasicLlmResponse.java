@@ -191,6 +191,11 @@ public class BasicLlmResponse implements LlmResponse
 		return fieldNextFunctionName;
 	}
 
+	public void setOperationState(String inOperationState)
+	{
+		fieldOperationState = inOperationState;
+	}
+
 	public String getOperationState()
 	{
 		return fieldOperationState;

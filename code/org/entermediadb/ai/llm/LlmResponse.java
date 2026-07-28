@@ -52,5 +52,7 @@ public interface LlmResponse
 
     String getFileName();
 
+    void setOperationState(String inOperationState); // error, cancel, continue, runskill
+
     String getOperationState(); // error, cancel, continue, runskill
 }
