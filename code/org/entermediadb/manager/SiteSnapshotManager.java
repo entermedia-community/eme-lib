@@ -545,8 +545,8 @@ public class SiteSnapshotManager extends BaseMediaModule
 
 			snapshotsearcher.saveData(snapshot);
 
-			boolean configonly = Boolean.parseBoolean(String.valueOf(snapshot.getValue("configonly")));
 			export(scriptLogger, catalogid, snapshot);
+
 			snapshot.setValue("snapshotstatus", "complete");
 			snapshotsearcher.saveData(snapshot);
 		}
