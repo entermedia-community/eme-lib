@@ -24,17 +24,22 @@ public class AdaptiveTutorialWelcomeSkill extends AdaptiveTutorialBaseSkill
 
 		messageContext.putContextValue("tutorial", tutorial);
 
-		LlmConnection llmconnection = getMediaArchive().getLlmConnection("localrender"); // Should stay
-		// search_start
+		LlmConnection llmconnection = getMediaArchive().getLlmConnection("localrender");
 		LlmResponse response = llmconnection.renderLocalAction(inAgentContext, "chat_tutor_welcome");
-		// response.setNextSkillEnabled("auto_detect_conversation");
 		messageContext.setLastResponse(response);
 		messageContext.log("sent" + response.getMessagePlain());
-		// }
-		// super.process(messageContext);
 
 		messageContext.setLastSectionId(null);
 		messageContext.setLastComponentId(null);
+
+		MultiValued agentmessage = messageContext.getAgentMessage();
+		agentmessage.setValue("chatmessagestatus", "completed");
+		agentmessage.setValue("messagetype", "message");
+
+		// Map<String, String> broadcastpayload = new HashMap<String, String>();
+		// broadcastpayload.put("messageid", tutorialid + "_welcome");
+		// broadcastpayload.put("messagetype", "welcome");
+		// messageContext.setValue("broadcastpayload", broadcastpayload);
 
 		AgentEnabled skillEnabled = messageContext.getCurrentAgentEnable();
 		messageContext.fireStatusComplete(skillEnabled);
@@ -43,6 +48,7 @@ public class AdaptiveTutorialWelcomeSkill extends AdaptiveTutorialBaseSkill
 
 		AgentEnabled nextAgentEnabled = scenario.findEnabled("chat_tutor_continue");
 		AgentContext nextContext = scenario.createAgentContext(messageContext, nextAgentEnabled);
+		nextContext.setWaitTime(200l);
 		scenario.runProcess(nextAgentEnabled, nextContext, true);
 	}
 

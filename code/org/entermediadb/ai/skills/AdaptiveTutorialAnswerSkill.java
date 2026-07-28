@@ -24,8 +24,6 @@ public class AdaptiveTutorialAnswerSkill extends AdaptiveTutorialBaseSkill
 		String confidence = (String) messageContext.getContextValue("confidence");
 		String selectedoption = (String) messageContext.getContextValue("selectedoption");
 
-		Data section = getMediaArchive().getData("componentsection", messageContext.getLastSectionId());
-
 		if (channelid == null || questionid == null || selectedoption == null)
 		{
 			return;
@@ -87,7 +85,8 @@ public class AdaptiveTutorialAnswerSkill extends AdaptiveTutorialBaseSkill
 		messageContext.fireStatusComplete(skillEnabled);
 
 		Data agentmessage = messageContext.getAgentMessage();
-		agentmessage.setValue("id", section.get("playbackentityid") + "_progressupdate");
+
+		agentmessage.setValue("id", messageContext.getTutorialId() + "_progressupdate");
 		agentmessage.setValue("messagetype", "system");
 
 		RunningScenario scenario = messageContext.getCurrentScenario();
