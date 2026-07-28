@@ -1,5 +1,7 @@
 package org.entermediadb.ai.skills;
 
+import java.util.HashMap;
+import java.util.Map;
 import org.entermediadb.ai.AgentContext;
 import org.entermediadb.ai.TutorMessageContext;
 import org.entermediadb.ai.automation.RunningScenario;
@@ -35,11 +37,9 @@ public class AdaptiveTutorialWelcomeSkill extends AdaptiveTutorialBaseSkill
 		MultiValued agentmessage = messageContext.getAgentMessage();
 		agentmessage.setValue("chatmessagestatus", "completed");
 		agentmessage.setValue("messagetype", "message");
-
-		// Map<String, String> broadcastpayload = new HashMap<String, String>();
-		// broadcastpayload.put("messageid", tutorialid + "_welcome");
-		// broadcastpayload.put("messagetype", "welcome");
-		// messageContext.setValue("broadcastpayload", broadcastpayload);
+		Map<String, String> broadcastpayload = new HashMap<String, String>();
+		broadcastpayload.put("messageid", tutorialid + "_welcome");
+		messageContext.setValue("broadcastpayload", broadcastpayload);
 
 		AgentEnabled skillEnabled = messageContext.getCurrentAgentEnable();
 		messageContext.fireStatusComplete(skillEnabled);
@@ -47,7 +47,7 @@ public class AdaptiveTutorialWelcomeSkill extends AdaptiveTutorialBaseSkill
 		RunningScenario scenario = messageContext.getCurrentScenario();
 
 		AgentEnabled nextAgentEnabled = scenario.findEnabled("chat_tutor_continue");
-		AgentContext nextContext = scenario.createAgentContext(messageContext, nextAgentEnabled);
+		TutorMessageContext nextContext = (TutorMessageContext) scenario.createAgentContext(messageContext, nextAgentEnabled);
 		nextContext.setWaitTime(200l);
 		scenario.runProcess(nextAgentEnabled, nextContext, true);
 	}

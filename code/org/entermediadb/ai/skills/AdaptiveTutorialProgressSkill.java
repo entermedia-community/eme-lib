@@ -22,6 +22,11 @@ public class AdaptiveTutorialProgressSkill extends AdaptiveTutorialBaseSkill
 		String tutorialid = messageContext.getTutorialId();
 		String channelid = messageContext.getChannel().getId();
 
+		if (tutorialid == null || userid == null || channelid == null)
+		{
+			return;
+		}
+
 		Collection<Data> allsections = getMediaArchive().query("componentsection").exact("playbackentitymoduleid", "entitytutorial").exact("playbackentityid", tutorialid).search();
 
 		Collection<String> sectionids = allsections.stream().map(s -> s.getId()).toList();

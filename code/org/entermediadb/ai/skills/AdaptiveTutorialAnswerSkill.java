@@ -92,7 +92,8 @@ public class AdaptiveTutorialAnswerSkill extends AdaptiveTutorialBaseSkill
 		RunningScenario scenario = messageContext.getCurrentScenario();
 
 		AgentEnabled nextAgentEnabled = scenario.findEnabled("chat_tutor_progress");
-		AgentContext nextContext = scenario.createAgentContext(messageContext, nextAgentEnabled);
+		TutorMessageContext nextContext = (TutorMessageContext) scenario.createAgentContext(messageContext, nextAgentEnabled);
+
 		scenario.runProcess(nextAgentEnabled, nextContext, true);
 	}
 }
