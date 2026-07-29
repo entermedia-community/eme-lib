@@ -3161,5 +3161,15 @@
 		</property>
 	</bean>
 
+	<bean id="languageFixer" class="org.entermediadb.translator.LanguageFixer" lazy-init="default" scope="prototype">
+		<property name="pageManager">
+			<ref bean="pageManager" />
+		</property>
+		<property name="xmlArchive">
+			<ref bean="xmlArchive" />
+		</property>
+	</bean>
+
+
 
 </beans>

@@ -18,6 +18,7 @@ import org.entermediadb.ai.automation.AutomationManager;
 import org.entermediadb.ai.informatics.InformaticsContext;
 import org.entermediadb.asset.MediaArchive;
 import org.entermediadb.asset.modules.BaseMediaModule;
+import org.openedit.Data;
 import org.openedit.ModuleManager;
 import org.openedit.MultiValued;
 import org.openedit.OpenEditException;
@@ -467,6 +468,34 @@ public class TranslationModule extends BaseMediaModule
 			}
 		}
 
+	}
+
+	public void translateLists(WebPageRequest inReq)
+	{
+		translateData(inReq, "lists");
+
+	}
+
+	public void translateFields(WebPageRequest inReq)
+	{
+		translateData(inReq, "fields");
+
+	}
+
+	protected void translateData(WebPageRequest inReq, String inType)
+	{
+		String catalogid = inReq.getRequestParameter("catalogid");
+		Translation trans = (Translation) getTranslations(inReq);
+		LanguageFixer fixer = (LanguageFixer) getModuleManager().getBean("languageFixer");
+		fixer.setTranslator(trans.getTranslator());
+		String listfolder = "/WEB-INF/data/" + catalogid + "/lists";
+		Collection<String> paths = getPageManager().getChildrenPaths(listfolder);
+		fixer.setPaths(paths);
+
+		Collection<Data> locales = getSearcherManager().getList(catalogid, "locale");
+		fixer.setLocales(locales);
+
+		fixer.translateNames();
 	}
 
 }
