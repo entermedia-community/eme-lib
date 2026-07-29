@@ -38,6 +38,7 @@ import org.openedit.HttpException;
 import org.openedit.MultiValued;
 import org.openedit.OpenEditException;
 import org.openedit.WebPageRequest;
+import org.openedit.cache.CacheManager;
 import org.openedit.data.PropertyDetail;
 import org.openedit.data.QueryBuilder;
 import org.openedit.data.Searcher;
@@ -165,11 +166,12 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 	public ChatMessageContext loadChatContext(String applicationId, String inChannelId)
 	{
 		MediaArchive archive = getMediaArchive();
-		ChatMessageContext chatMessageContext = (ChatMessageContext) archive.getCacheManager().get("chatMessageContext", inChannelId);
+		CacheManager cache = archive.getCacheManager();
+		ChatMessageContext chatMessageContext = (ChatMessageContext) cache.get("chatMessageContext", inChannelId);
 		if (chatMessageContext == null)
 		{
 			chatMessageContext = new ChatMessageContext(loadContext(applicationId, inChannelId));
-			archive.getCacheManager().put("chatMessageContext", inChannelId, chatMessageContext);
+			cache.put("chatMessageContext", inChannelId, chatMessageContext);
 		}
 		return chatMessageContext;
 	}
@@ -1084,7 +1086,7 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 			agentmessage.setValue("chatmessagestatus", "completed");
 			getMediaArchive().saveData("chatterbox", agentmessage);
 
-			JSONObject functionMessageUpdate = new JSONObject();
+			Map<String, String> functionMessageUpdate = new HashMap<>();
 			functionMessageUpdate.put("messagetype", "airesponse");
 			functionMessageUpdate.put("catalogid", getMediaArchive().getCatalogId());
 			functionMessageUpdate.put("user", "agent");
@@ -1098,11 +1100,12 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 			functionMessageUpdate.put("messageplain", messageplain);
 			functionMessageUpdate.put("nextfunctionname", nextFunctionName);
 			functionMessageUpdate.put("functionname", inAgentEnabled.getEnabledId());
+			functionMessageUpdate.put("date", new Date().toString());
 
-			Map additionalBroadcastPayload = (Map) chatMessageContext.getValue("broadcastpayload");
+			Map<String, String> additionalBroadcastPayload = (Map) chatMessageContext.getValue("broadcastpayload");
 			if (additionalBroadcastPayload != null)
 			{
-				for (Object key : additionalBroadcastPayload.keySet())
+				for (String key : additionalBroadcastPayload.keySet())
 				{
 					functionMessageUpdate.put(key, additionalBroadcastPayload.get(key));
 				}
@@ -1110,9 +1113,11 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 
 			ChatServer server = (ChatServer) getMediaArchive().getBean("chatServer");
 
-			log.info("Broadcasting: " + functionMessageUpdate.toJSONString());
+			JSONObject jsonMessage = new JSONObject(functionMessageUpdate);
 
-			server.broadcastMessage(functionMessageUpdate);
+			log.info("Broadcasting: " + jsonMessage.toJSONString());
+
+			server.broadcastMessage(jsonMessage);
 
 		}
 		catch (Exception ex)
