@@ -470,14 +470,9 @@ public class TranslationModule extends BaseMediaModule
 
 	}
 
-	public void translateLists(WebPageRequest inReq)
+	public void translateData(WebPageRequest inReq)
 	{
 		translateData(inReq, "lists");
-
-	}
-
-	public void translateFields(WebPageRequest inReq)
-	{
 		translateData(inReq, "fields");
 
 	}
