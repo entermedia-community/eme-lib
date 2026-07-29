@@ -97,7 +97,7 @@ public class RenderValues
 			Asset primaryasset = getMediaArchive().getAsset(assetid);
 			if (primaryasset != null)
 			{
-				List<String> fields = Arrays.asList("longcaption", "keywordsai", "semantictopics", "headline");
+				List<String> fields = Arrays.asList("longcaption", "keywordsai", "semantictopics", "headline", "language");
 				Searcher assetsearcher = getMediaArchive().getAssetSearcher();
 				for (Iterator iterator = fields.iterator(); iterator.hasNext();)
 				{
@@ -135,27 +135,25 @@ public class RenderValues
 				}
 			}
 		}
-		else
-			if (field.isBoolean())
+		else if (field.isBoolean())
+		{
+			if (getData().getBoolean(field.getId()))
 			{
-				if (getData().getBoolean(field.getId()))
-				{
-					output.append("Yes");
-				}
-				else
-				{
-					output.append("No");
-				}
+				output.append("Yes");
 			}
 			else
-				if (field.isDate())
-				{
-					// SKIP
-				}
-				else
-				{
-					String value = inData.get(field.getId());
-					output.append(value);
-				}
+			{
+				output.append("No");
+			}
+		}
+		else if (field.isDate())
+		{
+			// SKIP
+		}
+		else
+		{
+			String value = inData.get(field.getId());
+			output.append(value);
+		}
 	}
 }
