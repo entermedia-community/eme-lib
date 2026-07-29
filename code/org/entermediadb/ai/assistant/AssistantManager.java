@@ -1100,7 +1100,7 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 			functionMessageUpdate.put("messageplain", messageplain);
 			functionMessageUpdate.put("nextfunctionname", nextFunctionName);
 			functionMessageUpdate.put("functionname", inAgentEnabled.getEnabledId());
-			functionMessageUpdate.put("date", new Date().toString());
+			functionMessageUpdate.put("date", DateStorageUtil.getStorageUtil().getJsonFormat().format(new Date()));
 
 			Map<String, String> additionalBroadcastPayload = (Map) chatMessageContext.getValue("broadcastpayload");
 			if (additionalBroadcastPayload != null)
