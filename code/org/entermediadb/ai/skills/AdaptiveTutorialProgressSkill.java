@@ -81,8 +81,16 @@ public class AdaptiveTutorialProgressSkill extends AdaptiveTutorialBaseSkill
 
 			if (answer != null)
 			{
-				double pointsearned = answer.getDouble("pointsearned");
-				double bonusearned = answer.getDouble("bonusearned");
+				Double pointsearned = answer.getDouble("pointsearned");
+				if (pointsearned == null)
+				{
+					pointsearned = 0.0;
+				}
+				Double bonusearned = answer.getDouble("bonusearned");
+				if (bonusearned == null)
+				{
+					bonusearned = 0.0;
+				}
 				double totalpoints = pointsearned + bonusearned;
 
 				String cognitivelevel = question.get("mcqcognitivelevel");

@@ -369,12 +369,12 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 		}
 		catch (HttpException e)
 		{
-			log.error("Error from " + chatMessageContext.getCurrentScenario() + " running " + chatMessageContext.getCurrentAgentEnable().getEnabledId(), e);
+			log.error("Error from " + chatMessageContext.getCurrentScenario(), e);
 			handleError(chatMessageContext, e.getMessage(), e.getErrorcode());
 		}
 		catch (Exception e)
 		{
-			log.error("Error from " + chatMessageContext.getCurrentScenario() + " running " + chatMessageContext.getCurrentAgentEnable().getEnabledId(), e);
+			log.error("Error from " + chatMessageContext.getCurrentScenario(), e);
 			handleError(chatMessageContext, e.getMessage());
 		}
 		// agentmessage.setValue("functionresponse", e.toString());
