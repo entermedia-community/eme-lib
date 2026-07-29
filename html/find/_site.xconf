@@ -16,12 +16,12 @@
   
   <property name="login-path">/${applicationid}/authentication/nopermissions.html</property>
   <property name="applicationid">finder/find</property>
+  <property name="catalogid">finder/catalog</property>
   <property name="editable">false</property>
   
   <property name="hitsname">hits</property>
   <property name="allowguestregistration">false</property>
   <property name="makeversion">false</property>
-  <property name="catalogid">catalog</property>
   <property name="systemfromemailname">EnterMedia</property>
   <property name="shownav">true</property>
   

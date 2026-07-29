@@ -3,7 +3,7 @@
 <page>
 
 	<property name="siteid">finder</property>
-	<property name="catalogid">catalog</property>
+	<property name="catalogid">finder/catalog</property>
 	<property name="findroot">/${siteid}/blockfind</property>
 	<property name="nothing">empty</property>
 </page>

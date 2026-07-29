@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<page>
+
+	<property name="fallbackdirectory">/mediadb</property>
+	<property name="applicationid">finder/mediadb</property>
+	<property name="catalogid">finder/catalog</property>
+	<property name="siteid">finder</property>
+</page>
