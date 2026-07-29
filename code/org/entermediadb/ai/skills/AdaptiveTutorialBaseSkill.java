@@ -4,13 +4,13 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import org.entermediadb.ai.BaseSkill;
-import org.entermediadb.ai.ChatMessageContext;
+import org.entermediadb.ai.TutorMessageContext;
 import org.entermediadb.ai.llm.AgentEnabled;
 import org.openedit.MultiValued;
 
 public class AdaptiveTutorialBaseSkill extends BaseSkill
 {
-	public void endTutorial(ChatMessageContext messageContext)
+	public void endTutorial(TutorMessageContext messageContext)
 	{
 		AgentEnabled currentAgentEnabled = messageContext.getCurrentScenario().findEnabled("chat_tutor_end");
 

@@ -1,7 +1,7 @@
 package org.entermediadb.ai.skills;
 
 import org.entermediadb.ai.AgentContext;
-import org.entermediadb.ai.ChatMessageContext;
+import org.entermediadb.ai.TutorMessageContext;
 import org.entermediadb.ai.llm.AgentEnabled;
 import org.entermediadb.ai.llm.LlmConnection;
 import org.entermediadb.ai.llm.LlmResponse;
@@ -12,7 +12,7 @@ public class AdaptiveTutorialEndSkill extends AdaptiveTutorialBaseSkill
 	@Override
 	public void process(AgentContext inAgentContext)
 	{
-		ChatMessageContext messageContext = (ChatMessageContext) inAgentContext;
+		TutorMessageContext messageContext = (TutorMessageContext) inAgentContext;
 
 		messageContext.putContextValue("skiploader", Boolean.TRUE);
 
