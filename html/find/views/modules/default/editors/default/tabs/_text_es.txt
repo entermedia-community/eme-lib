@@ -1,0 +1,28 @@
+#
+#Wed Jul 29 16:46:53 CST 2026
+\#text($viewdata)=\#text($viewdata)
+AI\ Guide=Gu\u00EDa de IA
+AI\ Helper=Asistente de IA
+Add\ New=A\u00F1adir nuevo
+Back\ to=Volver
+Bulk\ Folders\ from\ Files=Carpetas masivas de archivos
+Create\ Manually=Crear manualmente
+Create\ new=Crear nuevo
+Create\ with\ AI=Crear con IA
+Details=Detalles
+Esc\ to\ Close=Esc para cerrar
+Export=Exportar
+Files=Archivos
+Import=Importar
+Items=\u00CDtems
+Multi\ Edit=Edici\u00F3n m\u00FAltiple
+Next=Siguiente
+Please\ select\ a\ tab\ for=Por favor, seleccione una pesta\u00F1a para
+Prev=Anterior
+Profile=Perfil
+Security=Seguridad
+Settings=Configuraci\u00F3n
+Share=Compartir
+Sources=Fuentes
+Tutorials=Tutoriales
+with\ AI=con IA
