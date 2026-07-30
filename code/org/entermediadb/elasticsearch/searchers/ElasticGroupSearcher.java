@@ -13,7 +13,7 @@ import org.openedit.users.GroupSearcher;
  * @author cburkey
  * 
  */
-public class ElasticGroupSearcher extends BaseElasticSearcher implements GroupSearcher
+public class ElasticGroupSearcher extends ElasticListSearcher implements GroupSearcher
 {
 	private static final Log log = LogFactory.getLog(ElasticGroupSearcher.class);
 
@@ -22,6 +22,13 @@ public class ElasticGroupSearcher extends BaseElasticSearcher implements GroupSe
 		Data lookup = getSearcherManager().getCachedData(getCatalogId(), getSearchType(), inGroupId);
 		Group group = (Group) lookup; // Should be loaded already
 		return group;
+	}
+
+	@Override
+	public boolean initialize()
+	{
+		// TODO Auto-generated method stub
+		return super.initialize();
 	}
 
 }
