@@ -182,6 +182,8 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 		AgentContext agentContext = (AgentContext) archive.getCacheManager().get("agentContext", inChannelId);
 		if (agentContext == null)
 		{
+			// TODO: Replace agentcontext with chatterbox message data (load messages and their add their data
+			// to the context)
 			Searcher searcher = archive.getSearcher("agentcontext");
 			agentContext = (AgentContext) searcher.query().exact("channel", inChannelId).searchOne();
 			// hitory?
