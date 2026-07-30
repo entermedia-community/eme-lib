@@ -243,9 +243,9 @@ public class BaseAgentContext extends BaseData implements CatalogEnabled, AgentC
 	@Override
 	public String get(String inId)
 	{
-		// TODO Auto-generated method stub
 		String value = super.get(inId);
 
+		// Is this really needed? It seems like it would be better to just use the context values instead of
 		if (value == null && inId.equals("entityid"))
 		{
 			if (!inId.equals("channel") && getChannel() != null)
@@ -317,18 +317,10 @@ public class BaseAgentContext extends BaseData implements CatalogEnabled, AgentC
 
 	public Object getContextValue(String inKey)
 	{
-		Object obj = null;
-		if (context != null)
-		{
-			obj = context.get(inKey);
-		}
-		if (obj == null && getParentContext() != null)
-		{
-			return getParentContext().getContextValue(inKey);
-		}
+		Object obj = getRootContext().getContextValue(inKey);
 		if (obj == null)
 		{
-			obj = get(inKey);
+			obj = getContext().get(inKey);
 		}
 		return obj;
 	}
@@ -360,7 +352,8 @@ public class BaseAgentContext extends BaseData implements CatalogEnabled, AgentC
 
 	public void putContextValue(String inKey, Object inValue)
 	{
-		getRootContext().getContext().put(inKey, inValue);
+		getContext().put(inKey, inValue); // Track what is changed locally..
+		getRootContext().getContext().put(inKey, inValue); // Make sure everyone is updated
 	}
 
 	public void putContextValues(Map inValues)
