@@ -483,11 +483,11 @@ public class TranslationModule extends BaseMediaModule
 		Translation trans = (Translation) getTranslations(inReq);
 		LanguageFixer fixer = (LanguageFixer) getModuleManager().getBean("languageFixer");
 		fixer.setTranslator(trans.getTranslator());
-		String listfolder = "/WEB-INF/data/" + catalogid + "/lists";
-		Collection<String> paths = getPageManager().getChildrenPaths(listfolder);
+		String listfolder = "/" + catalogid + "/lists";
+		Collection<String> paths = getPageManager().getChildrenPaths(listfolder, true);
 		fixer.setPaths(paths);
 
-		Collection<Data> locales = getSearcherManager().getList(catalogid, "locale");
+		Collection<Data> locales = getSearcherManager().query(catalogid, "locale").exact("enabled", "true").search();
 		fixer.setLocales(locales);
 
 		fixer.translateNames();
