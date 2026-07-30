@@ -124,6 +124,8 @@ public class TranslationModule extends BaseMediaModule
 
 		MultiValued record = new BaseData();
 		record.setValue(detailid, languagemap);
+		String moduleid = (String) inReq.findValue("module");
+		record.setValue("entitysourcetype", moduleid);
 		Collection<MultiValued> pageofhits = Arrays.asList((MultiValued) record);
 		context.setRecordsToProcess(pageofhits);
 

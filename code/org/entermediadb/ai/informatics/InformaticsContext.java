@@ -29,45 +29,27 @@ public class InformaticsContext extends BaseAgentContext
 		return null;
 	}
 
-	protected Collection<MultiValued> fieldRecordsToProcess;
-
 	public Collection<MultiValued> getRecordsToProcess()
 	{
-		if (fieldRecordsToProcess == null)
-		{
-			InformaticsContext parent = getParentInformaticContext();
-			if (parent != null)
-			{
-				return parent.getRecordsToProcess();
-			}
-		}
-		return fieldRecordsToProcess;
+
+		Collection<MultiValued> records = (Collection<MultiValued>) getContextValue("recordsToProcess");
+		return records;
 	}
 
 	public void setRecordsToProcess(Collection<MultiValued> inRecordsToProcess)
 	{
-		fieldRecordsToProcess = inRecordsToProcess;
+		putContextValue("recordsToProcess", inRecordsToProcess);
 	}
 
 	public Collection<Asset> getAssetsToProcess()
 	{
-		if (fieldAssetsToProcess == null)
-		{
-			InformaticsContext parent = getParentInformaticContext();
-			if (parent != null)
-			{
-				return parent.getAssetsToProcess();
-			}
-		}
-
-		return fieldAssetsToProcess;
+		Collection<Asset> assets = (Collection<Asset>) getContextValue("assetsToProcess");
+		return assets;
 	}
 
 	public void setAssetsToProcess(Collection<Asset> inAssetsToProcess)
 	{
-		fieldAssetsToProcess = inAssetsToProcess;
+		putContextValue("assetsToProcess", inAssetsToProcess);
 	}
-
-	protected Collection<Asset> fieldAssetsToProcess;
 
 }

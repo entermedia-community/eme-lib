@@ -342,7 +342,7 @@ public class TranslationManager extends BaseAiManager implements CatalogEnabled
 	{
 		HitTracker locales = getMediaArchive().query("locale").exact("translatemetadata", true).cachedSearch();
 
-		if (locales.size() < 2)
+		if (locales.size() < 1)
 		{
 			return;
 		}

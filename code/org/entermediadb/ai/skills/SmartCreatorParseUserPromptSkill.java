@@ -24,6 +24,10 @@ public class SmartCreatorParseUserPromptSkill extends BaseSkill
 
 	public LlmResponse parseUserPrompt(ChatMessageContext messageContext)
 	{
+		if (messageContext.getAgentMessage() == null)
+		{
+			return null;
+		}
 		Data usermessage = getMediaArchive().getCachedData("chatterbox", messageContext.getAgentMessage().get("replytoid"));
 
 		String prompt = usermessage.get("message");

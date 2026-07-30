@@ -420,7 +420,7 @@ textarea:focus-visible {
 	outline: none;
 }
 
-.oeinputform .emfield-textarea textarea {
+.emfield-textarea textarea {
 	width: 100%;
 	border-color: var(--light-border);
 	border-radius: var(--btn-radius);
@@ -5285,6 +5285,14 @@ table.greytxt {
 	background: #fff;
 }
 
+.inputformrow {
+	margin-bottom: 10px;
+}
+
+.inputformrow .emdatafield {
+	margin-bottom: 2px;
+}
+
 .settingslayout {
 	position: relative;
 	background: var(--light-bg);
@@ -5302,6 +5310,16 @@ table.greytxt {
 
 .settingslayout h3 {
 	margin: 0.5rem 0 0.75rem;
+}
+.detaileditor-2colums {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-between;
+}
+.detaileditor-2colums .inputformrow {
+	flex: 0 0 auto;
+    width: calc(50% - 20px);
+	margin:0 10px;
 }
 
 .contentlayout {
@@ -8058,14 +8076,6 @@ h3.modal-insight-datatype {
 
 .toggle-upload-details:hover {
 	background: #f5f5f5;
-}
-
-.inputformrow {
-	margin-bottom: 10px;
-}
-
-.inputformrow .emdatafield {
-	margin-bottom: 2px;
 }
 
 .addnew-generic {
