@@ -480,7 +480,6 @@ public class MediaAdminModule extends BaseMediaModule
 	{
 		// Use the archive
 		String siteid = inReq.getRequestParameter("id");
-		
 
 		Searcher snaps = getSearcherManager().getSearcher("system", "sitesnapshot");
 
@@ -515,7 +514,6 @@ public class MediaAdminModule extends BaseMediaModule
 
 	}
 
-
 	public void runExport(WebPageRequest inReq)
 	{
 		SiteSnapshotManager snapshotmanager = (SiteSnapshotManager) getModuleManager().getBean("system", "siteSnapshotManager");
@@ -536,13 +534,12 @@ public class MediaAdminModule extends BaseMediaModule
 		}
 		// PathEvent event =
 		// manager.getPathEvent("/system/events/data/exportsite.html");
-	
+
 		searcher.saveData(snapshot);
 		inReq.putPageValue("site", snapshot.get("site"));
 
 		inReq.putPageValue("snapshot", snapshot);
 	}
-
 
 	public void restoreSiteSnapshot(WebPageRequest inReq)
 	{
@@ -976,60 +973,6 @@ public class MediaAdminModule extends BaseMediaModule
 		 * requestedPage.setInnerLayout("/" + applicationid + "/theme/layouts/searchlayout2.html");
 		 */
 		return module;
-	}
-
-	public void scanForCustomizations(WebPageRequest inReq)
-	{
-		MediaArchive mediaArchive = getMediaArchive(inReq);
-		Collection modules = mediaArchive.query("module").all().sort("name").search();
-		getWorkspaceManager().scanModuleCustomizations(mediaArchive, modules);
-		// getWorkspaceManager().scanHtmlCustomizations(mediaArchive);
-	}
-
-	public void customizationsExportEntities(WebPageRequest inReq)
-	{
-		MediaArchive mediaArchive = getMediaArchive(inReq);
-		String[] moduleids = inReq.getRequestParameters("moduleid");
-		Collection modules = mediaArchive.query("module").orgroup("id", moduleids).sort("name").search();
-		getWorkspaceManager().scanModuleCustomizations(mediaArchive, modules);
-
-	}
-
-	public void importCustomization(WebPageRequest inReq) throws Exception
-	{
-		MediaArchive mediaArchive = getMediaArchive(inReq);
-
-		FileUpload command = new FileUpload();
-		command.setPageManager(getPageManager());
-		UploadRequest properties = command.parseArguments(inReq);
-		if (properties == null)
-		{
-			return;
-		}
-		if (properties.getFirstItem() == null)
-		{
-			return;
-		}
-		Page temp = getPageManager().getPage("/WEB-INF/tmp/unzip");
-		getPageManager().removePage(temp);
-		properties.saveFirstFileAs("/WEB-INF/tmp/unzip/temporary.zip", inReq.getUser());
-
-		List files = properties.unzipFiles(true);
-		getWorkspaceManager().importCustomizations(mediaArchive, files);
-		String appid = inReq.findValue("applicationid");
-
-		// group order librarycollections etc.
-		// role (settingsgroup), saved searches (savedquery), hot folders, conversion
-		// presets, users, orders, collections, libraries, divisions, permissionsapp,
-		// preset configuration
-		Collection all = mediaArchive.query("module").all().search();
-		for (Iterator iterator = all.iterator(); iterator.hasNext();)
-		{
-			Data module = (Data) iterator.next();
-			getWorkspaceManager().saveModule(mediaArchive.getCatalogId(), appid, module);
-		}
-		getPageManager().clearCache();
-		scanForCustomizations(inReq);
 	}
 
 	public void copySmartOrganizer(WebPageRequest inReq)

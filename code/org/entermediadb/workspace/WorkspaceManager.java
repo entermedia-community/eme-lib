@@ -157,27 +157,6 @@ public class WorkspaceManager
 
 		archive.savePropertyDetails(details, tablename, null, file);
 
-		// Now using ElasticViewSearcher to merge views
-		/*
-		 * for (Iterator iterator = details.iterator(); iterator.hasNext();) { PropertyDetail detail =
-		 * (PropertyDetail) iterator.next(); archive.savePropertyDetail(detail, searchtype, null);
-		 * 
-		 * 
-		 * }
-		 */
-
-		// edit beans.xml
-		// XmlFile file = getXmlArchive().getXml("/" + catalogid +
-		// "/configuration/beans.xml");
-		// Element element = file.getElementById(searchtype + "Searcher");
-		// if (element == null)
-		// {
-		// element = file.addNewElement();
-		// element.addAttribute("id", searchtype + "Searcher");
-		// element.addAttribute("bean", "xmlFileSearcher");
-		// getXmlArchive().saveXml(file, null);
-		// }
-		// getSearcherManager().clear();
 		return searchtype;
 	}
 
@@ -193,66 +172,49 @@ public class WorkspaceManager
 			throw new OpenEditException("Invalid module id");
 		}
 		String mid = createModuleFallbacks(appid, module);
+		String templatepermissionfields = "/" + catalogid + "/configuration/baseentitytemplate.xml";
+		Page template = getPageManager().getPage(templatepermissionfields);
+
 		if (!mid.equals("asset"))
 		{
-			String viewstemplate = "";
 			/** DATABASE STUFF **/
 			// is Entity?
 			if (Boolean.parseBoolean(module.get("isentity")))
 			{
-				String templateentities = "/" + catalogid + "/data/lists/view/entities.xml";
-				// Page pathentitiesbase = getPageManager().getPage("/" + catalogid +
-				// "/data/lists/view/" + module.getId() + ".xml");
-				// if( !pathentitiesbase.exists())
-				// {
-				// String pathentities = "/WEB-INF/data/" + catalogid + "/lists/view/" +
-				// module.getId() + ".xml";
-				// copyXml(catalogid, templateentities, pathentities, module);
-				// }
-				// viewstemplate = "/" + catalogid + "/data/views/" + module.getId() + "/";
-				// Page viewstemplatedefaults = getPageManager().getPage(viewstemplate);
-				// if (!viewstemplatedefaults.exists())
-				// {
-				// viewstemplate = "/" + catalogid + "/data/views/defaults/";
-				// }
-				Page destinationbase = getPageManager().getPage("/" + catalogid + "/fields/" + module.getId() + "/baseentity.xml");
-				// if( !destinationbase.exists() )
-				// {
-				String templatepermissionfields = "/" + catalogid + "/configuration/baseentitytemplate.xml";
-				Page template = getPageManager().getPage(templatepermissionfields);
 				if (template.exists())
 				{
 					Page destination = getPageManager().getPage("/WEB-INF/data/" + catalogid + "/fields/" + module.getId() + "/baseentity.xml");
 					getPageManager().copyPage(template, destination); // Always update these
 				}
-				// }
 			}
 			String templte2 = "/" + catalogid + "/data/lists/settingsmenumodule/default.xml";
 			String path2 = "/WEB-INF/data/" + catalogid + "/lists/settingsmenumodule/" + module.getId() + ".xml";
 			if (!getPageManager().getPage(path2).exists())
 			{
 				copyXml(catalogid, templte2, path2, module);
-				Searcher settingsmenumodule = getSearcherManager().getSearcher(catalogid, "settingsmenumodule");
-				settingsmenumodule.reIndexAll();
+				Searcher searcher = getSearcherManager().getSearcher(catalogid, "settingsmenumodule");
+				searcher.reloadSettings();
 			}
 			else if (verify)
 			{
 				// Merge
 
 			}
-
+			// Menu builder
 			String templte3 = "/" + catalogid + "/data/lists/settingsmodulepermissionsdefault.xml";
 			String path3 = "/WEB-INF/data/" + catalogid + "/lists/settingsmodulepermissions" + module.getId() + ".xml";
 			if (!getPageManager().getPage(path3).exists())
 			{
 				copyXml(catalogid, templte3, path3, module);
-				getSearcherManager().removeFromCache(catalogid, "settingsmenumodule");
+				Searcher searcher = getSearcherManager().getSearcher(catalogid, "settingsmodulepermissions");
+				searcher.reloadSettings();
+
 			}
 
 		}
 		// add settings menu
 		createTable(catalogid, module.getId(), module.getId());
-		getSearcherManager().getPropertyDetailsArchive(catalogid).clearCache();
+		getSearcherManager().getPropertyDetailsArchive(catalogid).clearCache(); /// This is slow
 		getMediaArchive(catalogid).getPermissionManager().queuePermissionCheck((MultiValued) module);
 		getMediaArchive(catalogid).saveData("module", module);
 	}
@@ -668,165 +630,6 @@ public class WorkspaceManager
 		{
 			throw new OpenEditException(ex);
 		}
-
-	}
-
-	public void scanModuleCustomizations(MediaArchive inMediaArchive, Collection inModules)
-	{
-		Collection skip = Arrays.asList(new String[] {"order", "asset", "librarycollection", "library", "category", "modulesearch", "faceprofilegroup", "group", "user", "settingsgroup"});
-
-		Set tables = new HashSet();
-
-		for (Iterator iterator = inModules.iterator(); iterator.hasNext();)
-		{
-			Data module = (Data) iterator.next();
-			if (skip.contains(module.getId()))
-			{
-				continue;
-			}
-			MultiValued customization = (MultiValued) inMediaArchive.query("customization").exact("targetid", module.getId()).searchOne();
-			if (customization == null)
-			{
-				// Make em
-				customization = (MultiValued) inMediaArchive.getSearcher("customization").createNewData();
-				customization.setValue("targetid", module.getId());
-				customization.setName(module.getName("en"));
-				customization.setValue("customizationtype", "module");
-				customization.setValue("dateupdated", new Date());
-				// This will be used to export and import a bunch of xml files?
-				inMediaArchive.saveData("customization", customization);
-			}
-			tables.add(module.getId());
-			PropertyDetails details = inMediaArchive.getPropertyDetailsArchive().getPropertyDetails(module.getId());
-			for (Iterator iterator2 = details.iterator(); iterator2.hasNext();)
-			{
-				PropertyDetail detail = (PropertyDetail) iterator2.next();
-				if (detail.isList())
-				{
-					if (!tables.contains(detail.getListId()) && !skip.contains(detail.getListId()))
-					{
-						tables.add(detail.getListId());
-						customization = (MultiValued) inMediaArchive.query("customization").exact("targetid", detail.getListId()).searchOne();
-						if (customization == null)
-						{
-							// Make em
-							customization = (MultiValued) inMediaArchive.getSearcher("customization").createNewData();
-							customization.setValue("targetid", detail.getListId());
-							customization.addValue("moduleids", module.getId());
-
-							customization.setName(detail.getName("en"));
-							customization.setValue("customizationtype", "table");
-							customization.setValue("dateupdated", new Date());
-							// This will be used to export and import a bunch of xml files?
-							inMediaArchive.saveData("customization", customization);
-						}
-					}
-				}
-
-			}
-		}
-		Collection menu = inMediaArchive.query("appsection").all().search();
-		if (!menu.isEmpty())
-		{
-			Data customization = inMediaArchive.query("customization").exact("targetid", "appsection").searchOne();
-			if (customization == null)
-			{
-				// Make em
-				customization = inMediaArchive.getSearcher("customization").createNewData();
-				customization.setValue("targetid", "appsection");
-				customization.setName("App Section Menu");
-				customization.setValue("customizationtype", "table");
-				customization.setValue("dateupdated", new Date());
-				// This will be used to export and import a bunch of xml files?
-				inMediaArchive.saveData("customization", customization);
-			}
-		}
-
-	}
-
-	public void scanHtmlCustomizations(MediaArchive inMediaArchive, Collection inExisting)
-	{
-
-	}
-
-	public void exportCustomizations(String inCatalogId, String[] inIds, OutputStream inStream) throws Exception
-	{
-		PageZipUtil pageZipUtil = new PageZipUtil(getPageManager());
-		ZipOutputStream finalZip = new ZipOutputStream(inStream);
-
-		MediaArchive archive = (MediaArchive) getSearcherManager().getModuleManager().getBean(inCatalogId, "mediaArchive");
-
-		for (int i = 0; i < inIds.length; i++)
-		{
-			Data customization = archive.getData("customization", inIds[i]);
-			// TODO: Make xml files for each config
-			Element root = DocumentHelper.createElement("customization");
-			String searchtype = customization.get("targetid");
-			root.addAttribute("targetid", searchtype);
-			root.addAttribute("customizationtype", customization.get("customizationtype"));
-			root.addElement("name").setText(customization.getName("en"));
-			if ("module".equals(customization.get("customizationtype")))
-			{
-				Data module = archive.getCachedData("module", searchtype);
-
-				String path = "/WEB-INF/data/" + inCatalogId + "/fields/" + searchtype + ".xml";
-				if (getPageManager().getRepository().doesExist(path))
-				{
-					pageZipUtil.zip(path, finalZip);
-					path = "/WEB-INF/data/" + inCatalogId + "/fields/" + searchtype + "/";
-					if (getPageManager().getRepository().doesExist(path))
-					{
-						pageZipUtil.zip(path, finalZip);
-					}
-				}
-
-				// Views
-				path = "/WEB-INF/data/" + inCatalogId + "/lists/view/" + searchtype + ".xml";
-				if (getPageManager().getRepository().doesExist(path))
-				{
-					pageZipUtil.zip(path, finalZip);
-				}
-				path = "/WEB-INF/data/" + inCatalogId + "/views/" + searchtype + "/";
-				if (getPageManager().getRepository().doesExist(path))
-				{
-					pageZipUtil.zip(path, finalZip);
-				}
-				// Pull in the module data info
-				Element xml = saveDataToXml(module);
-				root.add(xml);
-			}
-			else if ("table".equals(customization.get("customizationtype")))
-			{
-				String path = "/WEB-INF/data/" + inCatalogId + "/fields/" + searchtype + ".xml";
-				if (getPageManager().getRepository().doesExist(path))
-				{
-					pageZipUtil.zip(path, finalZip);
-					path = "/WEB-INF/data/" + inCatalogId + "/fields/" + searchtype + "/";
-					if (getPageManager().getRepository().doesExist(path))
-					{
-						pageZipUtil.zip(path, finalZip);
-					}
-				}
-				exportData(archive, searchtype, finalZip);
-				String xml = "/WEB-INF/data/" + inCatalogId + "/lists/" + searchtype + ".xml";
-				if (getPageManager().getRepository().doesExist(xml))
-				{
-					pageZipUtil.zip(xml, finalZip);
-				}
-			}
-
-			pageZipUtil.addTozip(root.asXML(), "/customizations/" + searchtype + ".xml", finalZip);
-		}
-		try
-		{
-			finalZip.close();
-		}
-		catch (IOException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
 	}
 
 	private void exportData(MediaArchive mediaarchive, String inSearchtype, ZipOutputStream inFinalZip) throws Exception
@@ -959,81 +762,6 @@ public class WorkspaceManager
 			fieldXmlUtil = new XmlUtil();
 		}
 		return fieldXmlUtil;
-	}
-
-	public void importCustomizations(MediaArchive mediaArchive, List inFiles) throws Exception
-	{
-		// Unzip the upload
-
-		for (Iterator iterator = inFiles.iterator(); iterator.hasNext();)
-		{
-			Page file = (Page) iterator.next();
-			if (file.getPath().contains("/customizations/") && file.getName().endsWith("xml"))
-			{
-				// Import customization
-				Element element = getXmlUtil().getXml(file.getReader(), "utf-8");
-
-				String type = element.attributeValue("customizationtype");
-				if ("module".equals(type))
-				{
-					ElementData data = new ElementData(element.element("element"));
-					String targetid = data.get("id");
-					Data module = mediaArchive.getCachedData("module", targetid);
-					if (module == null)
-					{
-						module = data;
-					}
-					mediaArchive.saveData("module", module);
-				}
-				continue;
-			}
-			if (file.getPath().contains("/customizations/") && file.getName().endsWith("json"))
-			{
-				String searchtype = file.getPageName();
-				importData(mediaArchive, searchtype, file);
-				continue;
-			}
-			int fieldindex = file.getPath().indexOf("/fields/");
-			if (fieldindex > -1)
-			{
-				// Copy all the views etc files
-				String path = "/WEB-INF/data/" + mediaArchive.getCatalogId();
-				path = path + file.getPath().substring(fieldindex);
-				Page target = getPageManager().getPage(path);
-				getPageManager().copyPage(file, target);
-				continue;
-			}
-			int listindex = file.getPath().indexOf("/lists/");
-			if (listindex > -1)
-			{
-				// Copy all the xml files
-				String path = "/WEB-INF/data/" + mediaArchive.getCatalogId();
-				path = path + file.getPath().substring(listindex);
-				Page target = getPageManager().getPage(path);
-				getPageManager().copyPage(file, target);
-				continue;
-			}
-			// if(file.getPath().contains("/view/"))
-			// {
-			// //Views
-			// String path = "/WEB-INF/data/" + mediaArchive.getCatalogId() +
-			// "/lists/view/";
-			// Page target = getPageManager().getPage(path);
-			// getPageManager().copyPage(file, target);
-			// }
-			if (file.getPath().contains("/views/"))
-			{
-				String path = "/WEB-INF/data/" + mediaArchive.getCatalogId() + "/views/" + file.getDirectoryName() + "/" + file.getName();
-				Page target = getPageManager().getPage(path);
-				getPageManager().copyPage(file, target);
-			}
-
-		}
-		// Reindex
-		// mediaArchive.reindexAll();
-		Collection tables = getSearcherManager().reloadLoadedSettings(mediaArchive.getCatalogId());
-		// Scan changes?
-		mediaArchive.clearAll();
 	}
 
 	private Element saveDataToXml(Data inModule)
