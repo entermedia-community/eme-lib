@@ -1392,7 +1392,10 @@
 		<property name="eventManager">
 			<ref bean="eventManager" />
 		</property>
+		<property name="xmlSearcher">
+							<ref bean="xmlFolderSearcher" />
 
+		</property>
 	</bean>
 	<bean id="baseUser" class="org.openedit.users.BaseUser" scope="prototype">
 	</bean>
@@ -1413,6 +1416,9 @@
 		</property>
 		<property name="eventManager">
 			<ref bean="eventManager" />
+		</property>
+		<property name="xmlSearcher">
+							<ref bean="xmlFolderSearcher" />
 		</property>
 	</bean>
 

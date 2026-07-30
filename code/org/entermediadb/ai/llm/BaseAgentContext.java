@@ -317,7 +317,13 @@ public class BaseAgentContext extends BaseData implements CatalogEnabled, AgentC
 
 	public Object getContextValue(String inKey)
 	{
-		Object obj = getRootContext().getContextValue(inKey);
+		Object obj = null;
+		if (getParentContext() == null)
+		{
+			obj = getContext().get(inKey);
+			return obj;
+		}
+		obj = getRootContext().getContextValue(inKey);
 		if (obj == null)
 		{
 			obj = getContext().get(inKey);
