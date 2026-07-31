@@ -151,13 +151,15 @@ public class AdminModule extends BaseMediaModule
 		{
 			emailaddress = inReq.getRequestParameter("email"); // Move to using this
 		}
-		String u = inReq.getRequestParameter(UNAME);
-		if (emailaddress == null && u == null)
+
+		if (emailaddress == null)
 		{
 			inReq.putPageValue("commandSucceeded", "missingparam");
 			// log.error("Invalid information");
 			return;
 		}
+
+		inReq.putPageValue("emailaddress", emailaddress);
 
 		User foundUser = null;
 		String username = null;
@@ -202,7 +204,6 @@ public class AdminModule extends BaseMediaModule
 		{
 			// Show error on page. Notify admin
 			log.error("User not found:" + foundUser);
-			inReq.putPageValue("emailaddress", emailaddress);
 			String userapproveremail = (String) inReq.getPageValue("userapproveremail");
 			if (userapproveremail != null)
 			{
@@ -212,6 +213,14 @@ public class AdminModule extends BaseMediaModule
 			{
 				firstName = inReq.getRequestParameter("firstName");
 				lastName = inReq.getRequestParameter("lastName");
+				if (firstName == null || lastName == null)
+				{
+					Boolean allowguestregistration = Boolean.parseBoolean(inReq.findPathValue("allowguestregistration"));
+					inReq.putPageValue("allowguestregistration", allowguestregistration);
+					inReq.putPageValue("commandSucceeded", "nouser");
+					return;
+				}
+
 				screenName = inReq.getRequestParameter("screenName");
 				String userCode = getUserManager(inReq).createNewTempLoginKey(null, emailaddress, firstName, lastName, screenName, false);
 				String subject = inReq.getRequestParameter("subject");
@@ -596,6 +605,7 @@ public class AdminModule extends BaseMediaModule
 				String allow = inReq.getPage().get("allowguestregistration");
 				if (allow == null)
 				{
+					inReq.putPageValue("oe-exception", "User not found, registration is not enabled.");
 					log.error("allowguestregistration must be set to login with temp codes");
 				}
 				else
@@ -619,7 +629,7 @@ public class AdminModule extends BaseMediaModule
 
 			if (password == null && templogincode == null)
 			{
-				inReq.putPageValue("oe-exception", "Password cannot be blank " + account);
+				inReq.putPageValue("oe-exception", "No credentials provided");
 				log.info(" Password cannot be blank ");
 				inReq.putPageValue("commandSucceeded", "nopassword");
 				return;
