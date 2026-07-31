@@ -797,7 +797,7 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 		}
 
 		Searcher aiserverSearcher = getMediaArchive().getSearcher("aiserver");
-		aiserverSearcher.restoreSettings();
+		aiserverSearcher.resetMappings();
 
 		List tosave = new ArrayList();
 		currentservers = getMediaArchive().query("aiserver").all().search();
@@ -825,7 +825,7 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 
 		// reset aifunctions table
 		Searcher aifunctionSearcher = getMediaArchive().getSearcher("aifunction");
-		aifunctionSearcher.restoreSettings();
+		aifunctionSearcher.resetMappings();
 
 		List usetext = new ArrayList();
 		int existing = 0;

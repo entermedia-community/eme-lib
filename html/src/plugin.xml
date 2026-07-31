@@ -1781,6 +1781,28 @@
 		</property>
 	</bean>
 
+
+<bean id="elasticSettingsMenuSearcher" class="org.entermediadb.elasticsearch.searchers.ElasticSettingsMenuSearcher" scope="prototype">
+
+		<property name="xmlSearcher">
+			<ref bean="xmlFolderSearcher" />
+		</property>
+
+		<property name="elasticNodeManager">
+			<ref bean="elasticNodeManager" />
+		</property>
+		<property name="moduleManager">
+			<ref bean="moduleManager" />
+		</property>
+		<property name="searcherManager">
+			<ref bean="searcherManager" />
+		</property>
+		<property name="checkVersions">
+			<value>false</value>
+		</property>
+	</bean>
+
+
 	<bean id="elasticXmlFileSearcher" class="org.entermediadb.elasticsearch.searchers.ElasticXmlFileSearcher" scope="prototype">
 		<property name="pageManager">
 			<ref bean="pageManager" />

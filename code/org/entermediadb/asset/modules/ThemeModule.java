@@ -230,7 +230,7 @@ public class ThemeModule extends BaseMediaModule
 		String catalogid = inReq.findPathValue("catalogid");
 		Searcher themeSearcher = getSearcherManager().getSearcher(catalogid, "theme");
 		String themeid = inReq.getRequestParameter("themeid");
-		themeSearcher.restoreSettings();
+		themeSearcher.resetMappings();
 		themeSearcher.reindexInternal();
 		inReq.putPageValue("message", "Theme reset");
 		changeTheme(inReq);

@@ -1261,19 +1261,4 @@ public class MediaAdminModule extends BaseMediaModule
 		getWorkspaceManager().createMediaDbAiFunctionEndPoints(catalogid);
 	}
 
-	// This is used to backup xml lists to be checked in one time
-	public void saveDefaultData(WebPageRequest inReq)
-	{
-		String catalogid = inReq.findValue("catalogid");
-		getWorkspaceManager().saveDefaultData(catalogid);
-	}
-
-	// This is to restore the default data that was checked in. This will add to the live data and not
-	// remove any data. It will only add missing data.
-	public void restoreDefaultData(WebPageRequest inReq)
-	{
-		String catalogid = inReq.findValue("catalogid");
-		getWorkspaceManager().restoreDefaultData(catalogid);
-	}
-
 }

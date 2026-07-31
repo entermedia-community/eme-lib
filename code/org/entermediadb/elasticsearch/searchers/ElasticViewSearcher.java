@@ -8,10 +8,10 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-
 import org.entermediadb.data.ViewData;
 import org.openedit.Data;
 import org.openedit.OpenEditException;
+import org.openedit.data.QueryBuilder;
 import org.openedit.data.Searcher;
 import org.openedit.data.ValuesMap;
 import org.openedit.hittracker.HitTracker;
@@ -91,7 +91,6 @@ public class ElasticViewSearcher extends ElasticListSearcher
 		HitTracker actualviews = super.search(inSearch);
 
 		Term moduleid = inSearch.getTermByDetailId("moduleid");
-		
 
 		if (moduleid == null)
 		{
@@ -105,7 +104,7 @@ public class ElasticViewSearcher extends ElasticListSearcher
 		if (systemdefined != null)
 		{
 			isSystemdefined = Boolean.parseBoolean(systemdefined.getValue());
-		}	
+		}
 
 		// Basic searches we can mege with template
 		if (moduleid != null)
@@ -149,20 +148,21 @@ public class ElasticViewSearcher extends ElasticListSearcher
 		return combined;
 	}
 
-	private Collection getTemplateresults(SearchQuery inSearch, Boolean isSystemdefined) {
+	private Collection getTemplateresults(SearchQuery inSearch, Boolean isSystemdefined)
+	{
 		// Now go deal with the standard list
 		Searcher templateSearcher = getSearcherManager().getSearcher(getCatalogId(), "viewtemplate");
 
-		SearchQuery q = templateSearcher.query().exact("systemdefined", isSystemdefined).getQuery();
+		QueryBuilder builder = templateSearcher.query().exact("systemdefined", isSystemdefined);
 
 		if (inSearch.getTermByDetailId("rendertype") != null)
 		{
 			Term rendertype = inSearch.getTermByDetailId("rendertype").copy();
 			rendertype.setDetail(templateSearcher.getDetail("rendertype"));
-			q.addTerm(rendertype);
+			builder.getQuery().addTerm(rendertype);
 		}
 
-		Collection templateresults = templateSearcher.search(q);
+		Collection templateresults = builder.cachedSearch();
 		return templateresults;
 	}
 

@@ -324,7 +324,7 @@ public class DataEditModule extends BaseMediaModule
 		psearcher.updateData(inReq, fields, detail);
 		searcher.getPropertyDetailsArchive().savePropertyDetail(detail, fieldName, inReq.getUser());
 
-		searcher.reloadSettings();
+		searcher.refreshMappings();
 	}
 
 	public void addToView(WebPageRequest inReq) throws Exception
@@ -791,7 +791,13 @@ public class DataEditModule extends BaseMediaModule
 	public void restoreDefaults(WebPageRequest inReq) throws Exception
 	{
 		Searcher searcher = loadSearcher(inReq);
-		searcher.restoreSettings();
+		searcher.resetMappings();
+	}
+
+	public void resetData(WebPageRequest inReq) throws Exception
+	{
+		Searcher searcher = loadSearcher(inReq);
+		searcher.resetData();
 	}
 
 	public void deleteData(WebPageRequest inReq) throws Exception
@@ -847,56 +853,55 @@ public class DataEditModule extends BaseMediaModule
 					}
 				}
 			}
-			else
-				if (field != null && value != null)
+			else if (field != null && value != null)
+			{
+				SearchQuery query = searcher.createSearchQuery();
+
+				query.addExact(field, value);
+				HitTracker hits = (HitTracker) searcher.search(query);
+
+				if (hits.size() > 0)
 				{
-					SearchQuery query = searcher.createSearchQuery();
-
-					query.addExact(field, value);
-					HitTracker hits = (HitTracker) searcher.search(query);
-
-					if (hits.size() > 0)
+					for (Object hit : hits)
 					{
-						for (Object hit : hits)
+						Data curdata = (Data) hit;
+
+						if (curdata != null)
 						{
-							Data curdata = (Data) hit;
-
-							if (curdata != null)
+							if (getEventManager() != null)
 							{
-								if (getEventManager() != null)
-								{
-									WebEvent event = new WebEvent();
-									event.setSearchType(searcher.getSearchType());
-									event.setCatalogId(searcher.getCatalogId());
-									event.setOperation("deleting");
-									event.setProperty("dataid", curdata.getId());
-									event.setProperty("id", curdata.getId());
+								WebEvent event = new WebEvent();
+								event.setSearchType(searcher.getSearchType());
+								event.setCatalogId(searcher.getCatalogId());
+								event.setOperation("deleting");
+								event.setProperty("dataid", curdata.getId());
+								event.setProperty("id", curdata.getId());
 
-									event.setProperty("applicationid", inReq.findValue("applicationid"));
+								event.setProperty("applicationid", inReq.findValue("applicationid"));
 
-									getEventManager().fireEvent(event);
-								}
+								getEventManager().fireEvent(event);
+							}
 
-								searcher.delete(curdata, inReq.getUser());
+							searcher.delete(curdata, inReq.getUser());
 
-								if (getEventManager() != null)
-								{
-									WebEvent event = new WebEvent();
-									event.setSearchType(searcher.getSearchType());
-									event.setCatalogId(searcher.getCatalogId());
-									event.setOperation("deleted");
-									event.setProperty("dataid", curdata.getId());
-									event.setProperty("id", curdata.getId());
+							if (getEventManager() != null)
+							{
+								WebEvent event = new WebEvent();
+								event.setSearchType(searcher.getSearchType());
+								event.setCatalogId(searcher.getCatalogId());
+								event.setOperation("deleted");
+								event.setProperty("dataid", curdata.getId());
+								event.setProperty("id", curdata.getId());
 
-									event.setProperty("applicationid", inReq.findValue("applicationid"));
+								event.setProperty("applicationid", inReq.findValue("applicationid"));
 
-									getEventManager().fireEvent(event);
-								}
+								getEventManager().fireEvent(event);
 							}
 						}
 					}
-
 				}
+
+			}
 
 			inReq.putPageValue("rowsedited", String.valueOf(changes));
 		}
@@ -1192,22 +1197,19 @@ public class DataEditModule extends BaseMediaModule
 		{
 			hits.selectAll();
 		}
-		else
-			if ("page".equals(action))
-			{
-				hits.selectCurrentPage();
-			}
-			else
-				if ("pagenone".equals(action))
-				{
-					hits.deselectCurrentPage();
-				}
-				else
-					if ("none".equals(action))
-					{
-						hits.deselectAll();
-						hits.setShowOnlySelected(false);
-					}
+		else if ("page".equals(action))
+		{
+			hits.selectCurrentPage();
+		}
+		else if ("pagenone".equals(action))
+		{
+			hits.deselectCurrentPage();
+		}
+		else if ("none".equals(action))
+		{
+			hits.deselectAll();
+			hits.setShowOnlySelected(false);
+		}
 		inReq.putPageValue(hits.getHitsName(), hits);
 		inReq.putPageValue("hits", hits);
 

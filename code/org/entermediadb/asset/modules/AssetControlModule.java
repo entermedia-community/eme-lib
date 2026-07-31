@@ -97,32 +97,6 @@ public class AssetControlModule extends BaseMediaModule
 
 	}
 
-	/*
-	 * 
-	 * protected void loadAssetCollectionPermissions(WebPageRequest inReq) { String permissiontype =
-	 * "librarycollection"; MediaArchive archive = getMediaArchive(inReq); LibraryCollection collection
-	 * = (LibraryCollection) inReq.getPageValue("librarycol"); if(collection == null) {
-	 * 
-	 * String collectionid = inReq.findValue("collectionid"); if(collectionid == null) { return; }
-	 * collection = (LibraryCollection) archive.getData("librarycollection", collectionid);
-	 * if(collection == null) { return; }
-	 * 
-	 * } HitTracker <Data> permissions = archive.query("datapermissions").exact("permissiontype",
-	 * permissiontype).search(); for (Iterator iterator = permissions.iterator(); iterator.hasNext();) {
-	 * Data permission = (Data) iterator.next();
-	 * 
-	 * Permission per = archive.getPermission(permissiontype + "-" + collection.getId() + "-" +
-	 * permission.getId());
-	 * 
-	 * if(per != null) { boolean value = per.passes(inReq); inReq.putPageValue("can" +
-	 * permission.getId(), Boolean.valueOf(value)); }
-	 * 
-	 * }
-	 * 
-	 * }
-	 * 
-	 */
-
 	public void resetPermissions(WebPageRequest inReq)
 	{
 		MediaArchive archive = getMediaArchive(inReq);
@@ -170,25 +144,6 @@ public class AssetControlModule extends BaseMediaModule
 		return cando;
 	}
 
-	/*
-	 * public void loadAllAssetPermissions(WebPageRequest inReq) throws Exception { MediaArchive archive
-	 * = getMediaArchive(inReq); String sourcepath = archive.getSourcePathForPage(inReq); if (sourcepath
-	 * == null) { sourcepath = ""; } archive.loadAllAssetPermissions(sourcepath, inReq); }
-	 */
-	/*
-	 * protected String findSourcePath(WebPageRequest inReq) throws Exception {
-	 * if(!(inReq.getPageValue("asset") instanceof Asset)) { return null; } Asset asset = (Asset)
-	 * inReq.getPageValue("asset");
-	 * 
-	 * if (asset != null) { return asset.getSourcePath(); } MediaArchive archive =
-	 * getMediaArchive(inReq); String sourcePath = � archive.getSourcePathForPage(inReq);
-	 * 
-	 * if( sourcePath == null) { String assetid = inReq.getRequestParameter("assetid");
-	 * 
-	 * //look for if (assetid != null) { return archive.getAssetSearcher().idToPath(assetid); }
-	 * 
-	 * } return sourcePath; }
-	 */
 	public List<User> listAssetViewPermissions(WebPageRequest inReq) throws Exception
 	{
 		Asset asset = getAsset(inReq);

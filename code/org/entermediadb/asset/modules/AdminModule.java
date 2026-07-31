@@ -13,14 +13,14 @@
 package org.entermediadb.asset.modules;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.entermediadb.asset.Category;
@@ -29,7 +29,6 @@ import org.entermediadb.authenticate.AutoLoginResult;
 import org.entermediadb.authenticate.BaseAutoLogin;
 import org.entermediadb.users.AllowViewing;
 import org.entermediadb.users.PasswordHelper;
-import org.entermediadb.users.PermissionManager;
 import org.openedit.Data;
 import org.openedit.OpenEditException;
 import org.openedit.WebPageRequest;
@@ -49,7 +48,6 @@ import org.openedit.users.authenticate.AuthenticationRequest;
 import org.openedit.util.DateStorageUtil;
 import org.openedit.util.StringEncryption;
 import org.openedit.util.URLUtilities;
-
 import com.warrenstrange.googleauth.GoogleAuthenticator;
 import com.warrenstrange.googleauth.GoogleAuthenticatorKey;
 import com.warrenstrange.googleauth.GoogleAuthenticatorQRGenerator;
@@ -411,19 +409,27 @@ public class AdminModule extends BaseMediaModule
 
 	public void loadPermissions(WebPageRequest inReq) throws Exception
 	{
+		// Move to $canviewsettings in $profile.can("viewsettings")
+		// String catid = inReq.findPathValue("catalogid");
+		// if (catid == null)
+		// {
+		// catid = "system";
+		// }
+		// PermissionManager manager = (PermissionManager) getModuleManager().getBean(catid,
+		// "permissionManager");
+		// String limited = null;
+		// if (inReq.getCurrentAction() != null)
+		// {
+		// limited = inReq.getCurrentAction().getChildValue("permissions");
+		// }
+		// manager.loadPermissions(inReq, inReq.getContentPage(), limited);
 
-		String catid = inReq.findPathValue("catalogid");
-		if (catid == null)
+		for (Permission permission : (Collection<Permission>) inReq.getContentPage().getPermissions())
 		{
-			catid = "system";
+			boolean hasvalue = permission.passes(inReq);
+			inReq.putPageValue("can" + permission.getName(), hasvalue);
+			// log.info("Permission " + permission.getName() + " has value " + hasvalue);
 		}
-		PermissionManager manager = (PermissionManager) getModuleManager().getBean(catid, "permissionManager");
-		String limited = null;
-		if (inReq.getCurrentAction() != null)
-		{
-			limited = inReq.getCurrentAction().getChildValue("permissions");
-		}
-		manager.loadPermissions(inReq, inReq.getContentPage(), limited);
 	}
 
 	public void loadPermissionFinder(WebPageRequest inReq) throws Exception

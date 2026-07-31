@@ -209,7 +209,7 @@ public class ElasticXmlFileSearcher extends BaseElasticSearcher
 		}
 	}
 
-	public void restoreSettings()
+	public void resetMappings()
 	{
 		getPropertyDetailsArchive().clearCustomSettings(getSearchType());
 		reIndexAll();

@@ -422,11 +422,10 @@ public class BaseElasticSearcher extends BaseSearcher implements FullTextLoader
 				}
 				search.setFetchSource(includes, excludescludes);
 			}
-			else
-				if (!inQuery.isIncludeDescription())
-				{
-					search.setFetchSource(null, "description");
-				}
+			else if (!inQuery.isIncludeDescription())
+			{
+				search.setFetchSource(null, "description");
+			}
 			ElasticHitTracker hits = new ElasticHitTracker(getClient(), search, terms, inQuery.getHitsPerPage());
 			hits.setSearcherManager(getSearcherManager());
 			hits.setIndexId(getIndexId());
@@ -728,40 +727,38 @@ public class BaseElasticSearcher extends BaseSearcher implements FullTextLoader
 				continue;
 			}
 
+			else if (detail.isNumber())
+			{
+				SumBuilder b = new SumBuilder(detail.getId() + "_sum");
+				b.field(detail.getId());
+				inSearch.addAggregation(b);
+
+				AvgBuilder avg = new AvgBuilder(detail.getId() + "_avg");
+				avg.field(detail.getId());
+
+			}
+			else if (detail.isList() || detail.isBoolean() || detail.isMultiValue())
+			{
+				AggregationBuilder b = null;
+				// if (detail.isViewType("tageditor"))
+				// {
+				// //b = AggregationBuilders.terms(detail.getId()).field(detail.getId() +
+				// ".exact").size(100);
+				// b =
+				// AggregationBuilders.terms(detail.getId()).field(detail.getId()).size(100);
+				// }
+				// else
+				// {
+				//
+				b = AggregationBuilders.terms(detail.getId()).field(detail.getId()).size(50);
+				// }
+				inSearch.addAggregation(b);
+			}
 			else
-				if (detail.isNumber())
-				{
-					SumBuilder b = new SumBuilder(detail.getId() + "_sum");
-					b.field(detail.getId());
-					inSearch.addAggregation(b);
-
-					AvgBuilder avg = new AvgBuilder(detail.getId() + "_avg");
-					avg.field(detail.getId());
-
-				}
-				else
-					if (detail.isList() || detail.isBoolean() || detail.isMultiValue())
-					{
-						AggregationBuilder b = null;
-						// if (detail.isViewType("tageditor"))
-						// {
-						// //b = AggregationBuilders.terms(detail.getId()).field(detail.getId() +
-						// ".exact").size(100);
-						// b =
-						// AggregationBuilders.terms(detail.getId()).field(detail.getId()).size(100);
-						// }
-						// else
-						// {
-						//
-						b = AggregationBuilders.terms(detail.getId()).field(detail.getId()).size(50);
-						// }
-						inSearch.addAggregation(b);
-					}
-					else
-					{
-						AggregationBuilder b = AggregationBuilders.terms(detail.getId()).field(detail.getId() + ".exact").size(50);
-						inSearch.addAggregation(b);
-					}
+			{
+				AggregationBuilder b = AggregationBuilders.terms(detail.getId()).field(detail.getId() + ".exact").size(50);
+				inSearch.addAggregation(b);
+			}
 			added.add(detail.getId());
 
 		}
@@ -886,7 +883,7 @@ public class BaseElasticSearcher extends BaseSearcher implements FullTextLoader
 			{
 				Searcher child = getSearcherManager().getSearcher(getCatalogId(), details.getId());
 				child.setAlternativeIndex(getAlternativeIndex());
-				child.reloadSettings();
+				child.refreshMappings();
 				child.setAlternativeIndex(null);
 			}
 		}
@@ -1179,31 +1176,29 @@ public class BaseElasticSearcher extends BaseSearcher implements FullTextLoader
 
 		}
 
-		else
-			if (detail.isDataType("nested"))
+		else if (detail.isDataType("nested"))
+		{
+			jsonproperties = jsonproperties.field("type", "nested");
+			jsonproperties.startObject("properties");
+			for (Iterator iterator = detail.getObjectDetails().iterator(); iterator.hasNext();)
 			{
-				jsonproperties = jsonproperties.field("type", "nested");
-				jsonproperties.startObject("properties");
-				for (Iterator iterator = detail.getObjectDetails().iterator(); iterator.hasNext();)
-				{
-					PropertyDetail child = (PropertyDetail) iterator.next();
-					jsonproperties = jsonproperties.startObject(child.getId());
-					configureDetail(child, jsonproperties);
-					jsonproperties = jsonproperties.endObject();
-				}
-				jsonproperties.endObject();
-
-				return;
-
+				PropertyDetail child = (PropertyDetail) iterator.next();
+				jsonproperties = jsonproperties.startObject(child.getId());
+				configureDetail(child, jsonproperties);
+				jsonproperties = jsonproperties.endObject();
 			}
-			else
-				if (detail.isDataType("stringvector"))
-				{
-					// "index" : "not_analyzed"
-					jsonproperties = jsonproperties.field("type", "binary");
-					jsonproperties = jsonproperties.field("doc_values", true);
-					return;
-				}
+			jsonproperties.endObject();
+
+			return;
+
+		}
+		else if (detail.isDataType("stringvector"))
+		{
+			// "index" : "not_analyzed"
+			jsonproperties = jsonproperties.field("type", "binary");
+			jsonproperties = jsonproperties.field("doc_values", true);
+			return;
+		}
 
 		// First determine type
 		if (detail.isDate())
@@ -1215,55 +1210,49 @@ public class BaseElasticSearcher extends BaseSearcher implements FullTextLoader
 			// jsonproperties = jsonproperties.field("format",
 			// "yyyy-MM-dd HH:mm:ss Z");
 		}
-		else
-			if (detail.isBoolean())
+		else if (detail.isBoolean())
+		{
+			jsonproperties = jsonproperties.field("type", "boolean");
+		}
+		else if (detail.isDataType("number") || detail.isDataType("long"))
+		{
+			jsonproperties = jsonproperties.field("type", "long");
+		}
+		else if (detail.isDataType("float"))
+		{
+			jsonproperties = jsonproperties.field("type", "float");
+		}
+		else if (detail.isDataType("double"))
+		{
+			jsonproperties = jsonproperties.field("type", "double");
+		}
+		else if (detail.isDataType("geo_point"))
+		{
+			jsonproperties = jsonproperties.field("type", "geo_point");
+		}
+
+		else if (detail.isList()) // Or multi valued?
+		{
+			if (Boolean.parseBoolean(detail.get("nested")))
 			{
-				jsonproperties = jsonproperties.field("type", "boolean");
+				jsonproperties = jsonproperties.field("type", "nested");
 			}
 			else
-				if (detail.isDataType("number") || detail.isDataType("long"))
-				{
-					jsonproperties = jsonproperties.field("type", "long");
-				}
-				else
-					if (detail.isDataType("float"))
-					{
-						jsonproperties = jsonproperties.field("type", "float");
-					}
-					else
-						if (detail.isDataType("double"))
-						{
-							jsonproperties = jsonproperties.field("type", "double");
-						}
-						else
-							if (detail.isDataType("geo_point"))
-							{
-								jsonproperties = jsonproperties.field("type", "geo_point");
-							}
+			{
+				jsonproperties = jsonproperties.field("type", "string");
+			}
+			// TODO: enable sort on list fields. if exact field is sortable add sort
+			// subfield with the actual lookedup name value?
+		}
+		else
+		{
+			jsonproperties = jsonproperties.field("type", "string");
+			if (detail.isAnalyzed())
+			{
+				jsonproperties = createExactEnabledField(detail, jsonproperties);
+			}
 
-							else
-								if (detail.isList()) // Or multi valued?
-								{
-									if (Boolean.parseBoolean(detail.get("nested")))
-									{
-										jsonproperties = jsonproperties.field("type", "nested");
-									}
-									else
-									{
-										jsonproperties = jsonproperties.field("type", "string");
-									}
-									// TODO: enable sort on list fields. if exact field is sortable add sort
-									// subfield with the actual lookedup name value?
-								}
-								else
-								{
-									jsonproperties = jsonproperties.field("type", "string");
-									if (detail.isAnalyzed())
-									{
-										jsonproperties = createExactEnabledField(detail, jsonproperties);
-									}
-
-								}
+		}
 
 		// Now determine index
 		String indextype = detail.get("indextype");
@@ -1457,20 +1446,19 @@ public class BaseElasticSearcher extends BaseSearcher implements FullTextLoader
 			or.mustNot(find);
 			return or;
 		}
-		else
-			if (inDetail.getId().contains("."))
+		else if (inDetail.getId().contains("."))
+		{
+			String[] ids = inDetail.getId().split("\\.");
+			PropertyDetail parent = getDetail(ids[0]);
+			if (parent != null && "nested".equals(parent.getDataType()))
 			{
-				String[] ids = inDetail.getId().split("\\.");
-				PropertyDetail parent = getDetail(ids[0]);
-				if (parent != null && "nested".equals(parent.getDataType()))
-				{
-					find = QueryBuilders.nestedQuery(ids[0], find);
-				}
-				/*
-				 * "nested": { "path": "faceprofiles", "query": { "bool": { "must": [ { "term": {
-				 * "faceprofiles.faceprofilegroup":"AXM5Gn6zvm9C1jY32Xy5" } } ] } } }
-				 */
+				find = QueryBuilders.nestedQuery(ids[0], find);
 			}
+			/*
+			 * "nested": { "path": "faceprofiles", "query": { "bool": { "must": [ { "term": {
+			 * "faceprofiles.faceprofilegroup":"AXM5Gn6zvm9C1jY32Xy5" } } ] } } }
+			 */
+		}
 
 		return find;
 	}
@@ -1532,14 +1520,13 @@ public class BaseElasticSearcher extends BaseSearcher implements FullTextLoader
 				return null;
 			}
 		}
-		else
-			if ("childfilter".equals(inTerm.getOperation()))
-			{
-				ChildFilter filter = (ChildFilter) inTerm;
-				QueryBuilder parent = QueryBuilders.termQuery(filter.getChildColumn(), filter.getValue());
-				QueryBuilder haschild = QueryBuilders.hasChildQuery(filter.getChildTable(), parent);
-				return haschild;
-			}
+		else if ("childfilter".equals(inTerm.getOperation()))
+		{
+			ChildFilter filter = (ChildFilter) inTerm;
+			QueryBuilder parent = QueryBuilders.termQuery(filter.getChildColumn(), filter.getValue());
+			QueryBuilder haschild = QueryBuilders.hasChildQuery(filter.getChildTable(), parent);
+			return haschild;
+		}
 
 		// if( fieldid.equals("description"))
 		// {
@@ -1555,16 +1542,14 @@ public class BaseElasticSearcher extends BaseSearcher implements FullTextLoader
 			{
 				find = QueryBuilders.matchAllQuery();
 			}
-			else
-				if (!"orgroup".equals(inTerm.getOperation()))
-				{
-					find = QueryBuilders.termQuery("_id", valueof);
-				}
-				else
-					if (inTerm.getValues() != null)
-					{
-						find = QueryBuilders.termsQuery("_id", inTerm.getValues());
-					}
+			else if (!"orgroup".equals(inTerm.getOperation()))
+			{
+				find = QueryBuilders.termQuery("_id", valueof);
+			}
+			else if (inTerm.getValues() != null)
+			{
+				find = QueryBuilders.termsQuery("_id", inTerm.getValues());
+			}
 			if (find != null)
 			{
 				return find;
@@ -1581,498 +1566,470 @@ public class BaseElasticSearcher extends BaseSearcher implements FullTextLoader
 
 		}
 
-		else
-			if ("contains".equals(inTerm.getOperation()))
+		else if ("contains".equals(inTerm.getOperation()))
+		{
+			// MatchQueryBuilder text = QueryBuilders.matchPhraseQuery(fieldid,
+			// valueof);
+			// QueryBuilder text = QueryBuilders.queryString("*" + valueof +
+			// "*").field(fieldid);
+			String wildcard = valueof;
+
+			if (!wildcard.startsWith("*"))
 			{
-				// MatchQueryBuilder text = QueryBuilders.matchPhraseQuery(fieldid,
-				// valueof);
-				// QueryBuilder text = QueryBuilders.queryString("*" + valueof +
-				// "*").field(fieldid);
-				String wildcard = valueof;
-
-				if (!wildcard.startsWith("*"))
-				{
-					wildcard = "*" + wildcard;
-				}
-				if (!wildcard.endsWith("*"))
-				{
-					wildcard = wildcard + "*";
-				}
-				wildcard = wildcard.toLowerCase(); // Some reason wildcard searches
-													// are not run by the analyser
-													// MatchQueryBuilder text = QueryBuilders.matchPhraseQuery(fieldid,
-													// valueof);
-				String altid = null;
-				if (inDetail.isAnalyzed() && !inDetail.getId().equals("description"))
-				{
-					altid = fieldid + ".sort";
-				}
-				else
-				{
-					altid = fieldid;
-				}
-
-				WildcardQueryBuilder text = QueryBuilders.wildcardQuery(altid, wildcard);
-
-				BoolQueryBuilder or = QueryBuilders.boolQuery();
-				or.should(text);
-
-				valueof = valueof.replace("*", "");
-				MatchQueryBuilder phrase = QueryBuilders.matchPhrasePrefixQuery(altid, valueof);
-				phrase.maxExpansions(75);
-				or.should(phrase);
-				find = or;
+				wildcard = "*" + wildcard;
+			}
+			if (!wildcard.endsWith("*"))
+			{
+				wildcard = wildcard + "*";
+			}
+			wildcard = wildcard.toLowerCase(); // Some reason wildcard searches
+												// are not run by the analyser
+												// MatchQueryBuilder text = QueryBuilders.matchPhraseQuery(fieldid,
+												// valueof);
+			String altid = null;
+			if (inDetail.isAnalyzed() && !inDetail.getId().equals("description"))
+			{
+				altid = fieldid + ".sort";
 			}
 			else
-				if ("missing".equals(inTerm.getOperation()))
+			{
+				altid = fieldid;
+			}
+
+			WildcardQueryBuilder text = QueryBuilders.wildcardQuery(altid, wildcard);
+
+			BoolQueryBuilder or = QueryBuilders.boolQuery();
+			or.should(text);
+
+			valueof = valueof.replace("*", "");
+			MatchQueryBuilder phrase = QueryBuilders.matchPhrasePrefixQuery(altid, valueof);
+			phrase.maxExpansions(75);
+			or.should(phrase);
+			find = or;
+		}
+		else if ("missing".equals(inTerm.getOperation()))
+		{
+			find = QueryBuilders.missingQuery(inTerm.getId());
+		}
+		else if ("exists".equals(inTerm.getOperation()))
+		{
+			find = QueryBuilders.existsQuery(inTerm.getId());
+		}
+
+		else if ("startswith".equals(inTerm.getOperation()))
+		{
+			// TODO: Should startswith be exact or analysed phrases?
+			// find = QueryBuilders.prefixQuery(fieldid, valueof);
+			// Left this in for now...
+
+			if (inDetail.isAnalyzed())
+			{
+
+				MatchQueryBuilder text = QueryBuilders.matchPhrasePrefixQuery(fieldid, valueof);
+				text.maxExpansions(10);
+				find = text;
+			}
+			else
+			{
+				PrefixQueryBuilder text = QueryBuilders.prefixQuery(fieldid, valueof);
+				find = text;
+			}
+		}
+		// else if ("freeform".equals(inTerm.getOperation()))
+		// {
+		// List fields = getKeywordProperties();
+		// for (Iterator iterator = fields.iterator(); iterator.hasNext();)
+		// {
+		// PropertyDetail detail = (PropertyDetail) iterator.next();
+		//
+		// }
+		// }
+		else if ("freeform".equals(inTerm.getOperation()))
+		{
+			// Pattern pattern = Pattern.compile("(?<=\\s)\\w(?=\\s)");
+
+			if ((valueof.startsWith("\"") && valueof.endsWith("\""))) // This seems wrong
+			{
+				Pattern pattern = Pattern.compile("(?<=\\s)[^a-zA-Z\\\\d\\\\s](?=\\s)");
+				Matcher matcher = pattern.matcher(valueof);
+				// String oldvalueof = valueof;
+				valueof = matcher.replaceAll("");
+
+				valueof = valueof.replace("\"", "");
+				valueof = QueryParser.escape(valueof);
+				String query = "+(" + valueof + ")";
+				MatchQueryBuilder text = QueryBuilders.matchPhraseQuery(inTerm.getId(), query);
+				text.analyzer("lowersnowball");
+				find = text;
+			}
+			else
+			{
+				// String uppercase = valueof.replace(" and ", " AND ").replace(" And ", " AND
+				// ").replace(" Or ", " OR ").replace(" or ", " OR ").replace(" not ", " NOT
+				// ").replace(" to ", " TO ");//.replace(", ", " AND "); //Babson uses lots of
+				// commas
+				// We no longer allow + or - notation
+				// Parse by Operator
+				// Add wildcards
+				// Look for Quotes
+
+				// Matcher customlogic = operators.matcher(uppercase);
+				// if (!customlogic.find()) //This somehow ignores things in " " .. ie. "Some
+				// things" Cool
+				// {
+				// uppercase = uppercase.replaceAll(" ", " AND "); //All spaces
+				// }
+				// tom and nancy == *tom* AND *nancy*
+				// tom or nancy == *tom* OR *nancy*
+				// tom nancy => *tom* AND *nancy*
+				// tom*nancy => tom*nancy
+				// tom AND "Nancy Druew" => *tom* AND "Nancy Druew"
+				// "Big Deal" => "Big Deal"
+				// valueof = valueof.replace(" and ", " AND ").replace(" or ", " OR ").replace("
+				// not ", " NOT ").replace(" to ", " TO "); // Why do this again?
+
+				// ..protected static final Pattern orpattern =
+				// Pattern.compile("(.*?)\\s+(OR?|AND?|NOT?)+");
+
+				Matcher andors = orpattern.matcher(valueof);
+
+				Collection searchpairs = new ArrayList();
+
+				// String regex = "(.*?)\\s+(AND|OR)\\s)+";
+				BoolQueryBuilder booleans = QueryBuilders.boolQuery();
+				int lastterm = 0;
+				while (andors.find())
 				{
-					find = QueryBuilders.missingQuery(inTerm.getId());
+					// Get the matched character
+					Map pair = new HashMap();
+					pair.put("word", andors.group(1));
+					pair.put("operator", andors.group(2));
+					searchpairs.add(pair);
+					lastterm = andors.end();
+				}
+				Map lastpair = new HashMap();
+				lastpair.put("word", valueof.substring(lastterm));
+				searchpairs.add(lastpair);
+
+				String currentoperator = null;
+
+				for (Iterator iterator = searchpairs.iterator(); iterator.hasNext();)
+				{
+					Map<String, String> pair = (Map) iterator.next();
+					String orword = pair.get("word");
+					// If there are tokens then treat a one word with quotes
+					// Check for quotes..
+					// Create a Matcher object
+					Matcher matcher = separatorchars.matcher(orword);
+					currentoperator = pair.get("operator");
+					String previousoperator = null;
+
+					// Bill_Clinton_official.jpg break it down = Bill_Clinton_official AND jpg
+					while (matcher.find()) // sEPARATE ON spaces and weird characters
+					{
+						// Get the matched character
+						String partialword = matcher.group();
+						previousoperator = currentoperator;
+						boolean lastword = orword.endsWith(partialword);
+						String nextoperator = addSearchTerms(inTerm, lastword, partialword, previousoperator, currentoperator, booleans);
+						currentoperator = nextoperator;
+					}
+				}
+
+				find = booleans;
+			}
+		}
+		else if (valueof.endsWith("*"))
+		{
+			valueof = valueof.substring(0, valueof.length() - 1);
+
+			MatchQueryBuilder text = QueryBuilders.matchPhrasePrefixQuery(fieldid, valueof);
+			text.maxExpansions(10);
+			find = text;
+		}
+		else if (valueof.contains("*"))
+		{
+			if (inDetail.isAnalyzed())
+			{
+				find = QueryBuilders.wildcardQuery(fieldid + ".sort", valueof);
+			}
+			else
+			{
+				find = QueryBuilders.wildcardQuery(fieldid, valueof);
+			}
+		}
+		else if (inDetail.isBoolean())
+		{
+			find = QueryBuilders.termQuery(fieldid, Boolean.parseBoolean(valueof));
+		}
+
+		else if (inDetail.isDate())
+		{
+			if ("beforedate".equals(inTerm.getOperation()))
+			{
+				// Date after = new Date(0);
+				Date before = DateStorageUtil.getStorageUtil().parseFromStorage(valueof);
+				Calendar c = new GregorianCalendar();
+
+				c.setTime(before);
+				c.set(Calendar.HOUR_OF_DAY, 23);
+				c.set(Calendar.MINUTE, 59);
+				c.set(Calendar.SECOND, 59);
+				c.set(Calendar.MILLISECOND, 999);
+				before = c.getTime();
+
+				find = QueryBuilders.rangeQuery(inDetail.getId()).to(before);
+
+			}
+			else if ("afterdate".equals(inTerm.getOperation()))
+			{
+				Date after = DateStorageUtil.getStorageUtil().parseFromStorage(valueof);
+				find = QueryBuilders.rangeQuery(fieldid).from(after);// .to(before);
+			}
+			else if ("betweendates".equals(inTerm.getOperation()))
+			{
+				// String end =
+				// DateStorageUtil.getStorageUtil().formatForStorage(new
+				// Date(Long.MAX_VALUE));
+				Date before = (Date) inTerm.getValue("beforeDate");
+				Date after = (Date) inTerm.getValue("afterDate");
+
+				// inTerm.getParameter("beforeDate");
+
+				// String before
+				// TODO: Use gte ?
+				find = QueryBuilders.rangeQuery(fieldid).from(after).to(before).includeUpper(true).includeLower(true);
+			}
+			else if ("ondate".equals(inTerm.getOperation()))
+			{
+				Date target = DateStorageUtil.getStorageUtil().parseFromStorage(valueof);
+
+				Calendar c = new GregorianCalendar();
+				c.setTime(target);
+				c.set(Calendar.HOUR_OF_DAY, 0);
+				c.set(Calendar.MINUTE, 0);
+				c.set(Calendar.SECOND, 0);
+				c.set(Calendar.MILLISECOND, 0);
+				Date fromtime = c.getTime();
+
+				c.set(Calendar.HOUR_OF_DAY, 23);
+				c.set(Calendar.MINUTE, 59);
+				c.set(Calendar.SECOND, 59);
+				c.set(Calendar.MILLISECOND, 999);
+
+				// inTerm.getParameter("beforeDate");
+
+				// String before
+				find = QueryBuilders.rangeQuery(fieldid).includeLower(true).includeLower(true).from(fromtime).to(c.getTime()).includeUpper(true).includeLower(true);
+			}
+			else
+			{
+				// Think this doesn't ever run. I think we use betweendates.
+				Date target = DateStorageUtil.getStorageUtil().parseFromStorage(valueof);
+				Calendar calendar = Calendar.getInstance();
+				calendar.setTime(target);
+				int year = calendar.get(Calendar.YEAR);
+				int month = calendar.get(Calendar.MONTH);
+				int day = calendar.get(Calendar.DATE);
+				calendar.set(Calendar.MILLISECOND, 0);
+				calendar.set(year, month, day, 0, 0, 0);
+
+				Date after = calendar.getTime();
+				calendar.set(year, month, day, 23, 59, 59);
+				calendar.set(Calendar.MILLISECOND, 999);
+
+				Date before = calendar.getTime();
+
+				find = QueryBuilders.rangeQuery(fieldid).from(after).to(before);
+
+				// find = QueryBuilders.termQuery(fieldid, valueof); //TODO make
+				// it a range query? from 0-24 hours
+			}
+			RangeQueryBuilder finalquery = (RangeQueryBuilder) find;
+			if (inQuery.getTimeZone() != null)
+			{
+				finalquery.timeZone(inQuery.getTimeZone());
+			}
+
+		}
+		else if (inDetail.isNumber())
+		{
+			if ("betweennumbers".equals(inTerm.getOperation()))
+			{
+
+				if (inDetail.isDataType("double"))
+				{
+					Double lowval = (Double) inTerm.getValue("lowval");
+					Double highval = (Double) inTerm.getValue("highval");
+					find = QueryBuilders.rangeQuery(fieldid).from(lowval).to(highval);
+				}
+				if (inDetail.isDataType("long") || inDetail.isDataType("number"))
+				{
+					Long lowval = (Long) inTerm.getValue("lowval");
+					Long highval = (Long) inTerm.getValue("highval");
+					find = QueryBuilders.rangeQuery(fieldid).from(lowval).to(highval);
+				}
+			}
+
+			else if ("lessthannumber".equals(inTerm.getOperation()))
+			{
+				if (inDetail.isDataType("double"))
+				{
+					Double val = Double.valueOf(inTerm.getValue());
+					find = QueryBuilders.rangeQuery(fieldid).lt(val);
+				}
+				if (inDetail.isDataType("long") || inDetail.isDataType("number"))
+				{
+					Long val = Long.valueOf(inTerm.getValue());
+					find = QueryBuilders.rangeQuery(fieldid).lt(val);
+				}
+
+			}
+
+			else if ("greaterthannumber".equals(inTerm.getOperation()))
+			{
+				if (inDetail.isDataType("double"))
+				{
+					Double val = Double.valueOf(inTerm.getValue());
+					find = QueryBuilders.rangeQuery(fieldid).gt(val);
+				}
+				if (inDetail.isDataType("long") || inDetail.isDataType("number"))
+				{
+					Long val = Long.valueOf(inTerm.getValue());
+					find = QueryBuilders.rangeQuery(fieldid).gt(val);
+				}
+
+			}
+
+			else
+			{
+				if (inDetail.isDataType("double"))
+				{
+					find = QueryBuilders.termQuery(fieldid, Double.parseDouble(valueof));
+
+				}
+				else if (inDetail.isDataType("float"))
+				{
+					find = QueryBuilders.termQuery(fieldid, Float.parseFloat(valueof));
 				}
 				else
-					if ("exists".equals(inTerm.getOperation()))
+				{
+					find = QueryBuilders.termQuery(fieldid, Long.parseLong(valueof));
+				}
+			}
+
+		}
+		else if (inDetail.isGeoPoint())
+		{
+			GeoFilter filter = (GeoFilter) inTerm;
+			if (filter.getLatitude() == 0)
+			{
+				find = QueryBuilders.termQuery("id", "-" + System.currentTimeMillis());
+			}
+			else
+			{
+				GeoDistanceQueryBuilder geoDistanceFilterBuilder = new GeoDistanceQueryBuilder(inDetail.getId());
+				geoDistanceFilterBuilder.point(filter.getLatitude(), filter.getLongitude());
+				geoDistanceFilterBuilder.distance(String.valueOf(filter.getDistance()));
+				geoDistanceFilterBuilder.optimizeBbox("memory"); // Can be also "indexed" or "none"
+				geoDistanceFilterBuilder.geoDistance(GeoDistance.ARC); // Or GeoDistance.PLANE
+				find = geoDistanceFilterBuilder;
+			}
+		}
+		// DO not use _all use _description
+		// else if (fieldid.equals("description"))
+		// {
+		// // valueof = valueof.substring(0,valueof.length()-1);
+		//
+		// MatchQueryBuilder text = QueryBuilders.matchPhrasePrefixQuery("_all",
+		// valueof);
+		// text.analyzer("lowersnowball");
+		// text.maxExpansions(10);
+		// find = text;
+		// }
+		else
+		{
+			if ("exact".equals(inTerm.getOperation()))
+			{
+				if (inDetail.isAnalyzed())
+				{
+					find = QueryBuilders.termQuery(fieldid + ".exact", valueof);
+				}
+				else
+				{
+					find = QueryBuilders.termQuery(fieldid, valueof);
+				}
+			}
+			else if ("orgroup".equals(inTerm.getOperation()) || "notgroup".equals(inTerm.getOperation()))
+			{
+				if (inDetail.isList() || !inDetail.isAnalyzed())
+				{
+					find = QueryBuilders.termsQuery(fieldid, inTerm.getValues()); // This is an OR
+				}
+				else
+				{
+					String altid = fieldid + ".exact";
+
+					find = QueryBuilders.termsQuery(altid, inTerm.getValues()); // This is an OR
+					// find = createMatchQuery(fieldid, inTerm.getValues()); //This is an OR
+				}
+				// BoolQueryBuilder or = QueryBuilders.boolQuery();
+				// Object[] values = inTerm.getValues();
+				// for (int i = 0; i < values.length; i++)
+				// {
+				// Object val = values[i];
+				//
+				// TermQueryBuilder item = QueryBuilders.termQuery(fieldid, val);
+				// if("notgroup".equals(inTerm.getOperation()))
+				// {
+				// or.mustNot(item);
+				// }
+				// else
+				// {
+				// or.should(item);
+				// }
+				// }
+				// find = or;
+			}
+			else if ("andgroup".equals(inTerm.getOperation()))
+			{
+				Object[] values = inTerm.getValues();
+				BoolQueryBuilder or = QueryBuilders.boolQuery();
+
+				for (int i = 0; i < values.length; i++)
+				{
+					Object val = values[i];
+					if (inDetail.isAnalyzed() || "keywords".equals(fieldid))
 					{
-						find = QueryBuilders.existsQuery(inTerm.getId());
+						MatchQueryBuilder item = QueryBuilders.matchQuery(fieldid, val);
+						or.must(item);
 					}
-
 					else
-						if ("startswith".equals(inTerm.getOperation()))
-						{
-							// TODO: Should startswith be exact or analysed phrases?
-							// find = QueryBuilders.prefixQuery(fieldid, valueof);
-							// Left this in for now...
+					{
+						TermQueryBuilder item = QueryBuilders.termQuery(fieldid, val);
+						or.must(item);
 
-							if (inDetail.isAnalyzed())
-							{
-
-								MatchQueryBuilder text = QueryBuilders.matchPhrasePrefixQuery(fieldid, valueof);
-								text.maxExpansions(10);
-								find = text;
-							}
-							else
-							{
-								PrefixQueryBuilder text = QueryBuilders.prefixQuery(fieldid, valueof);
-								find = text;
-							}
-						}
-						// else if ("freeform".equals(inTerm.getOperation()))
-						// {
-						// List fields = getKeywordProperties();
-						// for (Iterator iterator = fields.iterator(); iterator.hasNext();)
-						// {
-						// PropertyDetail detail = (PropertyDetail) iterator.next();
-						//
-						// }
-						// }
-						else
-							if ("freeform".equals(inTerm.getOperation()))
-							{
-								// Pattern pattern = Pattern.compile("(?<=\\s)\\w(?=\\s)");
-
-								if ((valueof.startsWith("\"") && valueof.endsWith("\""))) // This seems wrong
-								{
-									Pattern pattern = Pattern.compile("(?<=\\s)[^a-zA-Z\\\\d\\\\s](?=\\s)");
-									Matcher matcher = pattern.matcher(valueof);
-									// String oldvalueof = valueof;
-									valueof = matcher.replaceAll("");
-
-									valueof = valueof.replace("\"", "");
-									valueof = QueryParser.escape(valueof);
-									String query = "+(" + valueof + ")";
-									MatchQueryBuilder text = QueryBuilders.matchPhraseQuery(inTerm.getId(), query);
-									text.analyzer("lowersnowball");
-									find = text;
-								}
-								else
-								{
-									// String uppercase = valueof.replace(" and ", " AND ").replace(" And ", " AND
-									// ").replace(" Or ", " OR ").replace(" or ", " OR ").replace(" not ", " NOT
-									// ").replace(" to ", " TO ");//.replace(", ", " AND "); //Babson uses lots of
-									// commas
-									// We no longer allow + or - notation
-									// Parse by Operator
-									// Add wildcards
-									// Look for Quotes
-
-									// Matcher customlogic = operators.matcher(uppercase);
-									// if (!customlogic.find()) //This somehow ignores things in " " .. ie. "Some
-									// things" Cool
-									// {
-									// uppercase = uppercase.replaceAll(" ", " AND "); //All spaces
-									// }
-									// tom and nancy == *tom* AND *nancy*
-									// tom or nancy == *tom* OR *nancy*
-									// tom nancy => *tom* AND *nancy*
-									// tom*nancy => tom*nancy
-									// tom AND "Nancy Druew" => *tom* AND "Nancy Druew"
-									// "Big Deal" => "Big Deal"
-									// valueof = valueof.replace(" and ", " AND ").replace(" or ", " OR ").replace("
-									// not ", " NOT ").replace(" to ", " TO "); // Why do this again?
-
-									// ..protected static final Pattern orpattern =
-									// Pattern.compile("(.*?)\\s+(OR?|AND?|NOT?)+");
-
-									Matcher andors = orpattern.matcher(valueof);
-
-									Collection searchpairs = new ArrayList();
-
-									// String regex = "(.*?)\\s+(AND|OR)\\s)+";
-									BoolQueryBuilder booleans = QueryBuilders.boolQuery();
-									int lastterm = 0;
-									while (andors.find())
-									{
-										// Get the matched character
-										Map pair = new HashMap();
-										pair.put("word", andors.group(1));
-										pair.put("operator", andors.group(2));
-										searchpairs.add(pair);
-										lastterm = andors.end();
-									}
-									Map lastpair = new HashMap();
-									lastpair.put("word", valueof.substring(lastterm));
-									searchpairs.add(lastpair);
-
-									String currentoperator = null;
-
-									for (Iterator iterator = searchpairs.iterator(); iterator.hasNext();)
-									{
-										Map<String, String> pair = (Map) iterator.next();
-										String orword = pair.get("word");
-										// If there are tokens then treat a one word with quotes
-										// Check for quotes..
-										// Create a Matcher object
-										Matcher matcher = separatorchars.matcher(orword);
-										currentoperator = pair.get("operator");
-										String previousoperator = null;
-
-										// Bill_Clinton_official.jpg break it down = Bill_Clinton_official AND jpg
-										while (matcher.find()) // sEPARATE ON spaces and weird characters
-										{
-											// Get the matched character
-											String partialword = matcher.group();
-											previousoperator = currentoperator;
-											boolean lastword = orword.endsWith(partialword);
-											String nextoperator = addSearchTerms(inTerm, lastword, partialword, previousoperator, currentoperator, booleans);
-											currentoperator = nextoperator;
-										}
-									}
-
-									find = booleans;
-								}
-							}
-							else
-								if (valueof.endsWith("*"))
-								{
-									valueof = valueof.substring(0, valueof.length() - 1);
-
-									MatchQueryBuilder text = QueryBuilders.matchPhrasePrefixQuery(fieldid, valueof);
-									text.maxExpansions(10);
-									find = text;
-								}
-								else
-									if (valueof.contains("*"))
-									{
-										if (inDetail.isAnalyzed())
-										{
-											find = QueryBuilders.wildcardQuery(fieldid + ".sort", valueof);
-										}
-										else
-										{
-											find = QueryBuilders.wildcardQuery(fieldid, valueof);
-										}
-									}
-									else
-										if (inDetail.isBoolean())
-										{
-											find = QueryBuilders.termQuery(fieldid, Boolean.parseBoolean(valueof));
-										}
-
-										else
-											if (inDetail.isDate())
-											{
-												if ("beforedate".equals(inTerm.getOperation()))
-												{
-													// Date after = new Date(0);
-													Date before = DateStorageUtil.getStorageUtil().parseFromStorage(valueof);
-													Calendar c = new GregorianCalendar();
-
-													c.setTime(before);
-													c.set(Calendar.HOUR_OF_DAY, 23);
-													c.set(Calendar.MINUTE, 59);
-													c.set(Calendar.SECOND, 59);
-													c.set(Calendar.MILLISECOND, 999);
-													before = c.getTime();
-
-													find = QueryBuilders.rangeQuery(inDetail.getId()).to(before);
-
-												}
-												else
-													if ("afterdate".equals(inTerm.getOperation()))
-													{
-														Date after = DateStorageUtil.getStorageUtil().parseFromStorage(valueof);
-														find = QueryBuilders.rangeQuery(fieldid).from(after);// .to(before);
-													}
-													else
-														if ("betweendates".equals(inTerm.getOperation()))
-														{
-															// String end =
-															// DateStorageUtil.getStorageUtil().formatForStorage(new
-															// Date(Long.MAX_VALUE));
-															Date before = (Date) inTerm.getValue("beforeDate");
-															Date after = (Date) inTerm.getValue("afterDate");
-
-															// inTerm.getParameter("beforeDate");
-
-															// String before
-															// TODO: Use gte ?
-															find = QueryBuilders.rangeQuery(fieldid).from(after).to(before).includeUpper(true).includeLower(true);
-														}
-														else
-															if ("ondate".equals(inTerm.getOperation()))
-															{
-																Date target = DateStorageUtil.getStorageUtil().parseFromStorage(valueof);
-
-																Calendar c = new GregorianCalendar();
-																c.setTime(target);
-																c.set(Calendar.HOUR_OF_DAY, 0);
-																c.set(Calendar.MINUTE, 0);
-																c.set(Calendar.SECOND, 0);
-																c.set(Calendar.MILLISECOND, 0);
-																Date fromtime = c.getTime();
-
-																c.set(Calendar.HOUR_OF_DAY, 23);
-																c.set(Calendar.MINUTE, 59);
-																c.set(Calendar.SECOND, 59);
-																c.set(Calendar.MILLISECOND, 999);
-
-																// inTerm.getParameter("beforeDate");
-
-																// String before
-																find = QueryBuilders.rangeQuery(fieldid)
-																	.includeLower(true)
-																	.includeLower(true)
-																	.from(fromtime)
-																	.to(c.getTime())
-																	.includeUpper(true)
-																	.includeLower(true);
-															}
-															else
-															{
-																// Think this doesn't ever run. I think we use betweendates.
-																Date target = DateStorageUtil.getStorageUtil().parseFromStorage(valueof);
-																Calendar calendar = Calendar.getInstance();
-																calendar.setTime(target);
-																int year = calendar.get(Calendar.YEAR);
-																int month = calendar.get(Calendar.MONTH);
-																int day = calendar.get(Calendar.DATE);
-																calendar.set(Calendar.MILLISECOND, 0);
-																calendar.set(year, month, day, 0, 0, 0);
-
-																Date after = calendar.getTime();
-																calendar.set(year, month, day, 23, 59, 59);
-																calendar.set(Calendar.MILLISECOND, 999);
-
-																Date before = calendar.getTime();
-
-																find = QueryBuilders.rangeQuery(fieldid).from(after).to(before);
-
-																// find = QueryBuilders.termQuery(fieldid, valueof); //TODO make
-																// it a range query? from 0-24 hours
-															}
-												RangeQueryBuilder finalquery = (RangeQueryBuilder) find;
-												if (inQuery.getTimeZone() != null)
-												{
-													finalquery.timeZone(inQuery.getTimeZone());
-												}
-
-											}
-											else
-												if (inDetail.isNumber())
-												{
-													if ("betweennumbers".equals(inTerm.getOperation()))
-													{
-
-														if (inDetail.isDataType("double"))
-														{
-															Double lowval = (Double) inTerm.getValue("lowval");
-															Double highval = (Double) inTerm.getValue("highval");
-															find = QueryBuilders.rangeQuery(fieldid).from(lowval).to(highval);
-														}
-														if (inDetail.isDataType("long") || inDetail.isDataType("number"))
-														{
-															Long lowval = (Long) inTerm.getValue("lowval");
-															Long highval = (Long) inTerm.getValue("highval");
-															find = QueryBuilders.rangeQuery(fieldid).from(lowval).to(highval);
-														}
-													}
-
-													else
-														if ("lessthannumber".equals(inTerm.getOperation()))
-														{
-															if (inDetail.isDataType("double"))
-															{
-																Double val = Double.valueOf(inTerm.getValue());
-																find = QueryBuilders.rangeQuery(fieldid).lt(val);
-															}
-															if (inDetail.isDataType("long") || inDetail.isDataType("number"))
-															{
-																Long val = Long.valueOf(inTerm.getValue());
-																find = QueryBuilders.rangeQuery(fieldid).lt(val);
-															}
-
-														}
-
-														else
-															if ("greaterthannumber".equals(inTerm.getOperation()))
-															{
-																if (inDetail.isDataType("double"))
-																{
-																	Double val = Double.valueOf(inTerm.getValue());
-																	find = QueryBuilders.rangeQuery(fieldid).gt(val);
-																}
-																if (inDetail.isDataType("long") || inDetail.isDataType("number"))
-																{
-																	Long val = Long.valueOf(inTerm.getValue());
-																	find = QueryBuilders.rangeQuery(fieldid).gt(val);
-																}
-
-															}
-
-															else
-															{
-																if (inDetail.isDataType("double"))
-																{
-																	find = QueryBuilders.termQuery(fieldid, Double.parseDouble(valueof));
-
-																}
-																else
-																	if (inDetail.isDataType("float"))
-																	{
-																		find = QueryBuilders.termQuery(fieldid, Float.parseFloat(valueof));
-																	}
-																	else
-																	{
-																		find = QueryBuilders.termQuery(fieldid, Long.parseLong(valueof));
-																	}
-															}
-
-												}
-												else
-													if (inDetail.isGeoPoint())
-													{
-														GeoFilter filter = (GeoFilter) inTerm;
-														if (filter.getLatitude() == 0)
-														{
-															find = QueryBuilders.termQuery("id", "-" + System.currentTimeMillis());
-														}
-														else
-														{
-															GeoDistanceQueryBuilder geoDistanceFilterBuilder = new GeoDistanceQueryBuilder(inDetail.getId());
-															geoDistanceFilterBuilder.point(filter.getLatitude(), filter.getLongitude());
-															geoDistanceFilterBuilder.distance(String.valueOf(filter.getDistance()));
-															geoDistanceFilterBuilder.optimizeBbox("memory"); // Can be also "indexed" or "none"
-															geoDistanceFilterBuilder.geoDistance(GeoDistance.ARC); // Or GeoDistance.PLANE
-															find = geoDistanceFilterBuilder;
-														}
-													}
-													// DO not use _all use _description
-													// else if (fieldid.equals("description"))
-													// {
-													// // valueof = valueof.substring(0,valueof.length()-1);
-													//
-													// MatchQueryBuilder text = QueryBuilders.matchPhrasePrefixQuery("_all",
-													// valueof);
-													// text.analyzer("lowersnowball");
-													// text.maxExpansions(10);
-													// find = text;
-													// }
-													else
-													{
-														if ("exact".equals(inTerm.getOperation()))
-														{
-															if (inDetail.isAnalyzed())
-															{
-																find = QueryBuilders.termQuery(fieldid + ".exact", valueof);
-															}
-															else
-															{
-																find = QueryBuilders.termQuery(fieldid, valueof);
-															}
-														}
-														else
-															if ("orgroup".equals(inTerm.getOperation()) || "notgroup".equals(inTerm.getOperation()))
-															{
-																if (inDetail.isList() || !inDetail.isAnalyzed())
-																{
-																	find = QueryBuilders.termsQuery(fieldid, inTerm.getValues()); // This is an OR
-																}
-																else
-																{
-																	String altid = fieldid + ".exact";
-
-																	find = QueryBuilders.termsQuery(altid, inTerm.getValues()); // This is an OR
-																	// find = createMatchQuery(fieldid, inTerm.getValues()); //This is an OR
-																}
-																// BoolQueryBuilder or = QueryBuilders.boolQuery();
-																// Object[] values = inTerm.getValues();
-																// for (int i = 0; i < values.length; i++)
-																// {
-																// Object val = values[i];
-																//
-																// TermQueryBuilder item = QueryBuilders.termQuery(fieldid, val);
-																// if("notgroup".equals(inTerm.getOperation()))
-																// {
-																// or.mustNot(item);
-																// }
-																// else
-																// {
-																// or.should(item);
-																// }
-																// }
-																// find = or;
-															}
-															else
-																if ("andgroup".equals(inTerm.getOperation()))
-																{
-																	Object[] values = inTerm.getValues();
-																	BoolQueryBuilder or = QueryBuilders.boolQuery();
-
-																	for (int i = 0; i < values.length; i++)
-																	{
-																		Object val = values[i];
-																		if (inDetail.isAnalyzed() || "keywords".equals(fieldid))
-																		{
-																			MatchQueryBuilder item = QueryBuilders.matchQuery(fieldid, val);
-																			or.must(item);
-																		}
-																		else
-																		{
-																			TermQueryBuilder item = QueryBuilders.termQuery(fieldid, val);
-																			or.must(item);
-
-																		}
-																	}
-																	find = or;
-																}
-																else
-																	if ("matches".equals(inTerm.getOperation()))
-																	{
-																		find = createMatchQuery(inDetail, fieldid, valueof);
-																	}
-																	else
-																		if ("contains".equals(inTerm.getOperation()))
-																		{
-																			find = createMatchQuery(inDetail, fieldid, valueof);
-																		}
-																		else
-																			if (inDetail.isList())
-																			{
-																				find = QueryBuilders.termQuery(fieldid, valueof);
-																			}
-																			else
-																			{
-																				find = createMatchQuery(inDetail, fieldid, valueof);
-																			}
-													}
+					}
+				}
+				find = or;
+			}
+			else if ("matches".equals(inTerm.getOperation()))
+			{
+				find = createMatchQuery(inDetail, fieldid, valueof);
+			}
+			else if ("contains".equals(inTerm.getOperation()))
+			{
+				find = createMatchQuery(inDetail, fieldid, valueof);
+			}
+			else if (inDetail.isList())
+			{
+				find = QueryBuilders.termQuery(fieldid, valueof);
+			}
+			else
+			{
+				find = createMatchQuery(inDetail, fieldid, valueof);
+			}
+		}
 		return find;
 	}
 
@@ -2135,25 +2092,23 @@ public class BaseElasticSearcher extends BaseSearcher implements FullTextLoader
 		{
 			currentoperator = "OR";
 		}
-		else
-			if (currentoperator == null)
-			{
-				currentoperator = "AND";
-			}
+		else if (currentoperator == null)
+		{
+			currentoperator = "AND";
+		}
 
 		if (currentoperator.equals("NOT"))
 		{
 			booleans.mustNot(oneword);
 		}
+		else if (currentoperator.equals("OR"))
+		{
+			booleans.should(oneword);
+		}
 		else
-			if (currentoperator.equals("OR"))
-			{
-				booleans.should(oneword);
-			}
-			else
-			{
-				booleans.must(oneword);
-			}
+		{
+			booleans.must(oneword);
+		}
 		return currentoperator;
 	}
 
@@ -2195,12 +2150,11 @@ public class BaseElasticSearcher extends BaseSearcher implements FullTextLoader
 				direction = true;
 				field = field.substring(0, field.length() - 4);
 			}
-			else
-				if (field.endsWith("Up"))
-				{
-					direction = false;
-					field = field.substring(0, field.length() - 2);
-				}
+			else if (field.endsWith("Up"))
+			{
+				direction = false;
+				field = field.substring(0, field.length() - 2);
+			}
 			PropertyDetail detail = getDetail(field);
 			FieldSortBuilder sort = null;
 
@@ -2222,28 +2176,26 @@ public class BaseElasticSearcher extends BaseSearcher implements FullTextLoader
 				 * "mode": "min", "distance_type": "arc", "ignore_unmapped": true }
 				 */
 
-				else
-					if (detail.isDataType("objectarray") && detail.getObjectDetails() != null && !detail.getObjectDetails().isEmpty())
+				else if (detail.isDataType("objectarray") && detail.getObjectDetails() != null && !detail.getObjectDetails().isEmpty())
+				{
+					PropertyDetail first = (PropertyDetail) detail.getObjectDetails().iterator().next();
+					if (first.isAnalyzed())
 					{
-						PropertyDetail first = (PropertyDetail) detail.getObjectDetails().iterator().next();
-						if (first.isAnalyzed())
-						{
-							sort = SortBuilders.fieldSort(field + "." + first.getId() + ".sort");
-						}
-						else
-						{
-							sort = SortBuilders.fieldSort(field + "." + first.getId());
-						}
+						sort = SortBuilders.fieldSort(field + "." + first.getId() + ".sort");
 					}
 					else
-						if (detail.isAnalyzed())
-						{
-							sort = SortBuilders.fieldSort(field + ".sort");
-						}
-						else
-						{
-							sort = SortBuilders.fieldSort(field);
-						}
+					{
+						sort = SortBuilders.fieldSort(field + "." + first.getId());
+					}
+				}
+				else if (detail.isAnalyzed())
+				{
+					sort = SortBuilders.fieldSort(field + ".sort");
+				}
+				else
+				{
+					sort = SortBuilders.fieldSort(field);
+				}
 			}
 
 			if (sort == null)
@@ -2888,19 +2840,18 @@ public class BaseElasticSearcher extends BaseSearcher implements FullTextLoader
 			{
 				allprops.addAll(inData.getProperties().keySet()); // Needed for legacy field handling below
 			}
-			else
-				if (isCheckLegacy())
+			else if (isCheckLegacy())
+			{
+				for (Iterator iterator = inDetails.iterator(); iterator.hasNext();)
 				{
-					for (Iterator iterator = inDetails.iterator(); iterator.hasNext();)
+					PropertyDetail detail = (PropertyDetail) iterator.next();
+					String legacyfield = detail.get("legacy");
+					if (legacyfield != null)
 					{
-						PropertyDetail detail = (PropertyDetail) iterator.next();
-						String legacyfield = detail.get("legacy");
-						if (legacyfield != null)
-						{
-							allprops.add(legacyfield); // We need to make a copy anyways
-						}
+						allprops.add(legacyfield); // We need to make a copy anyways
 					}
 				}
+			}
 			// allprops.addAll(props.keySet());
 			for (Iterator iterator = inDetails.iterator(); iterator.hasNext();)
 			{
@@ -3075,11 +3026,10 @@ public class BaseElasticSearcher extends BaseSearcher implements FullTextLoader
 						// parse JSON string → Map
 						value = new JsonSlurper().parseText((String) value);
 					}
-					else
-						if (!(value instanceof Map))
-						{
-							throw new OpenEditException(inData.getId() + " / " + detail.getId() + " Data was not a Map or JSON string " + value.getClass());
-						}
+					else if (!(value instanceof Map))
+					{
+						throw new OpenEditException(inData.getId() + " / " + detail.getId() + " Data was not a Map or JSON string " + value.getClass());
+					}
 					inContent.field(key, value); // accept single object
 				}
 
@@ -3127,464 +3077,434 @@ public class BaseElasticSearcher extends BaseSearcher implements FullTextLoader
 													// again
 				}
 
-				else
-					if (detail.isDate())
+				else if (detail.isDate())
+				{
+					if (value != null)
 					{
-						if (value != null)
+						Date date = null;
+						if (value instanceof Date)
 						{
-							Date date = null;
-							if (value instanceof Date)
+							date = (Date) value;
+						}
+						else if (value instanceof String)
+						{
+							date = DateStorageUtil.getStorageUtil().parseFromStorage((String) value);
+						}
+						if (date != null)
+						{
+							inContent.field(key, date);
+						}
+					}
+				}
+				else if (detail.isCategory())
+				{
+					// Lets assume this detail is the EXACT one, not the set. the matching detail
+					// should have
+					// TODO: add this optimization
+					// if (isOptimizeReindex() && !(inData instanceof Asset)) //Low level
+					// performance fix
+					// {
+					// MultiValued values = (MultiValued) inData;
+					// saveArray(inContent, "category", values.getValues("category"));
+					// saveArray(inContent, "category-exact", values.getValues("category-exact"));
+					// String desc = values.get("description");
+					// inContent.field("description", desc);
+					// setFolderPath(inData, inContent);
+					// super.updateIndex(inContent, inData, inDetails, inUser);
+					//
+					// return;
+					// }
+
+					if (value != null)
+					{
+
+						String fullsetdetail = detail.get("categorypath");
+						List categories = null;
+						Set fulltree = null;
+						String searchtype = detail.getListId();
+						String catalog = detail.getListCatalogId();
+
+						CategorySearcher catsearcher = (CategorySearcher) getSearcherManager().getSearcher(catalog, searchtype);
+						if (value instanceof Collection)
+						{
+							categories = new ArrayList();
+							Collection vals = (Collection) value;
+							for (Iterator iterator2 = vals.iterator(); iterator2.hasNext();)
 							{
-								date = (Date) value;
+								String catid = (String) iterator2.next();
+								Category cat = catsearcher.getCategory(catid);
+								if (cat != null)
+								{
+									categories.add(cat);
+								}
+							}
+						}
+						else
+						{
+							categories = new ArrayList();
+							Category cat = catsearcher.getCategory((String) value);
+							if (cat != null)
+							{
+								categories.add(cat);
+							}
+						}
+
+						fulltree = catsearcher.buildCategorySet(categories);
+
+						String[] catids = new String[categories.size()];
+						int i = 0;
+						for (Iterator iterator3 = categories.iterator(); iterator3.hasNext();)
+						{
+							Category cat = (Category) iterator3.next();
+							catids[i++] = cat.getId();
+						}
+						if (i > 0)
+						{
+							inContent.field(detail.getId(), catids);
+						}
+
+						List ids = new ArrayList(fulltree.size());
+						for (Iterator iterator2 = fulltree.iterator(); iterator2.hasNext();)
+						{
+							Object object = iterator2.next();
+							String id = null;
+							if (object instanceof Data)
+							{
+								id = ((Data) object).getId();
 							}
 							else
-								if (value instanceof String)
-								{
-									date = DateStorageUtil.getStorageUtil().parseFromStorage((String) value);
-								}
-							if (date != null)
 							{
-								inContent.field(key, date);
+								id = String.valueOf(object);
 							}
+							ids.add(id);
+						}
+						if (ids.size() > 0)
+						{
+							String[] array = new String[ids.size()];
+							Object oa = ids.toArray(array);
+							inContent.field(fullsetdetail, oa);
 						}
 					}
 					else
-						if (detail.isCategory())
+					{
+						inContent.field(key, value);
+
+					}
+
+				}
+				else if (detail.isBoolean())
+				{
+					boolean val = false;
+					if (value instanceof Boolean)
+					{
+						val = (Boolean) value;
+					}
+					else if (value != null)
+					{
+						val = Boolean.valueOf((String) value);
+					}
+					inContent.field(key, val);
+				}
+				else if (detail.isDataType("double"))
+				{
+					if (detail.isMultiValue())
+					{
+						if (value instanceof double[])
 						{
-							// Lets assume this detail is the EXACT one, not the set. the matching detail
-							// should have
-							// TODO: add this optimization
-							// if (isOptimizeReindex() && !(inData instanceof Asset)) //Low level
-							// performance fix
-							// {
-							// MultiValued values = (MultiValued) inData;
-							// saveArray(inContent, "category", values.getValues("category"));
-							// saveArray(inContent, "category-exact", values.getValues("category-exact"));
-							// String desc = values.get("description");
-							// inContent.field("description", desc);
-							// setFolderPath(inData, inContent);
-							// super.updateIndex(inContent, inData, inDetails, inUser);
-							//
-							// return;
-							// }
+							double[] values = (double[]) value;
+							inContent.field(key, values);
+							continue;
+						}
+						if (value instanceof List)
+						{
+							List<Double> values = (List<Double>) value;
+							inContent.field(key, values);
+							continue;
+						}
+					}
+					Double val = null;
 
-							if (value != null)
+					if (value instanceof Double)
+					{
+						val = (Double) value;
+					}
+					else if (value instanceof Integer)
+					{
+						val = Double.valueOf((int) value);
+					}
+					else if (value instanceof Long)
+					{
+						val = Double.valueOf((long) value);
+					}
+					else if (value != null)
+					{
+						try
+						{
+							val = Double.valueOf((String) value);
+						}
+						catch (Exception ef)
+						{
+							log.error("Cant format " + getSearchType() + " " + detail.getId() + " " + value, ef);
+							continue;
+						}
+
+					}
+					inContent.field(key, val);
+				}
+				else if (detail.isDataType("float"))
+				{
+					if (detail.isMultiValue())
+					{
+						if (value instanceof float[])
+						{
+							float[] values = (float[]) value;
+							inContent.field(key, values);
+							continue;
+						}
+						if (value instanceof List)
+						{
+							List<Float> values = (List<Float>) value;
+							inContent.field(key, values);
+							continue;
+						}
+					}
+					Float val = null;
+
+					if (value instanceof Float)
+					{
+						val = (Float) value;
+					}
+					else if (value instanceof Integer)
+					{
+						val = Float.valueOf((int) value);
+					}
+					else if (value instanceof Long)
+					{
+						val = Float.valueOf((long) value);
+					}
+					else if (value != null)
+					{
+						try
+						{
+							val = Float.valueOf((String) value);
+						}
+						catch (Exception ef)
+						{
+							log.error("Cant format " + getSearchType() + " " + detail.getId() + " " + value, ef);
+							continue;
+						}
+
+					}
+					inContent.field(key, val);
+				}
+				else if (detail.isDataType("long"))
+				{
+					Long val = null;
+					if (value instanceof Double && detail.getId().contains("timecode"))
+					{
+						Double d = (Double) value;
+						val = Math.round(d * 1000d);
+					}
+					else if (value instanceof Double)
+					{
+						val = Math.round((Double) value); // Throw exception?
+					}
+					else if (value instanceof Integer)
+					{
+						val = ((Integer) value).longValue();
+					}
+					else if (value != null)
+					{
+						val = Long.valueOf(value.toString());
+					}
+					inContent.field(key, val);
+				}
+				else if (detail.isDataType("number"))
+				{
+					Object val = 0;
+
+					if (value instanceof Collection)
+					{
+						val = value;
+					}
+					else if (value instanceof Number)
+					{
+						val = (Number) value;
+					}
+					else if (value instanceof Integer)
+					{
+						val = (Integer) value;
+					}
+					else if (value != null)
+					{
+						try
+						{
+							val = Long.valueOf((String) value);
+						}
+						catch (Exception e)
+						{
+							// throw new OpenEditException("Bad Value for Number: " + val + " trying to set:
+							// " + key);
+							log.info("Bad Value for Number:  " + val + " trying to set: " + key);
+
+						}
+					}
+					inContent.field(key, val);
+				}
+				else if (detail.isMultiValue() || detail.isList())
+				{
+					if (value != null)
+					{
+						if (value instanceof Data)
+						{
+							String id = ((Data) value).getId();
+							inContent.field(key, id);
+						}
+						else if (value instanceof Collection)
+						{
+							Collection values = (Collection) value;
+							Collection ids = new ArrayList(values.size());
+							for (Iterator iterator2 = values.iterator(); iterator2.hasNext();)
 							{
-
-								String fullsetdetail = detail.get("categorypath");
-								List categories = null;
-								Set fulltree = null;
-								String searchtype = detail.getListId();
-								String catalog = detail.getListCatalogId();
-
-								CategorySearcher catsearcher = (CategorySearcher) getSearcherManager().getSearcher(catalog, searchtype);
-								if (value instanceof Collection)
+								Object object = (Object) iterator2.next();
+								if (object instanceof Data)
 								{
-									categories = new ArrayList();
-									Collection vals = (Collection) value;
-									for (Iterator iterator2 = vals.iterator(); iterator2.hasNext();)
-									{
-										String catid = (String) iterator2.next();
-										Category cat = catsearcher.getCategory(catid);
-										if (cat != null)
-										{
-											categories.add(cat);
-										}
-									}
+									ids.add(((Data) object).getId());
 								}
 								else
 								{
-									categories = new ArrayList();
-									Category cat = catsearcher.getCategory((String) value);
-									if (cat != null)
-									{
-										categories.add(cat);
-									}
+									ids.add(String.valueOf(object));
 								}
-
-								fulltree = catsearcher.buildCategorySet(categories);
-
-								String[] catids = new String[categories.size()];
-								int i = 0;
-								for (Iterator iterator3 = categories.iterator(); iterator3.hasNext();)
-								{
-									Category cat = (Category) iterator3.next();
-									catids[i++] = cat.getId();
-								}
-								if (i > 0)
-								{
-									inContent.field(detail.getId(), catids);
-								}
-
-								List ids = new ArrayList(fulltree.size());
-								for (Iterator iterator2 = fulltree.iterator(); iterator2.hasNext();)
-								{
-									Object object = iterator2.next();
-									String id = null;
-									if (object instanceof Data)
-									{
-										id = ((Data) object).getId();
-									}
-									else
-									{
-										id = String.valueOf(object);
-									}
-									ids.add(id);
-								}
-								if (ids.size() > 0)
-								{
-									String[] array = new String[ids.size()];
-									Object oa = ids.toArray(array);
-									inContent.field(fullsetdetail, oa);
-								}
+							}
+							inContent.field(key, ids);
+						}
+						else if (detail.isMultiValue() && value instanceof String)
+						{
+							String vs = (String) value;
+							String[] vals = VALUEDELMITER.split(vs);
+							Collection values = Arrays.asList(vals);
+							inContent.field(key, values);
+						}
+						else
+						{
+							inContent.field(key, value);
+						}
+					}
+				}
+				else if (value != null && detail.isGeoPoint())
+				{
+					// Saved it as two fields?
+					if (value instanceof Position)
+					{
+						Position pos = (Position) value;
+						GeoPoint point = new GeoPoint(pos.getLatitude(), pos.getLongitude());
+						inContent.field(key, point);
+					}
+					else if (value instanceof String)
+					{
+						String geopoint = (String) value;
+						if (geopoint.startsWith("{"))
+						{
+							if (!geopoint.contains("\""))
+							{
+								geopoint = geopoint.substring(6, geopoint.length() - 1);
+								geopoint = geopoint.replace("lng: ", "");
 							}
 							else
 							{
-								inContent.field(key, value);
-
+								Map points = new JSONParser().parse(geopoint);
+								geopoint = points.get("lat") + "," + points.get("lng");
 							}
 
 						}
-						else
-							if (detail.isBoolean())
+						GeoPoint point = new GeoPoint(geopoint);
+						inContent.field(key, point);
+						Position position = new Position(point.getLat(), point.getLon());
+
+						inData.setValue(key, position); // For next time?
+					}
+					else if (value instanceof GeoPoint)
+					{
+						GeoPoint point = (GeoPoint) value;
+						inContent.field(key, point);
+						Position position = new Position(point.getLat(), point.getLon());
+						inData.setValue(key, position); // For next time?
+					}
+				}
+				else if (detail.isMultiLanguage())
+				{
+					// This is a nested document
+					if (value == null)
+					{
+						continue;
+					}
+					key = key + "_int";
+					XContentBuilder lanobj = inContent.startObject(key); // start
+																			// first
+																			// detail
+																			// object
+
+					HitTracker locales = getSearcherManager().getList(getCatalogId(), "locale");
+
+					if (value instanceof String)
+					{
+						String target = (String) value;
+						LanguageMap map = new LanguageMap();
+						map.setText("en", target);
+						value = map;
+					}
+					if (value instanceof LanguageMap)
+					{
+						// all good
+					}
+					else if (value instanceof Map)
+					{
+						value = new LanguageMap((Map) value);
+					}
+					if (!(value instanceof LanguageMap))
+					{
+						throw new OpenEditException(
+							"Unexpexted value for MultiLanguage enabled field : " + value + " detail: " + detail.getId() + "Data Was: " + inData.getId() + " searchtype " + getSearchType());
+					}
+					LanguageMap map = (LanguageMap) value;
+					for (Iterator iterator2 = locales.iterator(); iterator2.hasNext();)
+					{
+						Data locale = (Data) iterator2.next();
+						String id = locale.getId();
+						String localeval = map.getText(id); // get value
+						if (localeval != null)
+						{
+							lanobj.field(id, localeval);
+						}
+					}
+					lanobj.endObject();
+				}
+				else
+				{
+					if (value == null)
+					{
+						// log.info( getSearchType() + "Had null value " + key);
+					}
+					else
+					{
+						if (value instanceof LanguageMap)
+						{
+							value = ((LanguageMap) value).toString();
+						}
+						else if (!(value instanceof String))
+						{
+							String svalue = String.valueOf(value);
+							if (svalue.isEmpty())
 							{
-								boolean val = false;
-								if (value instanceof Boolean)
-								{
-									val = (Boolean) value;
-								}
-								else
-									if (value != null)
-									{
-										val = Boolean.valueOf((String) value);
-									}
-								inContent.field(key, val);
+								value = null;
 							}
-							else
-								if (detail.isDataType("double"))
-								{
-									if (detail.isMultiValue())
-									{
-										if (value instanceof double[])
-										{
-											double[] values = (double[]) value;
-											inContent.field(key, values);
-											continue;
-										}
-										if (value instanceof List)
-										{
-											List<Double> values = (List<Double>) value;
-											inContent.field(key, values);
-											continue;
-										}
-									}
-									Double val = null;
-
-									if (value instanceof Double)
-									{
-										val = (Double) value;
-									}
-									else
-										if (value instanceof Integer)
-										{
-											val = Double.valueOf((int) value);
-										}
-										else
-											if (value instanceof Long)
-											{
-												val = Double.valueOf((long) value);
-											}
-											else
-												if (value != null)
-												{
-													try
-													{
-														val = Double.valueOf((String) value);
-													}
-													catch (Exception ef)
-													{
-														log.error("Cant format " + getSearchType() + " " + detail.getId() + " " + value, ef);
-														continue;
-													}
-
-												}
-									inContent.field(key, val);
-								}
-								else
-									if (detail.isDataType("float"))
-									{
-										if (detail.isMultiValue())
-										{
-											if (value instanceof float[])
-											{
-												float[] values = (float[]) value;
-												inContent.field(key, values);
-												continue;
-											}
-											if (value instanceof List)
-											{
-												List<Float> values = (List<Float>) value;
-												inContent.field(key, values);
-												continue;
-											}
-										}
-										Float val = null;
-
-										if (value instanceof Float)
-										{
-											val = (Float) value;
-										}
-										else
-											if (value instanceof Integer)
-											{
-												val = Float.valueOf((int) value);
-											}
-											else
-												if (value instanceof Long)
-												{
-													val = Float.valueOf((long) value);
-												}
-												else
-													if (value != null)
-													{
-														try
-														{
-															val = Float.valueOf((String) value);
-														}
-														catch (Exception ef)
-														{
-															log.error("Cant format " + getSearchType() + " " + detail.getId() + " " + value, ef);
-															continue;
-														}
-
-													}
-										inContent.field(key, val);
-									}
-									else
-										if (detail.isDataType("long"))
-										{
-											Long val = null;
-											if (value instanceof Double && detail.getId().contains("timecode"))
-											{
-												Double d = (Double) value;
-												val = Math.round(d * 1000d);
-											}
-											else
-												if (value instanceof Double)
-												{
-													val = Math.round((Double) value); // Throw exception?
-												}
-												else
-													if (value instanceof Integer)
-													{
-														val = ((Integer) value).longValue();
-													}
-													else
-														if (value != null)
-														{
-															val = Long.valueOf(value.toString());
-														}
-											inContent.field(key, val);
-										}
-										else
-											if (detail.isDataType("number"))
-											{
-												Object val = 0;
-
-												if (value instanceof Collection)
-												{
-													val = value;
-												}
-												else
-													if (value instanceof Number)
-													{
-														val = (Number) value;
-													}
-													else
-														if (value instanceof Integer)
-														{
-															val = (Integer) value;
-														}
-														else
-															if (value != null)
-															{
-																try
-																{
-																	val = Long.valueOf((String) value);
-																}
-																catch (Exception e)
-																{
-																	// throw new OpenEditException("Bad Value for Number: " + val + " trying to set:
-																	// " + key);
-																	log.info("Bad Value for Number:  " + val + " trying to set: " + key);
-
-																}
-															}
-												inContent.field(key, val);
-											}
-											else
-												if (detail.isMultiValue() || detail.isList())
-												{
-													if (value != null)
-													{
-														if (value instanceof Data)
-														{
-															String id = ((Data) value).getId();
-															inContent.field(key, id);
-														}
-														else
-															if (value instanceof Collection)
-															{
-																Collection values = (Collection) value;
-																Collection ids = new ArrayList(values.size());
-																for (Iterator iterator2 = values.iterator(); iterator2.hasNext();)
-																{
-																	Object object = (Object) iterator2.next();
-																	if (object instanceof Data)
-																	{
-																		ids.add(((Data) object).getId());
-																	}
-																	else
-																	{
-																		ids.add(String.valueOf(object));
-																	}
-																}
-																inContent.field(key, ids);
-															}
-															else
-																if (detail.isMultiValue() && value instanceof String)
-																{
-																	String vs = (String) value;
-																	String[] vals = VALUEDELMITER.split(vs);
-																	Collection values = Arrays.asList(vals);
-																	inContent.field(key, values);
-																}
-																else
-																{
-																	inContent.field(key, value);
-																}
-													}
-												}
-												else
-													if (value != null && detail.isGeoPoint())
-													{
-														// Saved it as two fields?
-														if (value instanceof Position)
-														{
-															Position pos = (Position) value;
-															GeoPoint point = new GeoPoint(pos.getLatitude(), pos.getLongitude());
-															inContent.field(key, point);
-														}
-														else
-															if (value instanceof String)
-															{
-																String geopoint = (String) value;
-																if (geopoint.startsWith("{"))
-																{
-																	if (!geopoint.contains("\""))
-																	{
-																		geopoint = geopoint.substring(6, geopoint.length() - 1);
-																		geopoint = geopoint.replace("lng: ", "");
-																	}
-																	else
-																	{
-																		Map points = new JSONParser().parse(geopoint);
-																		geopoint = points.get("lat") + "," + points.get("lng");
-																	}
-
-																}
-																GeoPoint point = new GeoPoint(geopoint);
-																inContent.field(key, point);
-																Position position = new Position(point.getLat(), point.getLon());
-
-																inData.setValue(key, position); // For next time?
-															}
-															else
-																if (value instanceof GeoPoint)
-																{
-																	GeoPoint point = (GeoPoint) value;
-																	inContent.field(key, point);
-																	Position position = new Position(point.getLat(), point.getLon());
-																	inData.setValue(key, position); // For next time?
-																}
-													}
-													else
-														if (detail.isMultiLanguage())
-														{
-															// This is a nested document
-															if (value == null)
-															{
-																continue;
-															}
-															key = key + "_int";
-															XContentBuilder lanobj = inContent.startObject(key); // start
-																													// first
-																													// detail
-																													// object
-
-															HitTracker locales = getSearcherManager().getList(getCatalogId(), "locale");
-
-															if (value instanceof String)
-															{
-																String target = (String) value;
-																LanguageMap map = new LanguageMap();
-																map.setText("en", target);
-																value = map;
-															}
-															if (value instanceof LanguageMap)
-															{
-																// all good
-															}
-															else
-																if (value instanceof Map)
-																{
-																	value = new LanguageMap((Map) value);
-																}
-															if (!(value instanceof LanguageMap))
-															{
-																throw new OpenEditException("Unexpexted value for MultiLanguage enabled field : " + value + " detail: " + detail.getId() + "Data Was: "
-																	+ inData.getId() + " searchtype " + getSearchType());
-															}
-															LanguageMap map = (LanguageMap) value;
-															for (Iterator iterator2 = locales.iterator(); iterator2.hasNext();)
-															{
-																Data locale = (Data) iterator2.next();
-																String id = locale.getId();
-																String localeval = map.getText(id); // get value
-																if (localeval != null)
-																{
-																	lanobj.field(id, localeval);
-																}
-															}
-															lanobj.endObject();
-														}
-														else
-														{
-															if (value == null)
-															{
-																// log.info( getSearchType() + "Had null value " + key);
-															}
-															else
-															{
-																if (value instanceof LanguageMap)
-																{
-																	value = ((LanguageMap) value).toString();
-																}
-																else
-																	if (!(value instanceof String))
-																	{
-																		String svalue = String.valueOf(value);
-																		if (svalue.isEmpty())
-																		{
-																			value = null;
-																		}
-																	}
-																if (value != null)
-																{
-																	inContent.field(key, value);
-																}
-															}
-														}
+						}
+						if (value != null)
+						{
+							inContent.field(key, value);
+						}
+					}
+				}
 				// log.info("Saved" + key + "=" + value );
 			}
 			if (!badges.isEmpty())
@@ -4067,16 +3987,15 @@ public class BaseElasticSearcher extends BaseSearcher implements FullTextLoader
 							inFullDesc.append("|");
 						}
 					}
-					else
-						if (prop instanceof String)
+					else if (prop instanceof String)
+					{
+						Data data = (Data) getSearcherManager().getCachedData(det.getListCatalogId(), det.getListId(), (String) prop);
+						if (data != null && data.getName() != null)
 						{
-							Data data = (Data) getSearcherManager().getCachedData(det.getListCatalogId(), det.getListId(), (String) prop);
-							if (data != null && data.getName() != null)
-							{
-								inFullDesc.append(data.getName());
-								inFullDesc.append("|");
-							}
+							inFullDesc.append(data.getName());
+							inFullDesc.append("|");
 						}
+					}
 				}
 			}
 			else
@@ -4118,118 +4037,120 @@ public class BaseElasticSearcher extends BaseSearcher implements FullTextLoader
 					}
 				}
 
-				else
-					if (det.isDataType("object"))
+				else if (det.isDataType("object"))
+				{
+					Object values = inData.getValue(det.getId());
+					if (values != null && values instanceof String)
 					{
-						Object values = inData.getValue(det.getId());
-						if (values != null && values instanceof String)
-						{
 
-						}
+					}
+				}
+
+				else if (det.isDataType("objectarray") || det.isDataType("nested"))
+				{
+					Object values = inData.getValue(det.getId());
+					if (values != null && values instanceof String)
+					{
+						// Spreadsheet import
+						inFullDesc.append(values);
+						inFullDesc.append("|");
+						return;
 					}
 
-					else
-						if (det.isDataType("objectarray") || det.isDataType("nested"))
+					if (values != null && det.getObjectDetails() != null)
+					{
+						Collection maps = (Collection) values;
+						for (Iterator iterator = maps.iterator(); iterator.hasNext();)
 						{
-							Object values = inData.getValue(det.getId());
-							if (values != null && values instanceof String)
+							Map map = (Map) iterator.next();
+							for (Iterator miterator = det.getObjectDetails().iterator(); miterator.hasNext();)
 							{
-								// Spreadsheet import
-								inFullDesc.append(values);
-								inFullDesc.append("|");
-								return;
-							}
-
-							if (values != null && det.getObjectDetails() != null)
-							{
-								Collection maps = (Collection) values;
-								for (Iterator iterator = maps.iterator(); iterator.hasNext();)
+								PropertyDetail detal = (PropertyDetail) miterator.next();
+								if (detal.isKeyword())
 								{
-									Map map = (Map) iterator.next();
-									for (Iterator miterator = det.getObjectDetails().iterator(); miterator.hasNext();)
+									Object val = map.get(detal.getId());
+									if (val != null)
 									{
-										PropertyDetail detal = (PropertyDetail) miterator.next();
-										if (detal.isKeyword())
+										if (detal.isMultiValue())
 										{
-											Object val = map.get(detal.getId());
-											if (val != null)
+											Collection colvalues = null;
+											if (val instanceof Collection)
 											{
-												if (detal.isMultiValue())
-												{
-													Collection colvalues = null;
-													if (val instanceof Collection)
-													{
-														colvalues = (Collection) val;
-													}
-													else
-													{
-														colvalues = new ArrayList();
-														colvalues.add(val);
-													}
-													// Could be an collection
-													for (Iterator iterator2 = colvalues.iterator(); iterator2.hasNext();)
-													{
-														String string = (String) String.valueOf(iterator2.next());
+												colvalues = (Collection) val;
+											}
+											else
+											{
+												colvalues = new ArrayList();
+												colvalues.add(val);
+											}
+											// Could be an collection
+											for (Iterator iterator2 = colvalues.iterator(); iterator2.hasNext();)
+											{
+												String string = (String) String.valueOf(iterator2.next());
 
-														if (detal.isList())
-														{
-															Data data = (Data) getSearcherManager().getCachedData(detal.getListCatalogId(), detal.getListId(), (String) string);
-															if (data != null && data.getName() != null)
-															{
-																inFullDesc.append(data.getName());
-																inFullDesc.append(' ');
-															}
-														}
-														else
-														{
-															inFullDesc.append(string);
-															inFullDesc.append(' ');
-														}
+												if (detal.isList())
+												{
+													Data data = (Data) getSearcherManager().getCachedData(detal.getListCatalogId(), detal.getListId(), (String) string);
+													if (data != null && data.getName() != null)
+													{
+														inFullDesc.append(data.getName());
+														inFullDesc.append(' ');
 													}
 												}
 												else
 												{
-													inFullDesc.append(String.valueOf(val));
+													inFullDesc.append(string);
 													inFullDesc.append(' ');
 												}
 											}
 										}
-
+										else
+										{
+											inFullDesc.append(String.valueOf(val));
+											inFullDesc.append(' ');
+										}
 									}
 								}
+
 							}
 						}
-						else
-							if (det.isMultiValue()) // But not a list
-							{
-								Collection values = inData.getValues(det.getId());
-								if (values != null && !values.isEmpty())
-								{
-									for (Iterator iterator = values.iterator(); iterator.hasNext();)
-									{
-										String oneval = (String) iterator.next();
-										inFullDesc.append(oneval);
-										inFullDesc.append("|");
-									}
-								}
-							}
-							else
-							{
-								// Skip dates and lists? if( detail.isList() || detail.isDate() ||
-								// detail.isMultiLanguage() || detail.isDataType("objectarray") ||
-								// detail.isDataType("nested") || detail.getId().equals("description") ) // else
-								// if (det.isDataType("objectarray") || det.isDataType("nested"))
+					}
+				}
+				else if (det.isMultiValue()) // But not a list
+				{
+					Collection values = inData.getValues(det.getId());
+					if (values != null && !values.isEmpty())
+					{
+						for (Iterator iterator = values.iterator(); iterator.hasNext();)
+						{
+							String oneval = (String) iterator.next();
+							inFullDesc.append(oneval);
+							inFullDesc.append("|");
+						}
+					}
+				}
+				else
+				{
+					// Skip dates and lists? if( detail.isList() || detail.isDate() ||
+					// detail.isMultiLanguage() || detail.isDataType("objectarray") ||
+					// detail.isDataType("nested") || detail.getId().equals("description") ) // else
+					// if (det.isDataType("objectarray") || det.isDataType("nested"))
 
-								String val = inData.get(det.getId());
-								if (val != null)
-								{
-									inFullDesc.append(val);
-									inFullDesc.append("|");
-								}
-							}
+					String val = inData.get(det.getId());
+					if (val != null)
+					{
+						inFullDesc.append(val);
+						inFullDesc.append("|");
+					}
+				}
 			}
 		}
 	}
+
+	/**
+	 * This load the low level data from elasticsearch. Optimized for speed used when we reindex the
+	 * entire database
+	 */
 
 	public void reIndexAll() throws OpenEditException
 	{
@@ -4301,8 +4222,11 @@ public class BaseElasticSearcher extends BaseSearcher implements FullTextLoader
 		}
 	}
 
+	/**
+	 * Sets Mappings
+	 */
 	@Override
-	public void restoreSettings()
+	public void resetMappings()
 	{
 		getPropertyDetailsArchive().clearCustomSettings(getSearchType());
 		// deleteOldMapping(); //you will lose your data!
@@ -4311,10 +4235,8 @@ public class BaseElasticSearcher extends BaseSearcher implements FullTextLoader
 	}
 
 	@Override
-	public void reloadSettings()
+	public void refreshMappings()
 	{
-		// deleteOldMapping(); //you will lose your data!
-		// reIndexAll();
 		putMappings();
 
 	}
@@ -4350,6 +4272,12 @@ public class BaseElasticSearcher extends BaseSearcher implements FullTextLoader
 
 	}
 
+	/**
+	 * This is optimized for speed and will not load the data from the database. It will just reindex
+	 * what is in elasticsearch already. This is used when we are changing the mapping or adding new
+	 * fields
+	 * 
+	 */
 	@Override
 	public void reindexInternal() throws OpenEditException
 	{
