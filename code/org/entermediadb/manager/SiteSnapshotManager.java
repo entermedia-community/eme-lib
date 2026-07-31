@@ -217,8 +217,11 @@ public class SiteSnapshotManager extends BaseMediaModule
 		orderedJsontypes.addAll(childrennames);
 		orderedJsontypes.remove("propertydetail");
 		orderedJsontypes.remove("lock");
-		orderedJsontypes.remove("user");
-		orderedJsontypes.remove("group");
+		if (configonly)
+		{
+			orderedJsontypes.remove("user");
+			orderedJsontypes.remove("group");
+		}
 		String databaseIndex = tempindex;
 		if (configonly)
 		{
