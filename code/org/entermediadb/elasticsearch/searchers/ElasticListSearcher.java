@@ -116,18 +116,6 @@ public class ElasticListSearcher extends BaseElasticSearcher implements Reloadab
 		return (Data) getModuleManager().getBean(getNewDataName());
 	}
 
-	/*
-	 * @Override public void reindexInternal() throws OpenEditException { if (isSaveToXml()) {
-	 * super.reindexInternal(); return; } setReIndexing(true); try { getXmlSearcher().clearIndex();
-	 * HitTracker allhits = getXmlSearcher().getAllHits(); allhits.enableBulkOperations(); ArrayList
-	 * tosave = new ArrayList(); for (Iterator iterator2 = allhits.iterator(); iterator2.hasNext();) {
-	 * Data hit = (Data) iterator2.next(); if (hit.getId() == null || hit.getId().isEmpty()) { continue;
-	 * } Data real = (Data) loadData(hit); tosave.add(real); if (tosave.size() > 1000) {
-	 * updateInBatch(tosave, null);
-	 * 
-	 * tosave.clear(); } } updateInBatch(tosave, null); } finally { setReIndexing(false); clearIndex();
-	 * } }
-	 */
 	public synchronized void reindexXml() throws OpenEditException
 	{
 		getXmlSearcher().reIndexAll();
@@ -156,32 +144,10 @@ public class ElasticListSearcher extends BaseElasticSearcher implements Reloadab
 
 	}
 
-	public void restoreSettings()
-	{
-		getPropertyDetailsArchive().clearCustomSettings(getSearchType());
-		super.deleteAll(null); // removes the index
-
-		String rootpath = "/WEB-INF/data/" + getCatalogId() + "/lists/" + getSearchType() + ".xml";
-		XmlFile file = getXmlSearcher().getXmlArchive().getXml(rootpath);
-		if (file.isExist())
-		{
-			getXmlSearcher().getXmlArchive().deleteXmlFile(file);
-		}
-
-		rootpath = "/WEB-INF/data/" + getCatalogId() + "/lists/" + getSearchType() + "/custom.xml";
-		file = getXmlSearcher().getXmlArchive().getXml(rootpath);
-		if (file.isExist())
-		{
-			getXmlSearcher().getXmlArchive().deleteXmlFile(file);
-		}
-
-		reindexXml(); // this will go back
-	}
-
 	@Override
-	public void reloadSettings()
+	public void resetData()
 	{
-		super.reloadSettings();
+		super.resetData();
 		reindexXml();
 	}
 
