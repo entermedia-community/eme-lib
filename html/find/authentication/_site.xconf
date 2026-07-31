@@ -2,7 +2,8 @@
     <inner-layout>/${applicationid}/theme/layouts/largearea.html</inner-layout>
     
     <property name="loginroot">/${applicationid}/authentication</property>
-  	<property name="fallbackdirectory">/community/authentication</property>
+
+  	<property name="fallbackdirectory">/community/default/authentication</property>
 
     <permission name="view">
       <boolean value="true"/>
