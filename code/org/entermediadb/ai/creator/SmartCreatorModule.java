@@ -104,8 +104,15 @@ public class SmartCreatorModule extends BaseMediaModule
 			else
 			{
 				String ordering = inReq.getRequestParameter("ordering");
-				int orderingint = Integer.parseInt(ordering);
-				fields.put("ordering", orderingint + 1);
+				if (ordering != null && ordering.length() > 0)
+				{
+					int orderingint = Integer.parseInt(ordering);
+					fields.put("ordering", orderingint + 1);
+				}
+				else
+				{
+					fields.put("ordering", 0);
+				}
 			}
 			Data section = creatorManager.createCreatorSection(playbackentity, playbackentitymodule.getId(), fields);
 			inReq.putPageValue("playbackentity", playbackentity);
@@ -254,11 +261,10 @@ public class SmartCreatorModule extends BaseMediaModule
 		{
 			inReq.putPageValue("componentcontent", duplicate);
 		}
-		else
-			if ("componentsection".equals(searchtype))
-			{
-				inReq.putPageValue("section", duplicate);
-			}
+		else if ("componentsection".equals(searchtype))
+		{
+			inReq.putPageValue("section", duplicate);
+		}
 	}
 
 	public void creatorAiAction(WebPageRequest inReq)
@@ -272,29 +278,25 @@ public class SmartCreatorModule extends BaseMediaModule
 		{
 			creatorManager.correctGrammar(inReq, componentcontentid);
 		}
-		else
-			if ("improve".equals(aiaction))
-			{
-				creatorManager.improveContent(inReq, componentcontentid);
-			}
-			else
-				if ("generate".equals(aiaction))
-				{
-					String prompt = inReq.getRequestParameter("aiprompt");
-					creatorManager.generateContent(inReq, componentcontentid, prompt);
-				}
-				else
-					if ("image".equals(aiaction))
-					{
-						String prompt = inReq.getRequestParameter("aiprompt");
-						creatorManager.createImage(inReq, componentcontentid, prompt);
-					}
-					else
-						if ("caption".equals(aiaction))
-						{
-							String assetid = inReq.getRequestParameter("assetid");
-							creatorManager.captionImage(inReq, componentcontentid, assetid);
-						}
+		else if ("improve".equals(aiaction))
+		{
+			creatorManager.improveContent(inReq, componentcontentid);
+		}
+		else if ("generate".equals(aiaction))
+		{
+			String prompt = inReq.getRequestParameter("aiprompt");
+			creatorManager.generateContent(inReq, componentcontentid, prompt);
+		}
+		else if ("image".equals(aiaction))
+		{
+			String prompt = inReq.getRequestParameter("aiprompt");
+			creatorManager.createImage(inReq, componentcontentid, prompt);
+		}
+		else if ("caption".equals(aiaction))
+		{
+			String assetid = inReq.getRequestParameter("assetid");
+			creatorManager.captionImage(inReq, componentcontentid, assetid);
+		}
 	}
 
 }
