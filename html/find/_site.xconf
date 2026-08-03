@@ -65,8 +65,8 @@
   <style id="fontawesome-css" href="/${applicationid}/components/javascript/bootstrap/fonts/css/fontawesome-all.min.css"/>
   <style id="bootstra-icons" href="/${applicationid}/components/javascript/bootstrap/5.3.8/icons/bootstrap-icons.min.css"/>
   <script src="/openedit/components/javascript/openedit.js" id="openedit"/>
-  <script src="/${applicationid}/components/javascript/select2/4.1.0rc0/js/select2.full.js" id="select2"/>
-  <style id="select2-css" href="/${applicationid}/components/javascript/select2/4.1.0rc0/css/select2.css"/>
+  <script src="/${applicationid}/components/javascript/select2/4.1.0/js/select2.full.js" id="select2"/>
+  <style id="select2-css" href="/${applicationid}/components/javascript/select2/4.1.0/css/select2.css"/>
   <script src="/${applicationid}/components/javascript/jplayer/jquery.jplayer.min.js" id="jplayer"/>
   <style id="jplayer-css" href="/${applicationid}/components/javascript/jplayer/premium.pixels/premium-pixels.css"/>
   <script defer="true" src="/${applicationid}/components/javascript/minicolors/jquery.minicolors.min.js" id="minicolors"/>
