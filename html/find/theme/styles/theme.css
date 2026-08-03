@@ -4145,17 +4145,16 @@ a#searchEntityDropdown {
 	}
 
 	.emnav
-		.select2-container--bootstrap4
 		.select2-selection--single
 		.select2-selection__rendered {
 		line-height: 1.15rem;
 	}
 
-	.emnav .select2-container--bootstrap4 .select2-selection--single {
+	.emnav .select2-selection--single {
 		height: calc(1.25rem + 2px) !important;
 	}
 
-	.emnav .select2-container--bootstrap4 .select2-selection__clear {
+	.emnav .select2-selection__clear {
 		width: 1em;
 		height: 1em;
 		line-height: 1em;
