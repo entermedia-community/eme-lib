@@ -1417,11 +1417,11 @@ div#hiddenoverlay .overlay-margin {
 .lighttheme .overlay-close.largeicon:hover {
 	color: var(--default-text);
 }
-.entityclose {
+.closeemdialog {
 	border: none;
 	outline: none;
-	width: 30px;
-	height: 30px;
+	width: 25px;
+	height: 25px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -1431,14 +1431,18 @@ div#hiddenoverlay .overlay-margin {
 	border-radius: var(--btn-radius);
 	cursor: pointer;
 }
-.entityclose:hover {
+.closeemdialog:hover {
 	background: #c1c1c1;
 }
-.lighttheme .entityclose {
+.lighttheme .closeemdialog {
 	background: #dfdfdf;
 }
-.lighttheme .entityclose:hover {
+.lighttheme .closeemdialog:hover {
 	background: #c1c1c1;
+}
+.entitydialog .closeemdialog {
+	width: 30px;
+	height: 30px;
 }
 div#hiddenoverlay span.glyphicon.glyphicon-new-window {
 	cursor: pointer;
@@ -4816,7 +4820,7 @@ ul.summary-secondary-nav li a:hover {
 .site-switcher .btn,
 .entityNavBarContainer a.ajax,
 #header .btn-topnav,
-.entityclose {
+.closeemdialog {
 	box-shadow: var(--raised-shadow);
 }
 

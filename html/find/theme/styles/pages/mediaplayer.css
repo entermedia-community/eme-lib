@@ -261,7 +261,7 @@ li.assettabnav {
 	color: var(--default-text);
 }
 
-#assettabnavs .entityclose {
+#assettabnavs .closeemdialog {
 	width: 26px;
 	height: 26px;
 	margin: 5px;
