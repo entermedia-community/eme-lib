@@ -7935,8 +7935,8 @@ h3.modal-insight-datatype {
 
 .modal-lg {
 	max-width: 600px;
-	height: calc(100% - 2rem);
-	margin: 1rem auto;
+	height:100%;
+	margin: 0;
 }
 
 .modal-sm {
@@ -7974,7 +7974,8 @@ h3.modal-insight-datatype {
 @media (min-width: 1680px) {
 	.modal-lg,
 	.modal-xl {
-		max-width: 92%;
+		max-width: 100%;
+		margin:1rem;
 	}
 }
 
@@ -9165,7 +9166,6 @@ h2 .module-icon {
 .creator-maker,
 .automation,
 .organizer {
-	padding: 16px;
 	background: rgba(0, 0, 0, 0.1);
 	backdrop-filter: blur(5px);
 }

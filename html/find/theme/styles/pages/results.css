@@ -3405,9 +3405,6 @@ td .emgridcell a i.module-icon {
 		width: calc(100%);
 	}
 }
-.modal-lg:has(.entitydialog) {
-	max-width: calc(100% - 2rem);
-}
 .modal {
 	padding: 0 !important;
 }
