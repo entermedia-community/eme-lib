@@ -478,6 +478,7 @@ public class MediaAdminModule extends BaseMediaModule
 
 	public void createSiteSnapshot(WebPageRequest inReq)
 	{
+		ScriptLogger scriptLogger = (ScriptLogger) inReq.getPageValue("log");
 		// Use the archive
 		String siteid = inReq.getRequestParameter("id");
 
@@ -508,9 +509,10 @@ public class MediaAdminModule extends BaseMediaModule
 		snapshot.setValue("snapshotstatus", "pendingexport");
 		snaps.saveData(snapshot);
 
-		log.info("Saving new snapshot with a status of pendingexport " + siteid);
+		runExport(inReq);
+		//scriptLogger.info("Saving new snapshot with a status of pendingexport " + siteid);
 
-		manager.runSharedPathEvent("/system/events/snapshot/exportsite.html");
+		//manager.runSharedPathEvent("/system/events/snapshot/exportsite.html");
 
 	}
 
@@ -520,16 +522,17 @@ public class MediaAdminModule extends BaseMediaModule
 		Searcher searcher = getSearcherManager().getSearcher("system", "sitesnapshot");
 		Data snapshot = (Data) searcher.query().exact("snapshotstatus", "pendingexport").searchOne();
 		Data site = getSearcherManager().getData("system", "site", snapshot.get("site"));
+		ScriptLogger scriptLogger = (ScriptLogger) inReq.getPageValue("log");
 		try
 		{
 			String catalogid = site.get("catalogid");
-			ScriptLogger scriptLogger = (ScriptLogger) inReq.getPageValue("log");
+			
 			snapshotmanager.export(scriptLogger, catalogid, snapshot);
 			snapshot.setValue("snapshotstatus", "exported");
 		}
 		catch (Exception ex)
 		{
-			log.error("Error exporting snapshot: " + snapshot.getId(), ex);
+			scriptLogger.error("Error exporting snapshot: " + snapshot.getId(), ex);
 			snapshot.setValue("snapshotstatus", "error");
 		}
 		// PathEvent event =
@@ -572,7 +575,8 @@ public class MediaAdminModule extends BaseMediaModule
 		}
 		catch (Exception ex)
 		{
-			log.error("Error restoring snapshot: " + snapshot.getId(), ex);
+			ScriptLogger scriptLogger = (ScriptLogger) inReq.getPageValue("log");
+			scriptLogger.error("Error restoring snapshot: " + snapshot.getId(), ex);
 			snapshot.setValue("snapshotstatus", "error");
 		}
 

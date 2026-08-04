@@ -61,7 +61,8 @@ public class SiteSnapshotManager extends BaseMediaModule
 
 	public void restoreSnapshot(WebPageRequest inReq, Data snapshot) throws Exception
 	{
-		log.info("Initializing restore");
+		ScriptLogger scriptLogger = (ScriptLogger) inReq.getPageValue("log");
+		scriptLogger.info("Initializing restore");
 		SearcherManager searcherManager = (SearcherManager) inReq.getPageValue("searcherManager");
 		Searcher snapshotsearcher = searcherManager.getSearcher("system", "sitesnapshot");
 
@@ -83,22 +84,16 @@ public class SiteSnapshotManager extends BaseMediaModule
 			}
 
 			String logstring = String.format("restoring: %s config= %s ", site.get("rootpath"), configonly);
-			log.info(logstring);
-			ScriptLogger scriptLogger = (ScriptLogger) inReq.getPageValue("log");
+			scriptLogger.info(logstring);
+			
 			restore(scriptLogger, mediaarchive, site, snapshot, configonly);
 			snapshot.setValue("snapshotstatus", "complete");
 		}
 		catch (Exception ex)
 		{
-			ScriptLogger scriptLogger = (ScriptLogger) inReq.getPageValue("log");
-			if (scriptLogger != null)
-			{
-				scriptLogger.error("Could not restore " + ex.getMessage(), ex);
-			}
-			else
-			{
-				log.error("Could not restore", ex);
-			}
+
+			scriptLogger.error("Could not restore " + ex.getMessage(), ex);
+			
 			snapshot.setValue("snapshotstatus", "error");
 		}
 		finally
@@ -108,7 +103,7 @@ public class SiteSnapshotManager extends BaseMediaModule
 		snapshotsearcher.saveData(snapshot);
 		mediaarchive.getSearcherManager().clear();
 
-		log.info("Snapshot restore finished.");
+		scriptLogger.info("Snapshot restore finished.");
 
 	}
 
