@@ -50,6 +50,8 @@ import org.openedit.util.strainer.FilterReader;
 import org.openedit.util.strainer.GroupFilter;
 import org.openedit.util.strainer.OrFilter;
 
+import com.stripe.model.Customer;
+
 /**
  * @author Matthew Avery, mavery@einnovation.com
  * 
@@ -1071,13 +1073,20 @@ public class UserManagerModule extends BaseMediaModule
 
 	public void findAllUsers(WebPageRequest inReq)
 	{
-		HitTracker all = getUserSearcher(inReq).getAllHits();
-		all.setHitsName("userTracker");
+		Searcher usersearcher = getUserSearcher(inReq);
+		HitTracker hits = usersearcher.getAllHits(inReq);
+		/*all.setHitsName("userTracker");
 		all.setCatalogId(getUserSearcher(inReq).getCatalogId());
 		inReq.putPageValue(all.getHitsName(), all);
+		inReq.putPageValue("hits", all);
 		inReq.putSessionValue(all.getSessionId(), all);
-		log.info(all.getHitsName() + " = " + all.size());
-		inReq.putPageValue("searcher", getUserSearcher(inReq));
+		log.info(all.getHitsName() + " = " + all.size());*/
+
+		String name = inReq.findValue("hitsname");
+		hits.setHitsName(name);
+		inReq.putPageValue(name, hits);
+		inReq.putSessionValue(hits.getSessionId(), hits);
+		inReq.putPageValue("searcher", usersearcher);
 	}
 
 	public void findUsersInGroup(WebPageRequest inReq)
