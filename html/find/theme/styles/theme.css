@@ -5369,16 +5369,41 @@ table.greytxt {
 .eventlogcontainer {
 	height: calc(100vh - 400px);
 }
-
 .eventlogcontainer {
 	font-family: "Courier New", monospace;
 	font-size: 0.85rem;
 }
-
 .eventlogcontainer .output-container {
 	height: calc(100% - 50px);
 }
+.output-container {
+	display: flex;
+ 	flex-direction: column-reverse;
+}
+.eventlogcontainer .eventlastrun
+{
+	display: inline-block;
+	padding:3px 6px;
+	
+}
+.eventlastrun.eventupdated {
+  animation: textPulse 1s cubic-bezier(0.25, 1, 0.5, 1);
+}
 
+/* Keyframe animation for the update flash */
+@keyframes textPulse {
+  0% {
+    background-color: transparent;
+  }
+  15% {
+    background-color: #94e594; 
+    color: #fdfdfd; 
+  }
+  100% {
+    background-color: transparent;
+    color: #111827; 
+  }
+}
 #viewlist {
 	min-width: 360px;
 	margin-right: 4px;
