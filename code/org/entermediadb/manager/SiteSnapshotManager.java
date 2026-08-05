@@ -85,7 +85,7 @@ public class SiteSnapshotManager extends BaseMediaModule
 
 			String logstring = String.format("restoring: %s config= %s ", site.get("rootpath"), configonly);
 			scriptLogger.info(logstring);
-			
+
 			restore(scriptLogger, mediaarchive, site, snapshot, configonly);
 			snapshot.setValue("snapshotstatus", "complete");
 		}
@@ -93,7 +93,7 @@ public class SiteSnapshotManager extends BaseMediaModule
 		{
 
 			scriptLogger.error("Could not restore " + ex.getMessage(), ex);
-			
+
 			snapshot.setValue("snapshotstatus", "error");
 		}
 		finally
@@ -222,6 +222,7 @@ public class SiteSnapshotManager extends BaseMediaModule
 		{
 			databaseIndex = nodeManager.getIndexNameFromAliasName(mediaarchive.getCatalogId().replaceAll("/", "_"));
 		}
+		scriptLogger.info("Found  " + mappings.size() + " mappings");
 		for (String it : mappings)
 		{
 			Page upload = mediaarchive.getPageManager().getPage(rootfolder + "/json/" + it + ".json");

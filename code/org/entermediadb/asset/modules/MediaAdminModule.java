@@ -510,9 +510,9 @@ public class MediaAdminModule extends BaseMediaModule
 		snaps.saveData(snapshot);
 
 		runExport(inReq);
-		//scriptLogger.info("Saving new snapshot with a status of pendingexport " + siteid);
+		// scriptLogger.info("Saving new snapshot with a status of pendingexport " + siteid);
 
-		//manager.runSharedPathEvent("/system/events/snapshot/exportsite.html");
+		// manager.runSharedPathEvent("/system/events/snapshot/exportsite.html");
 
 	}
 
@@ -526,7 +526,7 @@ public class MediaAdminModule extends BaseMediaModule
 		try
 		{
 			String catalogid = site.get("catalogid");
-			
+
 			snapshotmanager.export(scriptLogger, catalogid, snapshot);
 			snapshot.setValue("snapshotstatus", "exported");
 		}
@@ -590,8 +590,7 @@ public class MediaAdminModule extends BaseMediaModule
 	public void deploySite(WebPageRequest inReq) throws Exception
 	{
 		// make us a catalog id
-		// Download a snapshot? no use snapshots by URL to do that. Show a URL and allow
-		// paste of URL
+
 		String sitename = inReq.getRequestParameter("sitename");
 
 		Searcher sites = getSearcherManager().getSearcher("system", "site");
@@ -619,60 +618,63 @@ public class MediaAdminModule extends BaseMediaModule
 		site.setValue("catalogid", catalogid);
 		site.setName(sitename);
 		sites.saveData(site);
-		inReq.setRequestParameter("siteid", site.getId());
+		inReq.setRequestParameter("id", site.getId());
+		inReq.putPageValue("site", site);
 
 		Page cat = getPageManager().getPage("/" + siteid + "/_site.xconf");
 		if (!cat.exists())
 		{
-			PageSettings settings = cat.getPageSettings();
-			settings.setProperty("catalogid", catalogid);
-			String fallbackdirectory = "/eminstitute";
-			settings.setProperty("fallbackdirectory", fallbackdirectory);
-			settings.setProperty("siteid", siteid);
-			getPageManager().getPageSettingsManager().saveSetting(settings);
+			Page source = getPageManager().getPage("/system/templates/webapp/site");
+			String path = "/" + siteid;
+			Page dest = getPageManager().getPage(path);
+			getPageManager().copyPage(source, dest);
+
+			// loop dest path looking for _site.xconf and update the settings
+			List children = getPageManager().getChildrenPaths(path, false);
+			initSiteSettings(siteid, catalogid, children);
 			getPageManager().clearCache();
+
 		}
-		// String frontendid = inReq.getRequestParameter("frontendid");
-		// Data frontend= getSearcherManager().getData("system","frontend",frontendid);
-		// String url = frontend.get("initurl");
-		// if( url != null)
-		// {
-		// inReq.setRequestParameter("url", url);
-		// Data snapshot = downloadSnapshot(inReq);
-		// Page root = getPageManager().getPage(rootpath);
-		// if( root.exists() )
-		// {
-		// //dont mess with it
-		// snapshot.setValue("snapshotstatus","downloaded");
-		// }
-		// else
-		// {
-		// snapshot.setValue("snapshotstatus","pendingrestore");
-		// }
-		// Searcher snaps = getSearcherManager().getSearcher("system", "sitesnapshot");
-		// snaps.saveData(snapshot);
-		// PathEventManager manager =
-		// (PathEventManager)getModuleManager().getBean("system", "pathEventManager");
-		// manager.runSharedPathEvent("/system/events/snapshot/restoresite.html");
-		// inReq.putPageValue("snapshot", snapshot);
-		// }
+	}
 
-		// Searcher snaps = getSearcherManager().getSearcher("system", "sitesnapshot");
-		//
-		// Data snapshot = snaps.createNewData();
-		// String folder = DateStorageUtil.getStorageUtil().formatDateObj(new Date(),
-		// "yyyy-MM-dd-HH-mm-ss");
-		// snapshot.setValue("folder", folder);
-		// snapshot.setName(folder + " site added"); //Init
-		// snapshot.setValue("site", site.getId());
-		// snapshot.setValue("snapshotstatus","pendingrestore");
-		// snaps.saveData(snapshot);
-		//
-		// PathEventManager manager =
-		// (PathEventManager)getModuleManager().getBean("system", "pathEventManager");
-		// manager.runSharedPathEvent("/system/events/snapshot/restoresite.html");
-		// inReq.putPageValue("snapshot", snapshot);
+	private void initSiteSettings(String siteid, String catalogid, List children)
+	{
+		for (Iterator iterator = children.iterator(); iterator.hasNext();)
+		{
+			String childpath = (String) iterator.next();
 
+			if (childpath.endsWith("_site.xconf"))
+			{
+				Page child = getPageManager().getPage(childpath);
+				PageSettings settings = child.getPageSettings();
+				settings.setProperty("siteid", siteid);
+				settings.setProperty("catalogid", catalogid);
+				if (settings.getProperty("applicationid") != null)
+				{
+					PageProperty appid = settings.getProperty("applicationid");
+					if (appid.getValue() != null)
+					{
+						String applicationid = appid.getValue();
+						String appname = applicationid.substring(applicationid.indexOf("/") + 1);
+						if (appname != null)
+						{
+							settings.setProperty("applicationid", siteid + "/" + appname);
+						}
+					}
+
+				}
+				getPageManager().getPageSettingsManager().saveSetting(settings);
+			}
+			else
+			{
+				// if childpath is a folder
+				List children2 = getPageManager().getChildrenPaths(childpath, false);
+				if (children2.size() > 0)
+				{
+					initSiteSettings(siteid, catalogid, children2);
+				}
+			}
+		}
 	}
 
 	public void zipSnapshot(WebPageRequest inReq) throws Exception
@@ -707,6 +709,50 @@ public class MediaAdminModule extends BaseMediaModule
 		path = PathUtilities.extractDirectoryPath(path);
 		inReq.setRequestParameter("stripfolders", path);
 
+	}
+
+	public Data downloadSiteSnapshot(WebPageRequest inReq) throws Exception
+	{
+		String zip = inReq.getRequestParameter("url");
+		String folder = PathUtilities.extractFileName(zip);
+
+		Page temp = getPageManager().getPage("/WEB-INF/temp/" + folder);
+		String foldername = temp.getPageName() + "D" + DateStorageUtil.getStorageUtil().formatDateObj(new Date(), "HH-mm-ss");
+
+		getPageManager().removePage(temp);
+		File outputFile = new File(temp.getContentItem().getAbsolutePath());
+		log.info("downloading " + zip);
+		new Downloader().download(zip, outputFile);
+		log.info("downloading finished " + zip);
+
+		// Unzip it to temp folder
+		ZipUtil util = new ZipUtil();
+		temp = getPageManager().getPage("/WEB-INF/temp/" + folder + "unzip/");
+		getPageManager().removePage(temp);
+		util.unzip(outputFile.getAbsolutePath(), temp.getContentItem().getAbsolutePath());
+
+		String siteid = inReq.getRequestParameter("siteid");
+		Data site = getSearcherManager().getData("system", "site", siteid);
+
+		Page source = getPageManager().getPage("/WEB-INF/temp/" + folder + "unzip/" + PathUtilities.extractPageName(folder));
+
+		String path = "/WEB-INF/data/exports/" + site.get("catalogid") + "/" + foldername;
+		Page dest = getPageManager().getPage(path);
+		getPageManager().movePage(source, dest);
+		Searcher snaps = getSearcherManager().getSearcher("system", "sitesnapshot");
+		Data snapshot = snaps.createNewData();
+		snapshot.setValue("folder", foldername);
+		snapshot.setName(foldername);
+		snapshot.setValue("site", siteid);
+		snapshot.setValue("snapshotstatus", "downloaded");
+		snaps.saveData(snapshot);
+
+		// PathEvent event =
+		// manager.getPathEvent("/system/events/data/exportsite.html");
+		inReq.putPageValue("site", site);
+
+		inReq.putPageValue("snapshot", snapshot);
+		return snapshot;
 	}
 
 	public Data downloadSnapshot(WebPageRequest inReq) throws Exception
