@@ -532,7 +532,14 @@ public class MediaAdminModule extends BaseMediaModule
 		}
 		catch (Exception ex)
 		{
-			scriptLogger.error("Error exporting snapshot: " + snapshot.getId(), ex);
+			if (scriptLogger != null)
+			{
+				scriptLogger.error("Error exporting snapshot: " + snapshot.getId(), ex);
+			}
+			else
+			{
+				log.error("Error exporting snapshot: " + snapshot.getId(), ex);
+			}
 			snapshot.setValue("snapshotstatus", "error");
 		}
 		// PathEvent event =

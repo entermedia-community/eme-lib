@@ -172,7 +172,7 @@ public class SiteSnapshotManager extends BaseMediaModule
 
 		if (!configonly)
 		{
-			if (jsonfiles.size() < 300)
+			if (jsonfiles.size() < 10)
 			{
 				throw new OpenEditException("Not enough json files found in " + rootfolder + "/json/ only found " + jsonfiles.size());
 
@@ -209,14 +209,17 @@ public class SiteSnapshotManager extends BaseMediaModule
 			}
 		}
 
+		// Skipting tables
 		orderedJsontypes.addAll(childrennames);
 		orderedJsontypes.remove("propertydetail");
 		orderedJsontypes.remove("lock");
+		orderedJsontypes.remove("modulesearch");
 		if (configonly)
 		{
 			orderedJsontypes.remove("user");
 			orderedJsontypes.remove("group");
 		}
+
 		String databaseIndex = tempindex;
 		if (configonly)
 		{
