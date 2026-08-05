@@ -38,6 +38,7 @@ import org.openedit.HttpException;
 import org.openedit.MultiValued;
 import org.openedit.OpenEditException;
 import org.openedit.WebPageRequest;
+import org.openedit.cache.CacheManager;
 import org.openedit.data.PropertyDetail;
 import org.openedit.data.QueryBuilder;
 import org.openedit.data.Searcher;
@@ -165,10 +166,20 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 	public ChatMessageContext loadChatContext(String applicationId, String inChannelId)
 	{
 		MediaArchive archive = getMediaArchive();
-		Data channel = archive.getCachedData("channel", inChannelId);
-		Collection<MultiValued> messages = archive.query("chatterbox").exact("channel", channel.getId()).sort("dateUp").search();
-		ChatMessageContext chatMessageContext = new ChatMessageContext();
-		chatMessageContext.setChannel(channel);
+		CacheManager cache = archive.getCacheManager();
+		ChatMessageContext chatMessageContext = (ChatMessageContext) cache.get("chatMessageContext", inChannelId);
+		if (chatMessageContext == null)
+		{
+			chatMessageContext = new ChatMessageContext(loadContext(applicationId, inChannelId));
+			cache.put("chatMessageContext", inChannelId, chatMessageContext);
+		}
+		if (chatMessageContext.getChannel() == null)
+		{
+			Data channel = getMediaArchive().getCachedData("channel", inChannelId);
+			chatMessageContext.setChannel(channel);
+		}
+		Collection<MultiValued> messages = archive.query("chatterbox").exact("channel", inChannelId).sort("dateUp").search();
+
 		if (messages.isEmpty())
 		{
 			return chatMessageContext;
