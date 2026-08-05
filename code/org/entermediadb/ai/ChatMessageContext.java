@@ -2,6 +2,7 @@ package org.entermediadb.ai;
 
 import org.entermediadb.ai.llm.BaseAgentContext;
 import org.openedit.MultiValued;
+import org.json.simple.JSONObject;
 
 public class ChatMessageContext extends BaseAgentContext
 {
@@ -63,4 +64,20 @@ public class ChatMessageContext extends BaseAgentContext
 	// {
 	// return (String) getContextValue("lastcomponentid");
 	// }
+
+	public void setMessageAgentContext(String inKey, Object inValue)
+	{
+		if (!(inValue instanceof String) && !(inValue instanceof Number) && !(inValue instanceof Boolean) && !(inValue instanceof JSONObject) && inValue != null)
+		{
+			log("Value cannot be saved");
+			return;
+		}
+
+		getAgentMessage().setJSONValue("agentcontextvalues", inKey, inValue);
+	}
+
+	public Object getMessageAgentContext(String inKey)
+	{
+		return getAgentMessage().getJSONValue("agentcontextvalues", inKey);
+	}
 }

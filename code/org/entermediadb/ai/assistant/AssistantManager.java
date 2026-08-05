@@ -38,7 +38,6 @@ import org.openedit.HttpException;
 import org.openedit.MultiValued;
 import org.openedit.OpenEditException;
 import org.openedit.WebPageRequest;
-import org.openedit.cache.CacheManager;
 import org.openedit.data.PropertyDetail;
 import org.openedit.data.QueryBuilder;
 import org.openedit.data.Searcher;
@@ -166,13 +165,29 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 	public ChatMessageContext loadChatContext(String applicationId, String inChannelId)
 	{
 		MediaArchive archive = getMediaArchive();
-		CacheManager cache = archive.getCacheManager();
-		ChatMessageContext chatMessageContext = (ChatMessageContext) cache.get("chatMessageContext", inChannelId);
-		if (chatMessageContext == null)
+		Data channel = archive.getCachedData("channel", inChannelId);
+		Collection<MultiValued> messages = archive.query("chatterbox").exact("channel", channel.getId()).sort("dateUp").search();
+		ChatMessageContext chatMessageContext = new ChatMessageContext();
+		chatMessageContext.setChannel(channel);
+		if (messages.isEmpty())
 		{
-			chatMessageContext = new ChatMessageContext(loadContext(applicationId, inChannelId));
-			cache.put("chatMessageContext", inChannelId, chatMessageContext);
+			return chatMessageContext;
 		}
+
+		for (Iterator<MultiValued> iterator = messages.iterator(); iterator.hasNext();)
+		{
+			MultiValued message = iterator.next();
+			JSONObject agentcontextvalues = message.getJSONValue("agentcontextvalues");
+			if (agentcontextvalues != null)
+			{
+				for (Object key : agentcontextvalues.keySet())
+				{
+					Object value = agentcontextvalues.get(key);
+					chatMessageContext.putContextValue((String) key, value);
+				}
+			}
+		}
+
 		return chatMessageContext;
 	}
 

@@ -161,9 +161,9 @@ public class AgentModule extends BaseMediaModule
 		// Get the contenxt and update it first
 		String channelid = inReq.getRequestParameter("channel");
 		String applicationid = inReq.findValue("applicationid");
-		ChatMessageContext agentContext = assistantManager.loadChatContext(applicationid, channelid);
+		ChatMessageContext chatAgentContext = assistantManager.loadChatContext(applicationid, channelid);
 		// Refresh drop down area?
-		inReq.putPageValue("agentcontext", agentContext);
+		inReq.putPageValue("agentcontext", chatAgentContext);
 
 		boolean firesystemmessage = false;
 
@@ -172,28 +172,28 @@ public class AgentModule extends BaseMediaModule
 		String currentscenarioid = inReq.getRequestParameter("currentscenario");
 		if (currentscenarioid == null)
 		{
-			if (agentContext.getCurrentScenario() != null)
+			if (chatAgentContext.getCurrentScenario() != null)
 			{
-				currentscenarioid = agentContext.getCurrentScenario().getId();
+				currentscenarioid = chatAgentContext.getCurrentScenario().getId();
 			}
 			else
 			{
 				currentscenarioid = "chat_detection";
 			}
 		}
-		if (agentContext.getCurrentScenario() == null || currentscenarioid == null || !currentscenarioid.equals(agentContext.getCurrentScenario().getId()))
+		if (chatAgentContext.getCurrentScenario() == null || currentscenarioid == null || !currentscenarioid.equals(chatAgentContext.getCurrentScenario().getId()))
 		{
 			// Scenario changed. Clear the context and start over.
 			RunningScenario running = (RunningScenario) getMediaArchive(inReq).getBean("runningscenario", false);
 			running.setId(currentscenarioid);
-			agentContext.setCurrentScenario(running);
-			getMediaArchive(inReq).saveData("agentcontext", agentContext);
+			chatAgentContext.setCurrentScenario(running);
+			getMediaArchive(inReq).saveData("agentcontext", chatAgentContext);
 
 			firesystemmessage = true;
 
 			if (functionname == null)
 			{
-				functionname = agentContext.getCurrentScenario().getId() + "_welcome";
+				functionname = chatAgentContext.getCurrentScenario().getId() + "_welcome";
 
 			}
 
@@ -218,14 +218,14 @@ public class AgentModule extends BaseMediaModule
 				String value = inReq.getRequestParameter(key);
 				if (value != null)
 				{
-					agentContext.putContextValue(key.substring("context_".length()), value);
+					chatAgentContext.putContextValue(key.substring("context_".length()), value);
 				}
 			}
 		}
-		getMediaArchive(inReq).saveData("agentcontext", agentContext);
+		getMediaArchive(inReq).saveData("agentcontext", chatAgentContext);
 		// Now that Context is set. Let the chat respond
 
-		assistantManager.sendSystemMessage(agentContext, inReq.getUserName(), null, functionname);
+		assistantManager.sendSystemMessage(chatAgentContext, inReq.getUserName(), null, functionname);
 	}
 
 	public AgentContext loadAgentContext(WebPageRequest inReq) throws Exception
