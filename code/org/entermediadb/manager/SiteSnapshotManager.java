@@ -569,6 +569,7 @@ public class SiteSnapshotManager extends BaseMediaModule
 
 		boolean configonly = Boolean.parseBoolean(inSnap.get("configonly"));
 		exportDatabase(scriptLogger, mediaarchive, searchtypes, rootfolder, configonly);
+
 		Page fields = mediaarchive.getPageManager().getPage("/WEB-INF/data/" + catalogid + "/fields/");
 		if (fields.exists())
 		{
@@ -671,7 +672,7 @@ public class SiteSnapshotManager extends BaseMediaModule
 					IOUtils.write(hit.toJsonString(), finalZip, "UTF-8");
 					if (size != count)
 					{
-						IOUtils.write(",", finalZip, "UTF-8");
+						IOUtils.write(",\n", finalZip, "UTF-8");
 					}
 				}
 				IOUtils.write("]}", finalZip, "UTF-8");
