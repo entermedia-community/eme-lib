@@ -565,7 +565,14 @@ public class SiteSnapshotManager extends BaseMediaModule
 		String rootfolder = "/WEB-INF/data/exports/" + mediaarchive.getCatalogId() + "/" + inSnap.get("folder");
 		String catalogid = mediaarchive.getCatalogId();
 
-		scriptLogger.info("Exporting " + rootfolder);
+		if (scriptLogger != null)
+		{
+			scriptLogger.info("Exporting " + searchtypes.size() + " tables");
+		}
+		else
+		{
+			log.info("Exporting " + searchtypes.size() + " tables");
+		}
 
 		boolean configonly = Boolean.parseBoolean(inSnap.get("configonly"));
 		exportDatabase(scriptLogger, mediaarchive, searchtypes, rootfolder, configonly);
@@ -617,6 +624,11 @@ public class SiteSnapshotManager extends BaseMediaModule
 
 		String cat = mediaarchive.getCatalogId().replace("/", "_");
 		String indexid = nodeManager.getIndexNameFromAliasName(cat);
+
+		if (scriptLogger == null)
+		{
+			scriptLogger = new ScriptLogger();
+		}
 
 		ImmutableOpenMap<String, ImmutableOpenMap<String, MappingMetaData>> indexToMappings = null;
 		if (indexid != null)
