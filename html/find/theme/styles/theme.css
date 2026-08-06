@@ -3,7 +3,7 @@
 	--html-thumb: #aaa;
 	--default-text: #333;
 	--muted-text: #888;
-	--secondary-text: #616165;
+	--secondary-text: #666;
 	--text-link-color: #3cb371;
 	--dark-bg: #252525;
 	--light-bg: #fff;
@@ -1304,7 +1304,7 @@ a.categorypathlink:hover,
 
 .sidebar-list a {
 	display: block;
-	color: var(--default-text);
+	color: var(--secondary-text);
 	font-weight: bold;
 	padding: 4px 8px;
 }
@@ -1335,12 +1335,15 @@ a.categorypathlink:hover,
 }
 
 .sidebar-sublist li a {
-	padding: 4px 8px 4px 26px;
+	padding: 4px 8px 4px 42px;
 	font-weight: normal;
 	background: var(--secondary-bg);
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
+}
+.sidebar-sublist > li.current > a {
+	padding: 4px 8px 4px 28px;
 }
 .sidebar-sublist > li.current > a::before {
 	content: "\F231";
@@ -5153,9 +5156,9 @@ label.error {
 }
 
 .settings-title {
-	font-size: 1.5rem;
-	margin: 0;
-	padding: 0 8px;
+	font-size: 1.6rem;
+	margin: 0 0 1rem 0;
+	padding: 0;
 }
 
 .collectionmodule {
@@ -5307,9 +5310,6 @@ table.greytxt {
 	margin-bottom: 24px;
 }
 
-.settingslayout h3 {
-	margin: 0.5rem 0 0.75rem;
-}
 .detaileditor-2colums {
 	display: flex;
 	flex-wrap: wrap;
