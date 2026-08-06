@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <page>
-  <property name="fallbackdirectory">/${applicationid}/views/settings/modules/default</property>
+  <property name="fallbackdirectory">/community/default/views/settings/modules/asset</property>
   <property name="module">asset</property>
 </page>
