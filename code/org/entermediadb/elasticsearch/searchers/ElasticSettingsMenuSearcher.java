@@ -67,7 +67,7 @@ public class ElasticSettingsMenuSearcher extends ElasticListSearcher
 		}
 		// filter by moduleid
 
-		Collection alltemplaterows = getSearcherManager().getList(getCatalogId(), "settingsmenumoduletemplate");
+		Collection alltemplaterows = getSearcherManager().getList(getCatalogId(), "menumoduletemplate");
 		HitTracker combinedviews = mergeResults(actualviews, moduleid.getValue(), alltemplaterows);
 
 		List<MultiValued> finallist = new ArrayList<MultiValued>();
@@ -89,7 +89,7 @@ public class ElasticSettingsMenuSearcher extends ElasticListSearcher
 		for (Iterator iterator = combinedviews.iterator(); iterator.hasNext();)
 		{
 			Data d = (Data) iterator.next();
-			// Make sure these aren't SearchHitData
+			// Make sure that matches what they asked for
 			boolean skip = false;
 			for (Map.Entry<String, String> entry : filters.entrySet())
 			{
@@ -99,7 +99,6 @@ public class ElasticSettingsMenuSearcher extends ElasticListSearcher
 				if (fieldvalue == null || !value.equals(fieldvalue))
 				{
 					skip = true;
-					log.info(d.getProperties());
 					break;
 				}
 			}
@@ -157,7 +156,7 @@ public class ElasticSettingsMenuSearcher extends ElasticListSearcher
 		// Could be a virtual record
 		if (data == null) // TODO: Cache lookup?
 		{
-			HitTracker hits = getSearcherManager().query(getCatalogId(), "modulemenutemplate").all().cachedSearch();
+			HitTracker hits = getSearcherManager().query(getCatalogId(), "menumoduletemplate").all().cachedSearch();
 			for (Iterator iterator = hits.iterator(); iterator.hasNext();)
 			{
 				Data hit = (Data) iterator.next();

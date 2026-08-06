@@ -1335,7 +1335,7 @@ a.categorypathlink:hover,
 }
 
 .sidebar-sublist li a {
-	padding: 4px 8px 4px 42px;
+	padding: 4px 8px 4px 44px;
 	font-weight: normal;
 	background: var(--secondary-bg);
 	white-space: nowrap;
@@ -1346,8 +1346,8 @@ a.categorypathlink:hover,
 	padding: 4px 8px 4px 28px;
 }
 .sidebar-sublist > li.current > a::before {
-	content: "\F231";
-	margin-right: 2px;
+	content: "\F138";
+	margin-right: 4px;
 	font-family: bootstrap-icons !important;
 	vertical-align: -0.125em;
 	line-height: 1;

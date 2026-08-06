@@ -4,9 +4,7 @@
 package org.entermediadb.modules.admin.filemanager;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.entermediadb.asset.upload.FileUpload;
@@ -17,6 +15,7 @@ import org.openedit.WebPageRequest;
 import org.openedit.modules.BaseModule;
 import org.openedit.page.Page;
 import org.openedit.page.manage.PageManager;
+import org.openedit.util.Exec;
 import org.openedit.util.PathUtilities;
 import org.openedit.util.URLUtilities;
 
@@ -466,12 +465,10 @@ public class FileManagerModule extends BaseModule
 		if (editorpath == null)
 		{
 			// home/shanti/eclipse/java-2024-09/eclipse/eclipse --launcher.openFile "$@"
-
-			editorpath = System.getProperty("user.home") + "/bin/localopencommand"; // link up
-																					// /home/ian/eclipse/jee-2024-06/eclipse/eclipse
+			editorpath = getPageManager().getPage("/WEB-INF/bin/localopencommand").getContentItem().getAbsolutePath();
 		}
-		Collection params = new ArrayList();
-		params.add(editorpath);
+		List params = new ArrayList();
+
 		// String editorparams = inReq.findValue("editorparams");
 		// if( editorparams == null)
 		// {
@@ -482,8 +479,10 @@ public class FileManagerModule extends BaseModule
 		// params.add(editorparams);
 		// }
 		params.add(absolutepath);
+		Exec exec = (Exec) getModuleManager().getBean("exec");
+		exec.runExec("localopencommand", params);
 
-		Runtime.getRuntime().exec((String[]) params.toArray(new String[params.size()]));
+		// Runtime.getRuntime().exec((String[]) params.toArray(new String[params.size()]));
 	}
 
 	public void loadVue(WebPageRequest inReq) throws Exception
