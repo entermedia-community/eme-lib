@@ -1,6 +1,8 @@
 package org.entermediadb.asset.modules;
 
 import java.io.File;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -8,13 +10,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.lucene.search.SearcherManager;
 import org.entermediadb.asset.Category;
 import org.entermediadb.asset.MediaArchive;
-import org.entermediadb.asset.upload.FileUpload;
 import org.entermediadb.asset.upload.UploadRequest;
 import org.entermediadb.elasticsearch.ElasticNodeManager;
 import org.entermediadb.events.PathEventManager;
@@ -671,6 +670,23 @@ public class MediaAdminModule extends BaseMediaModule
 
 				}
 				getPageManager().getPageSettingsManager().saveSetting(settings);
+			}
+			else if (childpath.endsWith("xml"))
+			{
+				try
+				{
+					// open the file and replace the word "site" with siteid variable
+					Page child = getPageManager().getPage(childpath);
+					String content = child.getContent();
+					content = content.replace("site", siteid);
+					getPageManager().saveContent(child, null, content, "Saved");
+
+				}
+				catch (Exception ex)
+				{
+					log.error("Error updating xml file: " + childpath, ex);
+				}
+
 			}
 			else
 			{
