@@ -178,12 +178,14 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 			Data channel = getMediaArchive().getCachedData("channel", inChannelId);
 			chatMessageContext.setChannel(channel);
 		}
-		Collection<MultiValued> messages = archive.query("chatterbox").exact("channel", inChannelId).sort("dateUp").search();
+		Collection<MultiValued> messages = archive.query("chatterbox").exact("channel", inChannelId).sort("dateDown").search();
 
 		if (messages.isEmpty())
 		{
 			return chatMessageContext;
 		}
+
+		Map<String, Boolean> seen = new HashMap<>();
 
 		for (Iterator<MultiValued> iterator = messages.iterator(); iterator.hasNext();)
 		{
@@ -193,8 +195,13 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 			{
 				for (Object key : agentcontextvalues.keySet())
 				{
+					if (seen.containsKey(key))
+					{
+						continue;
+					}
 					Object value = agentcontextvalues.get(key);
 					chatMessageContext.putContextValue((String) key, value);
+					seen.put((String) key, true);
 				}
 			}
 		}
