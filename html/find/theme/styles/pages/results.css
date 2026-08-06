@@ -5692,3 +5692,13 @@ img.smallthumb,
 	margin: 0;
 	color: #ddd;
 }
+
+.col-resizer-cell
+{
+	display: block; min-width: 80px; position: relative;
+}
+
+.col-resizer-handle
+{
+	position: absolute; right: -16px; top: -10px; width: 20px; height: 40px; cursor: col-resize; z-index: 3; background: transparent;
+}
