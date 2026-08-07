@@ -37,9 +37,8 @@ public class AdaptiveTutorialWelcomeSkill extends AdaptiveTutorialBaseSkill
 		MultiValued agentmessage = messageContext.getAgentMessage();
 		agentmessage.setValue("chatmessagestatus", "completed");
 		agentmessage.setValue("messagetype", "message");
-		Map<String, String> broadcastpayload = new HashMap<String, String>();
-		broadcastpayload.put("messageid", tutorialid + "_welcome");
-		messageContext.setValue("broadcastpayload", broadcastpayload);
+
+		messageContext.setMessageAgentContext("messageid", tutorialid + "_welcome");
 
 		AgentEnabled skillEnabled = messageContext.getCurrentAgentEnable();
 		messageContext.fireStatusComplete(skillEnabled);

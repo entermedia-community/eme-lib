@@ -173,12 +173,20 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 			chatMessageContext = new ChatMessageContext(loadContext(applicationId, inChannelId));
 			cache.put("chatMessageContext", inChannelId, chatMessageContext);
 		}
+		else
+		{
+			return chatMessageContext;
+		}
+
 		if (chatMessageContext.getChannel() == null)
 		{
 			Data channel = getMediaArchive().getCachedData("channel", inChannelId);
 			chatMessageContext.setChannel(channel);
 		}
-		Collection<MultiValued> messages = archive.query("chatterbox").exact("channel", inChannelId).sort("dateDown").search();
+
+		HitTracker<MultiValued> messages = archive.query("chatterbox").exact("channel", inChannelId).exists("agentcontextvalues").sort("dateDown").search();
+
+		messages.enableBulkOperations();
 
 		if (messages.isEmpty())
 		{
@@ -320,11 +328,11 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 				Integer playbacksection = (Integer) inChannel.getValue("playbacksection");
 				if (playbacksection != null)
 				{
-					chatMessageContext.putContextValue("playbacksection", playbacksection);
+					chatMessageContext.setMessageAgentContext("playbacksection", playbacksection);
 				}
 				else
 				{
-					chatMessageContext.putContextValue("playbacksection", 0);
+					chatMessageContext.setMessageAgentContext("playbacksection", 0);
 				}
 			}
 			else
@@ -736,22 +744,26 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 		return manager;
 	}
 
-	public void sendSystemMessage(ChatMessageContext inContext, String inUser, String message, String functionname)
+	public void sendSystemMessage(ChatMessageContext inContext, String inUser, String functionname)
 	{
 		MediaArchive archive = getMediaArchive();
 
 		// currentchannel set next function
 		// Save a message
-		Data chat = archive.getSearcher("chatterbox").createNewData();
-		chat.setValue("messagetype", "system");
-		chat.setValue("user", inUser);
-		chat.setValue("date", new Date());
-		chat.setValue("functionname", functionname);
-		chat.setValue("chatmessagestatus", "received");
-		chat.setValue("channel", inContext.getChannel().getId());
-		chat.setValue("message", message);
 
-		archive.saveData("chatterbox", chat);
+		Data inChatMessage = inContext.getAgentMessage();
+		if (inChatMessage == null)
+		{
+			throw new OpenEditException("No agent message to send");
+		}
+		inChatMessage.setValue("messagetype", "system");
+		inChatMessage.setValue("user", inUser);
+		inChatMessage.setValue("date", new Date());
+		inChatMessage.setValue("functionname", functionname);
+		inChatMessage.setValue("chatmessagestatus", "received");
+		inChatMessage.setValue("channel", inContext.getChannel().getId());
+
+		archive.saveData("chatterbox", inChatMessage);
 		// inReq.putPageValue("chat", chat);
 
 		// Fire monitor
@@ -1131,29 +1143,18 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 			{
 				messageplain = "New message";
 			}
-			functionMessageUpdate.put("message", updatedMessage);
+			functionMessageUpdate.put("agentcontextvalues", agentmessage.get("agentcontextvalues"));
 			functionMessageUpdate.put("messageplain", messageplain);
 			functionMessageUpdate.put("nextfunctionname", nextFunctionName);
 			functionMessageUpdate.put("functionname", inAgentEnabled.getEnabledId());
 			functionMessageUpdate.put("date", DateStorageUtil.getStorageUtil().getJsonFormat().format(new Date()));
 
-			Map<String, String> additionalBroadcastPayload = (Map) chatMessageContext.getValue("broadcastpayload");
-			if (additionalBroadcastPayload != null)
-			{
-				for (String key : additionalBroadcastPayload.keySet())
-				{
-					functionMessageUpdate.put(key, additionalBroadcastPayload.get(key));
-				}
-			}
-
 			ChatServer server = (ChatServer) getMediaArchive().getBean("chatServer");
 
 			JSONObject jsonMessage = new JSONObject(functionMessageUpdate);
-
-			log.info("Broadcasting: " + jsonMessage.toJSONString());
-
 			server.broadcastMessage(jsonMessage);
 
+			log.info("Broadcasted: " + jsonMessage.toJSONString());
 		}
 		catch (Exception ex)
 		{

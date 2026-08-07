@@ -18,7 +18,7 @@ public class TutorMessageContext extends ChatMessageContext
 
 	public String getTutorialId()
 	{
-		return (String) getAgentMessage().getJSONValue("agentcontextvalues", "tutorialid");
+		return (String) getMessageAgentContext("tutorialid");
 	}
 
 	public void setLastSectionId(String inSectionId)
@@ -28,7 +28,7 @@ public class TutorMessageContext extends ChatMessageContext
 
 	public String getLastSectionId()
 	{
-		return (String) getAgentMessage().getJSONValue("agentcontextvalues", "lastsectionid");
+		return (String) getMessageAgentContext("lastsectionid");
 	}
 
 	public void setLastComponentId(String inComponentId)
@@ -38,6 +38,6 @@ public class TutorMessageContext extends ChatMessageContext
 
 	public String getLastComponentId()
 	{
-		return (String) getAgentMessage().getJSONValue("agentcontextvalues", "lastcomponentid");
+		return (String) getMessageAgentContext("lastcomponentid");
 	}
 }

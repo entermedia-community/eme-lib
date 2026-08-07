@@ -73,6 +73,7 @@ public class ChatMessageContext extends BaseAgentContext
 			return;
 		}
 
+		putContextValue(inKey, inValue);
 		getAgentMessage().setJSONValue("agentcontextvalues", inKey, inValue);
 	}
 

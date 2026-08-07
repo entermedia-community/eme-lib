@@ -132,17 +132,14 @@ public class AdaptiveTutorialProgressSkill extends AdaptiveTutorialBaseSkill
 		agentmessage.setValue("id", tutorialid + "_progressupdate");
 		agentmessage.setValue("messagetype", "system");
 
-		Map<String, String> broadcastpayload = new HashMap<String, String>();
-		broadcastpayload.put("messageid", tutorialid + "_progressupdate");
-		broadcastpayload.put("messagetype", "progressupdate");
-		broadcastpayload.put("tutorialid", tutorialid);
-		broadcastpayload.put("beginnerprogress", String.format("%.4f", average_beginnerpoints));
-		broadcastpayload.put("competentprogress", String.format("%.4f", average_competentpoints));
-		broadcastpayload.put("expertprogress", String.format("%.4f", average_expertpoints));
+		messageContext.setMessageAgentContext("messageid", tutorialid + "_progressupdate");
+		messageContext.setMessageAgentContext("messagetype", "progressupdate");
+		messageContext.setMessageAgentContext("tutorialid", tutorialid);
+		messageContext.setMessageAgentContext("beginnerprogress", String.format("%.4f", average_beginnerpoints));
+		messageContext.setMessageAgentContext("competentprogress", String.format("%.4f", average_competentpoints));
+		messageContext.setMessageAgentContext("expertprogress", String.format("%.4f", average_expertpoints));
 
 		agentmessage.setValue("message", "Progress updated for tutorial " + tutorialid);
-
-		messageContext.setValue("broadcastpayload", broadcastpayload);
 
 		AgentEnabled skillEnabled = messageContext.getCurrentAgentEnable();
 		messageContext.fireStatusComplete(skillEnabled);

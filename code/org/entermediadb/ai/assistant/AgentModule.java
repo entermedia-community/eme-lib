@@ -156,7 +156,9 @@ public class AgentModule extends BaseMediaModule
 
 	public void sendWelcomeIfNeeded(WebPageRequest inReq) throws Exception
 	{
-		AssistantManager assistantManager = (AssistantManager) getMediaArchive(inReq).getBean("assistantManager");
+		MediaArchive mediaArchive = getMediaArchive(inReq);
+
+		AssistantManager assistantManager = (AssistantManager) mediaArchive.getBean("assistantManager");
 
 		// Get the contenxt and update it first
 		String channelid = inReq.getRequestParameter("channel");
@@ -184,10 +186,10 @@ public class AgentModule extends BaseMediaModule
 		if (chatAgentContext.getCurrentScenario() == null || currentscenarioid == null || !currentscenarioid.equals(chatAgentContext.getCurrentScenario().getId()))
 		{
 			// Scenario changed. Clear the context and start over.
-			RunningScenario running = (RunningScenario) getMediaArchive(inReq).getBean("runningscenario", false);
+			RunningScenario running = (RunningScenario) mediaArchive.getBean("runningscenario", false);
 			running.setId(currentscenarioid);
 			chatAgentContext.setCurrentScenario(running);
-			getMediaArchive(inReq).saveData("agentcontext", chatAgentContext);
+			mediaArchive.saveData("agentcontext", chatAgentContext);
 
 			firesystemmessage = true;
 
@@ -209,6 +211,13 @@ public class AgentModule extends BaseMediaModule
 			return;
 		}
 
+		MultiValued agentMessage = chatAgentContext.getAgentMessage();
+		if (agentMessage == null)
+		{
+			agentMessage = (MultiValued) mediaArchive.getSearcher("chatterbox").createNewData();
+			chatAgentContext.setAgentMessage(agentMessage);
+		}
+
 		Collection<String> params = inReq.getParameterMap().keySet();
 		for (Iterator iterator = params.iterator(); iterator.hasNext();)
 		{
@@ -218,14 +227,14 @@ public class AgentModule extends BaseMediaModule
 				String value = inReq.getRequestParameter(key);
 				if (value != null)
 				{
-					chatAgentContext.putContextValue(key.substring("context_".length()), value);
+					String keyName = key.substring("context_".length());
+					chatAgentContext.setMessageAgentContext(keyName, value);
+
 				}
 			}
 		}
-		getMediaArchive(inReq).saveData("agentcontext", chatAgentContext);
-		// Now that Context is set. Let the chat respond
-
-		assistantManager.sendSystemMessage(chatAgentContext, inReq.getUserName(), null, functionname);
+		mediaArchive.saveData("agentcontext", chatAgentContext);
+		assistantManager.sendSystemMessage(chatAgentContext, inReq.getUserName(), functionname);
 	}
 
 	public AgentContext loadAgentContext(WebPageRequest inReq) throws Exception

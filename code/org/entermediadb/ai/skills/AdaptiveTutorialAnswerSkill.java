@@ -65,9 +65,9 @@ public class AdaptiveTutorialAnswerSkill extends AdaptiveTutorialBaseSkill
 
 		searcher.saveData(answer);
 
-		messageContext.putContextValue("iscorrect", iscorrect);
-		messageContext.putContextValue("correctoptiontext", question.get(question.get("correctoption")));
-		messageContext.putContextValue("confidence", confidence);
+		messageContext.setMessageAgentContext("iscorrect", iscorrect);
+		messageContext.setMessageAgentContext("correctoptiontext", question.get(question.get("correctoption")));
+		messageContext.setMessageAgentContext("confidence", confidence);
 
 		LlmConnection llmconnection = getMediaArchive().getLlmConnection("localrender");
 		LlmResponse response = llmconnection.renderLocalAction(messageContext, "chat_tutor_answer");
@@ -75,17 +75,13 @@ public class AdaptiveTutorialAnswerSkill extends AdaptiveTutorialBaseSkill
 		messageContext.setLastResponse(response);
 		messageContext.log("sent" + response.getMessagePlain());
 
-		Map<String, String> broadcastpayload = new HashMap<String, String>();
-		broadcastpayload.put("sectionid", messageContext.getLastSectionId());
-		broadcastpayload.put("componentid", messageContext.getLastComponentId());
-
-		messageContext.setValue("broadcastpayload", broadcastpayload);
+		messageContext.setMessageAgentContext("sectionid", messageContext.getLastSectionId());
+		messageContext.setMessageAgentContext("componentid", messageContext.getLastComponentId());
 
 		AgentEnabled skillEnabled = messageContext.getCurrentAgentEnable();
 		messageContext.fireStatusComplete(skillEnabled);
 
 		Data agentmessage = messageContext.getAgentMessage();
-
 		agentmessage.setValue("id", messageContext.getTutorialId() + "_progressupdate");
 		agentmessage.setValue("messagetype", "system");
 

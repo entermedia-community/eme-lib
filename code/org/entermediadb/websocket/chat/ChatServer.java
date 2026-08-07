@@ -192,6 +192,7 @@ public class ChatServer
 			message = inData.get("message");
 		}
 		inMap.put("message", message);
+		inMap.put("agentcontextvalues", inData.get("agentcontextvalues"));
 		broadcastMessage(inCatalogId, inMap);
 	}
 
