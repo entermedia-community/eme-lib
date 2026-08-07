@@ -774,8 +774,8 @@ public class AdminModule extends BaseMediaModule
 		if (inUser != null)
 		{
 			// Save our logged-in user in the session,
-			// because we use it again later.
-			if (inAReq.getPassword() != null || inUser.getPassword() != null)
+			// because we use it again later
+			if (inAReq.getPassword() != null || inUser.getPassword() != null || inAReq.get("templogincode") != null)
 			{
 				if (inUser.isEnabled())
 				{
