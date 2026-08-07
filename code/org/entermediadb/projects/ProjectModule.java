@@ -1975,7 +1975,7 @@ public class ProjectModule extends BaseMediaModule
 			topicsearcher.saveData(topic);
 		}
 		inReq.setRequestParameter("dataid", topic.getId());
-		inReq.setRequestParameter("createnew", "true");
+		// inReq.setRequestParameter("createnew", "true");
 		inReq.putPageValue("currenttopic", topic);
 	}
 

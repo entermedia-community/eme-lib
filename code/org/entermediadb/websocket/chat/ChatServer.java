@@ -215,6 +215,9 @@ public class ChatServer
 			// log.info("Sending " + inMap.toJSONString() +" to " + connections.size() + "
 			// Clients");
 
+			MultiValued channel = (MultiValued) archive.getCachedData("channel", channelid);
+			String channelmoduleid = channel.get("searchtype");
+
 			String userid = null;
 			if (inMap.get("user") != null)
 			{
@@ -223,7 +226,11 @@ public class ChatServer
 			String messageid = (String) inMap.get("messageid");
 			if (channelid != null)
 			{
-				manager.updateChatTopicLastModified(channelid, userid, messageid);
+				if (channelmoduleid != null && "collectiveproject".equals(channelmoduleid))
+				{
+					manager.updateChatTopicLastModified(channel.get("dataid"), userid, messageid);
+				}
+
 			}
 
 			ProjectManager projectmanager = getProjectManager(catalogid);
@@ -248,7 +255,6 @@ public class ChatServer
 				return;
 			}
 
-			MultiValued channel = (MultiValued) archive.getCachedData("channel", channelid);
 			if (channel == null)
 			{
 				log.error("Channel not found trying to broadcast message: " + channelid + " Message: " + inMap.toJSONString()); // should not happen
@@ -258,17 +264,15 @@ public class ChatServer
 			Data entity = null;
 			Set userids = new HashSet();
 
-			String moduleid = channel.get("searchtype");
-
-			if (moduleid == null)
+			if (channelmoduleid == null)
 			{
 				// Legacy fix for OI
 				if (inMap.get("moduleid") != null)
 				{
-					moduleid = (String) inMap.get("moduleid");
-					if (moduleid != null)
+					channelmoduleid = (String) inMap.get("moduleid");
+					if (channelmoduleid != null)
 					{
-						channel.setValue("searchtype", moduleid);
+						channel.setValue("searchtype", channelmoduleid);
 						archive.getSearcher("channel").saveData(channel);
 					}
 				}
@@ -277,7 +281,7 @@ public class ChatServer
 				// }
 			}
 
-			if (moduleid != null)
+			if (channelmoduleid != null)
 			{
 				// module = archive.getCachedData("module", moduleid);
 
@@ -292,10 +296,10 @@ public class ChatServer
 				}
 				if (entityid != null)
 				{
-					entity = archive.getCachedData(moduleid, entityid);
+					entity = archive.getCachedData(channelmoduleid, entityid);
 				}
 
-				if (moduleid.equals("collectiveproject"))
+				if (channelmoduleid.equals("collectiveproject"))
 				{
 					Data collectiveproject = archive.getCachedData("collectiveproject", entityid);
 					if (collectiveproject != null)
@@ -305,7 +309,7 @@ public class ChatServer
 					}
 
 				}
-				if (moduleid.equals("librarycollection"))
+				if (channelmoduleid.equals("librarycollection"))
 				{
 					userids = projectmanager.listTeam(entity);
 				}
@@ -409,7 +413,12 @@ public class ChatServer
 		chat.setValue("date", new Date());
 		chat.setValue("user", userid);
 		chat.setValue("channel", channel.getId());
-		chat.setValue("entityid", values.getString("entityid"));
+		String dataid = values.getString("dataid");
+		if (dataid == null)
+		{
+			dataid = values.getString("entityid");
+		}
+		chat.setValue("entityid", dataid);
 		chat.setValue("moduleid", values.getString("moduleid"));
 		chat.setValue("collectionid", values.getString("collectionid"));
 		chat.setValue("chatmessagestatus", "received");

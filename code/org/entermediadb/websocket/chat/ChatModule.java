@@ -655,8 +655,13 @@ public class ChatModule extends BaseMediaModule
 			// TODO: Add flag for multi user
 			if (entity != null)
 			{
-				boolean isowner = inReq.getUserName().equals(entity.get("owner"));
-				if (isowner)
+				boolean isowner = false;
+				if (channeltype.equals("agententitychat"))
+				{
+					isowner = inReq.getUserName().equals(entity.get("owner"));
+				}
+				// Agent Entity Chats are private per user ?
+				if (!isowner)
 				{
 					currentchannel =
 						(MultiValued) channelsearcher.query().exact("dataid", entityid).exact("searchtype", channeldatamodule).after("refreshdate", now.getTime()).sort("refreshdateDown").searchOne();
@@ -687,7 +692,7 @@ public class ChatModule extends BaseMediaModule
 
 		if (!createnew)
 		{
-			return;
+			// return;
 		}
 
 		// Create New Channel

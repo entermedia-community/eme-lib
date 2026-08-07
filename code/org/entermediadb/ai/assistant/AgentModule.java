@@ -164,6 +164,11 @@ public class AgentModule extends BaseMediaModule
 		String channelid = inReq.getRequestParameter("channel");
 		String applicationid = inReq.findValue("applicationid");
 		ChatMessageContext chatAgentContext = assistantManager.loadChatContext(applicationid, channelid);
+		if (chatAgentContext == null)
+		{
+			// log.error("Chat context is required to send welcome message");
+			return;
+		}
 		// Refresh drop down area?
 		inReq.putPageValue("agentcontext", chatAgentContext);
 

@@ -170,6 +170,7 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 		if (inChannelId == null)
 		{
 			log.error("Channel is required to load chat context");
+			return null;
 		}
 		ChatMessageContext chatMessageContext = (ChatMessageContext) cache.get("chatMessageContext", inChannelId);
 		if (chatMessageContext == null)
