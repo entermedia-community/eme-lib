@@ -83,7 +83,7 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 		// TODO: Only process one "open" channel at a time. What ever the last one they
 		// clicked on
 
-		HitTracker allchannels = channels.query().orgroup("channeltype", "agentchat,agententitychat,agenttutorchat").after("refreshdate", now.getTime()).sort("refreshdateDown").search();
+		HitTracker allchannels = channels.query().orgroup("channeltype", "agentchat,agententitychat,agenttutorchat,emeteamchat").after("refreshdate", now.getTime()).sort("refreshdateDown").search();
 
 		Searcher chats = archive.getSearcher("chatterbox");
 		for (Iterator iterator = allchannels.iterator(); iterator.hasNext();)
@@ -167,6 +167,10 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 	{
 		MediaArchive archive = getMediaArchive();
 		CacheManager cache = archive.getCacheManager();
+		if (inChannelId == null)
+		{
+			log.error("Channel is required to load chat context");
+		}
 		ChatMessageContext chatMessageContext = (ChatMessageContext) cache.get("chatMessageContext", inChannelId);
 		if (chatMessageContext == null)
 		{
@@ -301,8 +305,6 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 		chatMessageContext.setUserProfile(profile);
 
 		chatMessageContext.putContextValue("channel", inChannel);
-
-		// String oldstatus = usermessage.get("chatmessagestatus");
 
 		// Update original message processing status
 		usermessage.setValue("chatmessagestatus", "completed");

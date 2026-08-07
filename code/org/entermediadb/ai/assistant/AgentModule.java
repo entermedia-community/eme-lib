@@ -180,7 +180,12 @@ public class AgentModule extends BaseMediaModule
 			}
 			else
 			{
-				currentscenarioid = "chat_detection";
+				currentscenarioid = inReq.findValue("defaultscenarioid");
+				if (currentscenarioid == null)
+				{
+					currentscenarioid = "chat_detection";
+				}
+
 			}
 		}
 		if (chatAgentContext.getCurrentScenario() == null || currentscenarioid == null || !currentscenarioid.equals(chatAgentContext.getCurrentScenario().getId()))

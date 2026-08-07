@@ -2703,6 +2703,12 @@
 		</property>
 	</bean>
 
+	<bean id="chatResponderSkill" class="org.entermediadb.ai.skills.EmeChatRespondSkill" scope="prototype">
+		<property name="moduleManager">
+			<ref bean="moduleManager" />
+		</property>
+	</bean>
+
 	<bean id="questionsMakeSuggestionsSkill" class="org.entermediadb.ai.skills.QuestionsMakeSuggestionsSkill" scope="prototype">
 		<property name="moduleManager">
 			<ref bean="moduleManager" />

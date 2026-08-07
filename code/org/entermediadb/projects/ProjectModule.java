@@ -1944,38 +1944,39 @@ public class ProjectModule extends BaseMediaModule
 
 	}
 
-	public void loadChatChannel(WebPageRequest inReq)
+	public void loadChatTopic(WebPageRequest inReq)
 	{
 		MediaArchive archive = getMediaArchive(inReq);
-		String channel = inReq.findValue("channel");
-		if (channel == null)
+		String topicid = inReq.findValue("channel");
+		if (topicid == null)
 		{
-			channel = inReq.getRequestParameter("channel");
+			topicid = inReq.getRequestParameter("channel");
 		}
-		Data currentchannel = archive.getCachedData("collectiveproject", channel);
+
+		Data topic = archive.getCachedData("collectiveproject", topicid);
 
 		Searcher topicsearcher = archive.getSearcher("collectiveproject");
 
 		Data librarycol = (Data) inReq.getPageValue("librarycol");
-		String module = inReq.findValue("module");
-
-		if (librarycol != null && currentchannel == null)
+		if (librarycol != null && topic == null)
 		{
-			currentchannel = topicsearcher.query().match("parentcollectionid", librarycol.getId()).sort("name").searchOne();
+			topic = topicsearcher.query().match("parentcollectionid", librarycol.getId()).sort("name").searchOne();
 		}
-		if (currentchannel == null)
+		if (topic == null)
 		{
-			currentchannel = topicsearcher.createNewData();
-			currentchannel.setValue("moduleid", module);
+			topic = topicsearcher.createNewData();
+			topic.setValue("moduleid", "librarycollection");
 			if (librarycol != null)
 			{
-				currentchannel.setValue("parentcollectionid", librarycol.getId());
+				topic.setValue("parentcollectionid", librarycol.getId());
 			}
-			currentchannel.setName("General");
-			topicsearcher.saveData(currentchannel);
-		}
 
-		inReq.putPageValue("currentchannel", currentchannel);
+			topic.setName("General");
+			topicsearcher.saveData(topic);
+		}
+		inReq.setRequestParameter("dataid", topic.getId());
+		inReq.setRequestParameter("createnew", "true");
+		inReq.putPageValue("currenttopic", topic);
 	}
 
 	public void loadProjectLikes(WebPageRequest inReq)

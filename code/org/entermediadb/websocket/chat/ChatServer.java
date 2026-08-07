@@ -279,22 +279,32 @@ public class ChatServer
 
 			if (moduleid != null)
 			{
-				module = archive.getCachedData("module", moduleid);
+				// module = archive.getCachedData("module", moduleid);
 
-				String entityid = (String) inMap.get("entityid");
+				String entityid = (String) inMap.get("dataid");
 				if (entityid == null || entityid.equals("") || entityid.equals("null"))
 				{
-					entityid = (String) inMap.get("collectionid"); // For OI chats attached to a collectionid
+					entityid = channel.get("entityid");
 				}
 				if (entityid == null && channel != null)
 				{
-					entityid = channel.get("dataid");
+					entityid = (String) inMap.get("collectionid"); // For OI chats attached to a collectionid
 				}
 				if (entityid != null)
 				{
 					entity = archive.getCachedData(moduleid, entityid);
 				}
 
+				if (moduleid.equals("collectiveproject"))
+				{
+					Data collectiveproject = archive.getCachedData("collectiveproject", entityid);
+					if (collectiveproject != null)
+					{
+						Data librarycollection = archive.getCachedData("librarycollection", collectiveproject.get("parentcollectionid"));
+						userids = projectmanager.listTeam(librarycollection);
+					}
+
+				}
 				if (moduleid.equals("librarycollection"))
 				{
 					userids = projectmanager.listTeam(entity);

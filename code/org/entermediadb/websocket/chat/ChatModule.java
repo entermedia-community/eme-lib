@@ -592,14 +592,10 @@ public class ChatModule extends BaseMediaModule
 	{
 		MediaArchive archive = getMediaArchive(inReq);
 		Searcher channelsearcher = archive.getSearcher("channel");
-		boolean createnew = Boolean.parseBoolean(inReq.getRequestParameter("createnew"));
-
 		String channel = inReq.findValue("channel");
-		String module = inReq.findValue("module");
-
 		MultiValued currentchannel = null;
 
-		if (channel != null && !createnew)
+		if (channel != null)
 		{
 			currentchannel = (MultiValued) archive.getCachedData("channel", channel);
 			if (currentchannel != null)
@@ -609,120 +605,104 @@ public class ChatModule extends BaseMediaModule
 			}
 		}
 
+		Data entity = (Data) inReq.getPageValue("entity");
+
+		String entityid = inReq.getRequestParameter("dataid");
+		if (entityid == null)
+		{
+			entityid = inReq.getRequestParameter("entityid");
+		}
+		if (entityid == null)
+		{
+			entityid = inReq.findValue("entityid");
+		}
+		if (entityid == null && entity != null)
+		{
+			entityid = entity.getId();
+		}
+
+		if (entityid == null)
+		{
+			// throw new IllegalArgumentException("dataid is required");
+			log.error("Entity is required");
+		}
+
 		String channeltype = inReq.findValue("channeltype");
 		if (channeltype == null)
 		{
 			throw new IllegalArgumentException("channeltype is required");
 		}
-		String entityid = inReq.getRequestParameter("entityid");
-		if (entityid == null)
+
+		String channeldatamodule = inReq.findValue("channeldatamodule");
+		if (channeldatamodule == null)
 		{
-			entityid = inReq.findValue("entityid");
-		}
-		if (entityid == null)
-		{
-			entityid = inReq.findValue("dataid");
+			channeldatamodule = inReq.findValue("module");
 		}
 
-		boolean isowner = false;
-
-		if (entityid == null && "agententitychat".equals(channeltype))
+		if (entity == null && entityid != null && channeldatamodule != null)
 		{
-			Data entity = (Data) inReq.getPageValue("entity");
+			entity = archive.getCachedData(channeldatamodule, entityid);
+		}
 
+		boolean createnew = Boolean.parseBoolean(inReq.getRequestParameter("createnew"));
+
+		// Search channel
+		if (currentchannel == null && !createnew)
+		{
+			Calendar now = DateStorageUtil.getStorageUtil().createCalendar();
+			now.add(Calendar.HOUR_OF_DAY, -1);
+
+			// TODO: Add flag for multi user
 			if (entity != null)
 			{
-				entityid = entity.getId();
-				isowner = entity.get("owner").equals(inReq.getUserName());
-			}
-			// else
-			// {
-			// throw new IllegalArgumentException("entityid is required for agententitychat");
-			// }
-
-		}
-		String channelname = null;
-		// MultiValued entity = (MultiValued) inReq.getPageValue("entity");
-		// switch(channeltype) //TODO Remove this
-		// {
-		// case "agententitychat":
-		// dataid = entity.getId();
-		// channelname = "Guided Chat";
-		// break;
-		// case "entity":
-		// dataid = entity.getId();
-		// channelname = "Entity Chat";
-		// break;
-		// case "agentchat":
-		// dataid = inReq.getUserName();
-		// channelname = "AI Chat";
-		// break;
-		// }
-
-		if (!createnew)
-		{
-			currentchannel = (MultiValued) archive.getCachedData("channel", channel);
-			if (currentchannel == null)
-			{
-				Calendar now = DateStorageUtil.getStorageUtil().createCalendar();
-				now.add(Calendar.HOUR_OF_DAY, -1);
-
-				// TODO: Add flag for multi user
-				if (entityid != null)
+				boolean isowner = inReq.getUserName().equals(entity.get("owner"));
+				if (isowner)
 				{
-					if (isowner)
-					{
-						currentchannel =
-							(MultiValued) channelsearcher.query().exact("dataid", entityid).exact("searchtype", module).after("refreshdate", now.getTime()).sort("refreshdateDown").searchOne();
-					}
-					else
-					{
-						currentchannel = (MultiValued) channelsearcher.query()
-							.exact("dataid", entityid)
-							.exact("searchtype", module)
-							.exact("user", inReq.getUserName())
-							.after("refreshdate", now.getTime())
-							.sort("refreshdateDown")
-							.searchOne();
-					}
-
+					currentchannel =
+						(MultiValued) channelsearcher.query().exact("dataid", entityid).exact("searchtype", channeldatamodule).after("refreshdate", now.getTime()).sort("refreshdateDown").searchOne();
 				}
 				else
 				{
-					// By user
-					currentchannel = (MultiValued) channelsearcher.query().exact("user", inReq.getUserName()).missing("dataid").after("refreshdate", now.getTime()).sort("refreshdateDown").searchOne();
+					currentchannel = (MultiValued) channelsearcher.query()
+						.exact("dataid", entityid)
+						.exact("searchtype", channeldatamodule)
+						.exact("user", inReq.getUserName())
+						.after("refreshdate", now.getTime())
+						.sort("refreshdateDown")
+						.searchOne();
 				}
-				User chatuser = inReq.getUser();
-				if (chatuser != null)
-				{
-					channelname = chatuser.getName();
-				}
+
 			}
+			else
+			{
+				// By user
+				currentchannel = (MultiValued) channelsearcher.query().exact("user", inReq.getUserName()).missing("dataid").after("refreshdate", now.getTime()).sort("refreshdateDown").searchOne();
+			}
+		}
+		if (currentchannel != null)
+		{
+			inReq.putPageValue("currentchannel", currentchannel);
+			return;
 		}
 
-		if (currentchannel == null)
+		if (!createnew)
 		{
-			currentchannel = (MultiValued) channelsearcher.createNewData();
-			if (channelname == null)
-			{
-				channelname = "Chat - " + inReq.getUserName();
-			}
-			currentchannel.setName(channelname);
-			currentchannel.setValue("searchtype", module);
-			if (!"agentchat".equals(channeltype))
-			{
-				currentchannel.setValue("dataid", entityid);
-			}
-			currentchannel.setValue("user", inReq.getUser());
-			String applicationid = inReq.findValue("applicationid");
-			currentchannel.setValue("chatapplicationid", applicationid);
-			currentchannel.setValue("channeltype", channeltype);
+			return;
 		}
-		String toplevel = inReq.getRequestParameter("toplevelaifunctionid");
-		if (toplevel != null)
-		{
-			currentchannel.setValue("toplevelaifunctionid", toplevel);
-		}
+
+		// Create New Channel
+		currentchannel = (MultiValued) channelsearcher.createNewData();
+		String channelname = "Chat - " + inReq.getUserName();
+
+		currentchannel.setName(channelname);
+		// Could be null if we are in general chat
+		currentchannel.setValue("searchtype", channeldatamodule);
+		currentchannel.setValue("dataid", entityid);
+		currentchannel.setValue("user", inReq.getUser());
+
+		String applicationid = inReq.findValue("applicationid");
+		currentchannel.setValue("chatapplicationid", applicationid);
+		currentchannel.setValue("channeltype", channeltype);
 
 		Calendar now = Calendar.getInstance();
 		now.add(Calendar.SECOND, -1);
@@ -731,9 +711,7 @@ public class ChatModule extends BaseMediaModule
 		channelsearcher.saveData(currentchannel);
 
 		inReq.setRequestParameter("channel", currentchannel.getId());
-
 		inReq.putPageValue("currentchannel", currentchannel);
-
 		inReq.putPageValue("createnew", false);
 	}
 
