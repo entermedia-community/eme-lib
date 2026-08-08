@@ -45,6 +45,9 @@ public class AdaptiveTutorialContinueSkill extends AdaptiveTutorialBaseSkill
 		messageContext.setLastSectionId(topsection.getId());
 		messageContext.setLastComponentId(topcomponent.getId());
 
+		messageContext.putContextValue("sectionid", messageContext.getLastSectionId());
+		messageContext.putContextValue("componentid", messageContext.getLastComponentId());
+
 		messageContext.putContextValue("topcomponent", topcomponent);
 
 		LlmConnection llmconnection = getMediaArchive().getLlmConnection("localrender");
@@ -53,19 +56,26 @@ public class AdaptiveTutorialContinueSkill extends AdaptiveTutorialBaseSkill
 		messageContext.setLastResponse(response);
 		messageContext.log("sent" + response.getMessage());
 
+		Map<String, String> broadcastpayload = new HashMap<String, String>();
+		// broadcastpayload.put("messageid", topcomponent.getId());Continuing
+
+		broadcastpayload.put("sectionid", messageContext.getLastSectionId());
+		broadcastpayload.put("componentid", messageContext.getLastComponentId());
+
 		if ("mcq".equals(topcomponent.get("componenttype")))
 		{
-			messageContext.setMessageAgentContext("messagetype", "question");
-			messageContext.setMessageAgentContext("interactive", "yes");
+			broadcastpayload.put("messagetype", "question");
+			broadcastpayload.put("interactive", "yes");
 		}
 		else if ("asset".equals(topcomponent.get("componenttype")))
 		{
-			messageContext.setMessageAgentContext("messagetype", "asset");
+			broadcastpayload.put("messagetype", "asset");
 		}
 		else
 		{
-			messageContext.setMessageAgentContext("messagetype", "text");
+			broadcastpayload.put("messagetype", "text");
 		}
+		messageContext.setValue("broadcastpayload", broadcastpayload);
 
 		AgentEnabled skillEnabled = messageContext.getCurrentAgentEnable();
 		messageContext.fireStatusComplete(skillEnabled);

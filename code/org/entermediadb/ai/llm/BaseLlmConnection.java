@@ -299,6 +299,12 @@ public class BaseLlmConnection implements LlmConnection
 		{
 			Page template = getPageManager().getPage(templatepath);
 
+			if (!template.exists())
+			{
+				templatepath = "/mediadb/views/agentresponses/" + inTemplateName + ".html";
+				template = getPageManager().getPage(templatepath);
+			}
+
 			User user = getMediaArchive().getUserManager().getUser("agent");
 
 			WebPageRequest inReq = getRequestUtils().createPageRequest(template, user);

@@ -244,7 +244,8 @@ public class AgentModule extends BaseMediaModule
 			}
 		}
 		mediaArchive.saveData("agentcontext", chatAgentContext);
-		assistantManager.sendSystemMessage(chatAgentContext, inReq.getUserName(), functionname);
+		// assistantManager.sendSystemMessage(chatAgentContext, inReq.getUserName(), functionname);
+		assistantManager.sendSystemMessage(chatAgentContext, inReq.getUserName(), null, functionname);
 	}
 
 	public AgentContext loadAgentContext(WebPageRequest inReq) throws Exception

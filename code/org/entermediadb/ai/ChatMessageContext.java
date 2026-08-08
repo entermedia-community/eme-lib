@@ -79,6 +79,11 @@ public class ChatMessageContext extends BaseAgentContext
 
 	public Object getMessageAgentContext(String inKey)
 	{
-		return getAgentMessage().getJSONValue("agentcontextvalues", inKey);
+		Object ctx = getAgentMessage().getJSONValue("agentcontextvalues", inKey);
+		if (ctx == null)
+		{
+			ctx = getContextValue(inKey);
+		}
+		return ctx;
 	}
 }

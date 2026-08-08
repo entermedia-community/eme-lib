@@ -167,31 +167,18 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 	{
 		MediaArchive archive = getMediaArchive();
 		CacheManager cache = archive.getCacheManager();
-		if (inChannelId == null)
-		{
-			log.error("Channel is required to load chat context");
-			return null;
-		}
 		ChatMessageContext chatMessageContext = (ChatMessageContext) cache.get("chatMessageContext", inChannelId);
 		if (chatMessageContext == null)
 		{
 			chatMessageContext = new ChatMessageContext(loadContext(applicationId, inChannelId));
 			cache.put("chatMessageContext", inChannelId, chatMessageContext);
 		}
-		else
-		{
-			return chatMessageContext;
-		}
-
 		if (chatMessageContext.getChannel() == null)
 		{
 			Data channel = getMediaArchive().getCachedData("channel", inChannelId);
 			chatMessageContext.setChannel(channel);
 		}
-
-		HitTracker<MultiValued> messages = archive.query("chatterbox").exact("channel", inChannelId).exists("agentcontextvalues").sort("dateDown").search();
-
-		messages.enableBulkOperations();
+		Collection<MultiValued> messages = archive.query("chatterbox").exact("channel", inChannelId).sort("dateDown").search();
 
 		if (messages.isEmpty())
 		{
@@ -307,6 +294,8 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 
 		chatMessageContext.putContextValue("channel", inChannel);
 
+		// String oldstatus = usermessage.get("chatmessagestatus");
+
 		// Update original message processing status
 		usermessage.setValue("chatmessagestatus", "completed");
 		getMediaArchive().saveData("chatterbox", usermessage); // Update the user message again to finish it
@@ -331,11 +320,11 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 				Integer playbacksection = (Integer) inChannel.getValue("playbacksection");
 				if (playbacksection != null)
 				{
-					chatMessageContext.setMessageAgentContext("playbacksection", playbacksection);
+					chatMessageContext.putContextValue("playbacksection", playbacksection);
 				}
 				else
 				{
-					chatMessageContext.setMessageAgentContext("playbacksection", 0);
+					chatMessageContext.putContextValue("playbacksection", 0);
 				}
 			}
 			else
@@ -747,26 +736,22 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 		return manager;
 	}
 
-	public void sendSystemMessage(ChatMessageContext inContext, String inUser, String functionname)
+	public void sendSystemMessage(ChatMessageContext inContext, String inUser, String message, String functionname)
 	{
 		MediaArchive archive = getMediaArchive();
 
 		// currentchannel set next function
 		// Save a message
+		Data chat = archive.getSearcher("chatterbox").createNewData();
+		chat.setValue("messagetype", "system");
+		chat.setValue("user", inUser);
+		chat.setValue("date", new Date());
+		chat.setValue("functionname", functionname);
+		chat.setValue("chatmessagestatus", "received");
+		chat.setValue("channel", inContext.getChannel().getId());
+		chat.setValue("message", message);
 
-		Data inChatMessage = inContext.getAgentMessage();
-		if (inChatMessage == null)
-		{
-			throw new OpenEditException("No agent message to send");
-		}
-		inChatMessage.setValue("messagetype", "system");
-		inChatMessage.setValue("user", inUser);
-		inChatMessage.setValue("date", new Date());
-		inChatMessage.setValue("functionname", functionname);
-		inChatMessage.setValue("chatmessagestatus", "received");
-		inChatMessage.setValue("channel", inContext.getChannel().getId());
-
-		archive.saveData("chatterbox", inChatMessage);
+		archive.saveData("chatterbox", chat);
 		// inReq.putPageValue("chat", chat);
 
 		// Fire monitor
@@ -1146,18 +1131,29 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 			{
 				messageplain = "New message";
 			}
-			functionMessageUpdate.put("agentcontextvalues", agentmessage.get("agentcontextvalues"));
+			functionMessageUpdate.put("message", updatedMessage);
 			functionMessageUpdate.put("messageplain", messageplain);
 			functionMessageUpdate.put("nextfunctionname", nextFunctionName);
 			functionMessageUpdate.put("functionname", inAgentEnabled.getEnabledId());
 			functionMessageUpdate.put("date", DateStorageUtil.getStorageUtil().getJsonFormat().format(new Date()));
 
+			Map<String, String> additionalBroadcastPayload = (Map) chatMessageContext.getValue("broadcastpayload");
+			if (additionalBroadcastPayload != null)
+			{
+				for (String key : additionalBroadcastPayload.keySet())
+				{
+					functionMessageUpdate.put(key, additionalBroadcastPayload.get(key));
+				}
+			}
+
 			ChatServer server = (ChatServer) getMediaArchive().getBean("chatServer");
 
 			JSONObject jsonMessage = new JSONObject(functionMessageUpdate);
+
+			log.info("Broadcasting: " + jsonMessage.toJSONString());
+
 			server.broadcastMessage(jsonMessage);
 
-			log.info("Broadcasted: " + jsonMessage.toJSONString());
 		}
 		catch (Exception ex)
 		{

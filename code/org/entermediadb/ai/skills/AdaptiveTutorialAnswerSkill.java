@@ -19,7 +19,7 @@ public class AdaptiveTutorialAnswerSkill extends AdaptiveTutorialBaseSkill
 	{
 		TutorMessageContext messageContext = (TutorMessageContext) inAgentContext;
 
-		String channelid = (String) messageContext.getContextValue("channelid");
+		String channelid = (String) messageContext.getChannel().getId();
 		String questionid = (String) messageContext.getContextValue("questionid");
 		String confidence = (String) messageContext.getContextValue("confidence");
 		String selectedoption = (String) messageContext.getContextValue("selectedoption");
@@ -65,9 +65,9 @@ public class AdaptiveTutorialAnswerSkill extends AdaptiveTutorialBaseSkill
 
 		searcher.saveData(answer);
 
-		messageContext.setMessageAgentContext("iscorrect", iscorrect);
-		messageContext.setMessageAgentContext("correctoptiontext", question.get(question.get("correctoption")));
-		messageContext.setMessageAgentContext("confidence", confidence);
+		messageContext.putContextValue("iscorrect", iscorrect);
+		messageContext.putContextValue("correctoptiontext", question.get(question.get("correctoption")));
+		messageContext.putContextValue("confidence", confidence);
 
 		LlmConnection llmconnection = getMediaArchive().getLlmConnection("localrender");
 		LlmResponse response = llmconnection.renderLocalAction(messageContext, "chat_tutor_answer");
@@ -75,13 +75,17 @@ public class AdaptiveTutorialAnswerSkill extends AdaptiveTutorialBaseSkill
 		messageContext.setLastResponse(response);
 		messageContext.log("sent" + response.getMessagePlain());
 
-		messageContext.setMessageAgentContext("sectionid", messageContext.getLastSectionId());
-		messageContext.setMessageAgentContext("componentid", messageContext.getLastComponentId());
+		Map<String, String> broadcastpayload = new HashMap<String, String>();
+		broadcastpayload.put("sectionid", messageContext.getLastSectionId());
+		broadcastpayload.put("componentid", messageContext.getLastComponentId());
+
+		messageContext.setValue("broadcastpayload", broadcastpayload);
 
 		AgentEnabled skillEnabled = messageContext.getCurrentAgentEnable();
 		messageContext.fireStatusComplete(skillEnabled);
 
 		Data agentmessage = messageContext.getAgentMessage();
+
 		agentmessage.setValue("id", messageContext.getTutorialId() + "_progressupdate");
 		agentmessage.setValue("messagetype", "system");
 

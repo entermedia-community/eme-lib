@@ -23,21 +23,21 @@ public class TutorMessageContext extends ChatMessageContext
 
 	public void setLastSectionId(String inSectionId)
 	{
-		setMessageAgentContext("sectionid", inSectionId);
+		setMessageAgentContext("lastsectionid", inSectionId);
 	}
 
 	public String getLastSectionId()
 	{
-		return (String) getMessageAgentContext("sectionid");
+		return (String) getMessageAgentContext("lastsectionid");
 	}
 
 	public void setLastComponentId(String inComponentId)
 	{
-		setMessageAgentContext("componentid", inComponentId);
+		setMessageAgentContext("lastcomponentid", inComponentId);
 	}
 
 	public String getLastComponentId()
 	{
-		return (String) getMessageAgentContext("componentid");
+		return (String) getMessageAgentContext("lastcomponentid");
 	}
 }
