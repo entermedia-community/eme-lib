@@ -1,12 +1,13 @@
 package org.entermediadb.ai.skills;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import org.entermediadb.ai.AgentContext;
 import org.entermediadb.ai.TutorMessageContext;
 import org.entermediadb.ai.llm.AgentEnabled;
-import org.entermediadb.ai.llm.LlmConnection;
-import org.entermediadb.ai.llm.LlmResponse;
+import org.entermediadb.asset.Asset;
+import org.json.simple.JSONObject;
 import org.openedit.Data;
 import org.openedit.MultiValued;
 
@@ -18,8 +19,8 @@ public class AdaptiveTutorialContinueSkill extends AdaptiveTutorialBaseSkill
 		TutorMessageContext messageContext = (TutorMessageContext) inAgentContext;
 
 		String tutorialid = messageContext.getTutorialId();
-		String sectionid = (String) messageContext.getLastSectionId();
-		String componentid = (String) messageContext.getLastComponentId();
+		String sectionid = (String) messageContext.getMessageAgentContext("sectionid");
+		String componentid = (String) messageContext.getMessageAgentContext("componentid");
 
 		Map<String, Data> next = getNextSectionAndComponent(tutorialid, sectionid, componentid);
 		if (next == null)
@@ -42,40 +43,97 @@ public class AdaptiveTutorialContinueSkill extends AdaptiveTutorialBaseSkill
 			throw new IllegalStateException("Next component is the same as the current component. This should not happen.");
 		}
 
-		messageContext.setLastSectionId(topsection.getId());
-		messageContext.setLastComponentId(topcomponent.getId());
+		messageContext.setMessageAgentContext("sectionid", topsection.getId());
+		messageContext.setMessageAgentContext("componentid", topcomponent.getId());
 
-		messageContext.putContextValue("sectionid", messageContext.getLastSectionId());
-		messageContext.putContextValue("componentid", messageContext.getLastComponentId());
-
-		messageContext.putContextValue("topcomponent", topcomponent);
-
-		LlmConnection llmconnection = getMediaArchive().getLlmConnection("localrender");
-		LlmResponse response = llmconnection.renderLocalAction(messageContext, "chat_tutor_continue");
-
-		messageContext.setLastResponse(response);
-		messageContext.log("sent" + response.getMessage());
-
-		Map<String, String> broadcastpayload = new HashMap<String, String>();
-		// broadcastpayload.put("messageid", topcomponent.getId());Continuing
-
-		broadcastpayload.put("sectionid", messageContext.getLastSectionId());
-		broadcastpayload.put("componentid", messageContext.getLastComponentId());
+		messageContext.setMessageAgentContext("componentcontent", topcomponent.get("content"));
+		messageContext.setMessageAgentContext("componenttype", topcomponent.get("componenttype"));
+		messageContext.setMessageAgentContext("contentrole", topcomponent.get("contentrole"));
 
 		if ("mcq".equals(topcomponent.get("componenttype")))
 		{
-			broadcastpayload.put("messagetype", "question");
-			broadcastpayload.put("interactive", "yes");
+			if (topcomponent.get("questionid") != null)
+			{
+				Data question = getMediaArchive().getData("entityquestion", topcomponent.get("questionid"));
+				JSONObject questionjson = new JSONObject();
+				questionjson.put("id", question.getId());
+				questionjson.put("question", question.get("question"));
+
+				JSONObject options = new JSONObject();
+				options.put("option_a", question.get("option_a"));
+				options.put("option_b", question.get("option_b"));
+				options.put("option_c", question.get("option_c"));
+				options.put("option_d", question.get("option_d"));
+				options.put("option_e", question.get("option_e"));
+				options.put("option_f", question.get("option_f"));
+				questionjson.put("options", options);
+
+				// questionjson.put("correctoption", question.get("correctoption"));
+				// questionjson.put("rationale", question.get("rationale"));
+				questionjson.put("mcqcognitivelevel", question.get("mcqcognitivelevel"));
+				messageContext.setMessageAgentContext("question", questionjson);
+			}
+			messageContext.setMessageAgentContext("messagetype", "question");
+			messageContext.setMessageAgentContext("interactive", "yes");
 		}
 		else if ("asset".equals(topcomponent.get("componenttype")))
 		{
-			broadcastpayload.put("messagetype", "asset");
+			if (topcomponent.get("assetid") != null)
+			{
+				Asset asset = getMediaArchive().getAsset(topcomponent.get("assetid"));
+				if (asset == null)
+				{
+					// set some fallback no-img thumbnail
+				}
+				else
+				{
+					JSONObject assetMap = new JSONObject();
+					assetMap.put("id", asset.getId());
+					String siteroot = (String) messageContext.getContextValue("siteroot");
+
+					String mediatype = getMediaArchive().getMediaRenderType(asset);
+					assetMap.put("mediatype", mediatype);
+					if ("video".equals(mediatype))
+					{
+						String source = getMediaArchive().asLinkToGenerated(asset, "video.m3u8");
+						String sourceMp4 = getMediaArchive().asLinkToGenerated(asset, "video.mp4");
+						Collection<String> sources = asset.getValues("hlsstreams");
+						String url = null;
+						if (sources != null)
+						{
+							String maxSource = sources.stream().max((s1, s2) -> {
+								int size1 = Integer.parseInt(s1);
+								int size2 = Integer.parseInt(s2);
+								return Integer.compare(size1, size2);
+							}).orElse(null);
+							if (maxSource != null)
+								url = source + "/" + maxSource + "/video.m3u8";
+						}
+						if (url == null)
+						{
+							url = sourceMp4;
+						}
+						assetMap.put("url", siteroot + url);
+						String assetthumbnail = siteroot + getMediaArchive().asLinkToPreview(asset, "image1900x1080");
+						assetMap.put("thumbnail", assetthumbnail);
+					}
+					else
+					{
+						String assetthumbnail = siteroot + getMediaArchive().asLinkToPreview(asset, "image200x200");
+						assetMap.put("thumbnail", assetthumbnail);
+
+						String asseturl = siteroot + getMediaArchive().asLinkToPreview(asset, "image3000x3000");
+						assetMap.put("url", asseturl);
+					}
+					messageContext.setMessageAgentContext("asset", assetMap);
+				}
+			}
+			messageContext.setMessageAgentContext("messagetype", "asset");
 		}
 		else
 		{
-			broadcastpayload.put("messagetype", "text");
+			messageContext.setMessageAgentContext("messagetype", "text");
 		}
-		messageContext.setValue("broadcastpayload", broadcastpayload);
 
 		AgentEnabled skillEnabled = messageContext.getCurrentAgentEnable();
 		messageContext.fireStatusComplete(skillEnabled);

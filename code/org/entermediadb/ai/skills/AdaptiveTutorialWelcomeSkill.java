@@ -1,14 +1,12 @@
 package org.entermediadb.ai.skills;
 
-import java.util.HashMap;
-import java.util.Map;
 import org.entermediadb.ai.AgentContext;
 import org.entermediadb.ai.TutorMessageContext;
-import org.entermediadb.ai.automation.RunningScenario;
 import org.entermediadb.ai.llm.AgentEnabled;
 import org.entermediadb.ai.llm.LlmConnection;
 import org.entermediadb.ai.llm.LlmResponse;
 import org.openedit.MultiValued;
+import org.openedit.hittracker.HitTracker;
 
 public class AdaptiveTutorialWelcomeSkill extends AdaptiveTutorialBaseSkill
 {
@@ -17,10 +15,14 @@ public class AdaptiveTutorialWelcomeSkill extends AdaptiveTutorialBaseSkill
 	{
 		TutorMessageContext messageContext = (TutorMessageContext) inAgentContext;
 
-		messageContext.putContextValue("skiploader", Boolean.TRUE);
+		String channelid = messageContext.getChannel().getId();
+		HitTracker messages = getMediaArchive().query("chatterbox").exact("channel", channelid).not("messagetype", "system").search();
+		if (messages.size() > 0)
+		{
+			return;
+		}
 
 		String tutorialid = (String) messageContext.getContextValue("tutorialid");
-		messageContext.setTutorialId(tutorialid);
 
 		MultiValued tutorial = (MultiValued) getMediaArchive().query("entitytutorial").exact("id", tutorialid).searchOne();
 
@@ -31,25 +33,20 @@ public class AdaptiveTutorialWelcomeSkill extends AdaptiveTutorialBaseSkill
 		messageContext.setLastResponse(response);
 		messageContext.log("sent" + response.getMessagePlain());
 
-		messageContext.setLastSectionId(null);
-		messageContext.setLastComponentId(null);
-
-		MultiValued agentmessage = messageContext.getAgentMessage();
-		agentmessage.setValue("chatmessagestatus", "completed");
-		agentmessage.setValue("messagetype", "message");
-		Map<String, String> broadcastpayload = new HashMap<String, String>();
-		broadcastpayload.put("messageid", tutorialid + "_welcome");
-		messageContext.setValue("broadcastpayload", broadcastpayload);
+		messageContext.setMessageAgentContext("sectionid", null);
+		messageContext.setMessageAgentContext("componentid", null);
+		messageContext.setMessageAgentContext("messagetype", "welcome");
 
 		AgentEnabled skillEnabled = messageContext.getCurrentAgentEnable();
 		messageContext.fireStatusComplete(skillEnabled);
 
-		RunningScenario scenario = messageContext.getCurrentScenario();
+		// RunningScenario scenario = messageContext.getCurrentScenario();
 
-		AgentEnabled nextAgentEnabled = scenario.findEnabled("chat_tutor_continue");
-		TutorMessageContext nextContext = (TutorMessageContext) scenario.createAgentContext(messageContext, nextAgentEnabled);
-		nextContext.setWaitTime(200l);
-		scenario.runProcess(nextAgentEnabled, nextContext, true);
+		// AgentEnabled nextAgentEnabled = scenario.findEnabled("chat_tutor_continue");
+		// TutorMessageContext nextContext = (TutorMessageContext)
+		// scenario.createAgentContext(messageContext, nextAgentEnabled);
+		// nextContext.setWaitTime(200l);
+		// scenario.runProcess(nextAgentEnabled, nextContext, true);
 	}
 
 }

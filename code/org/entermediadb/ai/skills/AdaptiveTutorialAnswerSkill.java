@@ -19,7 +19,7 @@ public class AdaptiveTutorialAnswerSkill extends AdaptiveTutorialBaseSkill
 	{
 		TutorMessageContext messageContext = (TutorMessageContext) inAgentContext;
 
-		String channelid = (String) messageContext.getChannel().getId();
+		String channelid = messageContext.getChannel().getId();
 		String questionid = (String) messageContext.getContextValue("questionid");
 		String confidence = (String) messageContext.getContextValue("confidence");
 		String selectedoption = (String) messageContext.getContextValue("selectedoption");
@@ -75,11 +75,8 @@ public class AdaptiveTutorialAnswerSkill extends AdaptiveTutorialBaseSkill
 		messageContext.setLastResponse(response);
 		messageContext.log("sent" + response.getMessagePlain());
 
-		Map<String, String> broadcastpayload = new HashMap<String, String>();
-		broadcastpayload.put("sectionid", messageContext.getLastSectionId());
-		broadcastpayload.put("componentid", messageContext.getLastComponentId());
-
-		messageContext.setValue("broadcastpayload", broadcastpayload);
+		messageContext.setMessageAgentContext("sectionid", messageContext.getMessageAgentContext("sectionid"));
+		messageContext.setMessageAgentContext("componentid", messageContext.getMessageAgentContext("componentid"));
 
 		AgentEnabled skillEnabled = messageContext.getCurrentAgentEnable();
 		messageContext.fireStatusComplete(skillEnabled);

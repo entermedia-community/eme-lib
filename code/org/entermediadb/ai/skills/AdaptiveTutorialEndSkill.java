@@ -14,8 +14,6 @@ public class AdaptiveTutorialEndSkill extends AdaptiveTutorialBaseSkill
 	{
 		TutorMessageContext messageContext = (TutorMessageContext) inAgentContext;
 
-		messageContext.putContextValue("skiploader", Boolean.TRUE);
-
 		String tutorialid = (String) messageContext.getContextValue("tutorialid");
 		MultiValued tutorial = (MultiValued) getMediaArchive().query("entitytutorial").exact("id", tutorialid).searchOne();
 

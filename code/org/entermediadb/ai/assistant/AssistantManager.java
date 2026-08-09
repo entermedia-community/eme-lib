@@ -171,6 +171,7 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 		if (chatMessageContext == null)
 		{
 			chatMessageContext = new ChatMessageContext(loadContext(applicationId, inChannelId));
+
 			cache.put("chatMessageContext", inChannelId, chatMessageContext);
 		}
 		if (chatMessageContext.getChannel() == null)
@@ -234,7 +235,6 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 					// String siteid = PathUtilities.extractDirectoryPath(getMediaArchive().getCatalogId());
 					channel.setValue("chatapplicationid", applicationId);
 					getMediaArchive().saveData("channel", channel);
-
 				}
 
 				agentContext.setValue("channel", inChannelId);
@@ -245,7 +245,13 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 					agentContext.setValue("entitymoduleid", entitymoduleid);
 
 				}
+			}
 
+			String communitytagid = getMediaArchive().getPageManager().getPage("/" + applicationId + "/").getProperty("communitytag");
+			Data communitytag = getMediaArchive().getCachedData("communitytag", communitytagid);
+			if (communitytag != null)
+			{
+				agentContext.putContextValue("siteroot", communitytag.get("externaldomain"));
 			}
 
 			Data channel = getMediaArchive().getCachedData("channel", inChannelId);
@@ -1005,11 +1011,11 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 
 		ChatMessageContext chatMessageContext = (ChatMessageContext) inContext;
 
-		boolean skiploader = Boolean.TRUE.equals(chatMessageContext.getContextValue("skiploader"));
+		boolean skiploader = Boolean.parseBoolean((String) chatMessageContext.getContextValue("skiploader"));
 
 		if (skiploader)
 		{
-			chatMessageContext.putContextValue("skiploader", Boolean.FALSE);
+			// chatMessageContext.putContextValue("skiploader", Boolean.FALSE);
 			return;
 		}
 
@@ -1076,8 +1082,10 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 					updatedMessage = response.getMessage();
 				}
 			}
-
-			agentmessage.setValue("message", updatedMessage); // Final message
+			if (updatedMessage != null)
+			{
+				agentmessage.setValue("message", updatedMessage); // Final message
+			}
 
 			String messageplain = agentmessage.get("messageplain");
 			if (response != null)
@@ -1132,19 +1140,11 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 				messageplain = "New message";
 			}
 			functionMessageUpdate.put("message", updatedMessage);
+			functionMessageUpdate.put("agentcontextvalues", agentmessage.get("agentcontextvalues"));
 			functionMessageUpdate.put("messageplain", messageplain);
 			functionMessageUpdate.put("nextfunctionname", nextFunctionName);
 			functionMessageUpdate.put("functionname", inAgentEnabled.getEnabledId());
 			functionMessageUpdate.put("date", DateStorageUtil.getStorageUtil().getJsonFormat().format(new Date()));
-
-			Map<String, String> additionalBroadcastPayload = (Map) chatMessageContext.getValue("broadcastpayload");
-			if (additionalBroadcastPayload != null)
-			{
-				for (String key : additionalBroadcastPayload.keySet())
-				{
-					functionMessageUpdate.put(key, additionalBroadcastPayload.get(key));
-				}
-			}
 
 			ChatServer server = (ChatServer) getMediaArchive().getBean("chatServer");
 
