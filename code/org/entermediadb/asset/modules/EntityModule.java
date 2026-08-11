@@ -1917,19 +1917,19 @@ public class EntityModule extends BaseMediaModule
 		}
 
 		Searcher emesearcher = mediaArchive.getSearcher("emeprofile");
-
-		Data emeprofile = emesearcher.query().exact("urlname", user.getScreenName()).searchOne();
+		String urlname = "profiles/" + user.getScreenName();
+		Data emeprofile = emesearcher.query().exact("urlname", urlname).searchOne();
 
 		if (emeprofile == null)
 		{
 			emeprofile = emesearcher.createNewData();
-			emeprofile.setValue("urlname", user.getScreenName());
+			emeprofile.setValue("urlname", urlname);
 			emeprofile.setValue("name", user.getName());
 			emeprofile.setValue("owner", user.getId());
 			emesearcher.saveData(emeprofile);
 		}
 
-		inReq.redirect("/profiles/" + emeprofile.get("urlname"));
+		inReq.redirect("/" + urlname);
 
 	}
 
