@@ -114,9 +114,13 @@ public abstract class BaseAutoLogin implements AutoLoginProvider
 		}
 	}
 
-	protected User autoLoginFromMd5Value(WebPageRequest inReq, String uandpass)
+	public User validateEnterMediaKey(WebPageRequest inReq, String inKey)
 	{
-		// get the password expiry in days
+		return autoLoginFromMd5Value(inReq, inKey);
+	}
+
+	public int getPasswordExpiryDays(WebPageRequest inReq)
+	{
 		int pwd_expiry_in_days = 1;
 		String str = inReq.findValue("temporary_password_expiry");
 		if (str != null && !str.isEmpty())
@@ -133,10 +137,17 @@ public abstract class BaseAutoLogin implements AutoLoginProvider
 			{
 				pwd_expiry_in_days = 30;// default if malformed
 			}
-			if (log.isDebugEnabled())
-			{
-				log.debug("Password is set to expire in " + pwd_expiry_in_days + " days");
-			}
+		}
+		return pwd_expiry_in_days;
+	}
+
+	protected User autoLoginFromMd5Value(WebPageRequest inReq, String uandpass)
+	{
+		// get the password expiry in days
+		int pwd_expiry_in_days = getPasswordExpiryDays(inReq);
+		if (log.isDebugEnabled())
+		{
+			log.debug("Password is set to expire in " + pwd_expiry_in_days + " days");
 		}
 		// String uandpass = cook.getValue();
 		if (uandpass != null)

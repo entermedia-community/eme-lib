@@ -14,6 +14,7 @@ package org.entermediadb.asset.modules;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
@@ -32,6 +33,7 @@ import org.entermediadb.users.PasswordHelper;
 import org.openedit.Data;
 import org.openedit.OpenEditException;
 import org.openedit.WebPageRequest;
+import org.openedit.data.Searcher;
 import org.openedit.data.SearcherManager;
 import org.openedit.page.Page;
 import org.openedit.page.PageRequestKeys;
@@ -745,6 +747,126 @@ public class AdminModule extends BaseMediaModule
 		inReq.putPageValue("authenticated", ok);
 		return ok;
 
+	}
+
+	// OAuth2-style token endpoint for first-party clients (grant_type=password / refresh_token)
+	public void oauthToken(WebPageRequest inReq) throws Exception
+	{
+		String grantType = inReq.getRequestParameter("grant_type");
+		UserManager userManager = getUserManager(inReq);
+
+		if ("password".equals(grantType))
+		{
+			String username = inReq.getRequestParameter("username");
+			if (username == null)
+			{
+				username = inReq.getRequestParameter("email");
+			}
+			String password = inReq.getRequestParameter("password");
+
+			User user = null;
+			if (username != null)
+			{
+				user = userManager.getUser(username);
+				if (user == null && username.contains("@"))
+				{
+					user = userManager.getUserByEmail(username);
+				}
+			}
+
+			if (user == null || password == null)
+			{
+				putOauthError(inReq, "invalid_grant", "Invalid username or password");
+				return;
+			}
+
+			AuthenticationRequest aReq = userManager.createAuthenticationRequest(inReq, password, user);
+			if (userManager.authenticate(aReq) && user.isEnabled())
+			{
+				mintTokens(inReq, user, true);
+			}
+			else
+			{
+				putOauthError(inReq, "invalid_grant", "Invalid username or password");
+			}
+		}
+		else if ("refresh_token".equals(grantType))
+		{
+			String refreshToken = inReq.getRequestParameter("refresh_token");
+			BaseAutoLogin autologin = (BaseAutoLogin) getModuleManager().getBean(inReq.findPathValue("catalogid"), "autoLoginWithCookie");
+			User user = refreshToken == null ? null : autologin.validateEnterMediaKey(inReq, refreshToken);
+			if (user != null && user.isEnabled())
+			{
+				mintTokens(inReq, user, false);
+			}
+			else
+			{
+				putOauthError(inReq, "invalid_grant", "Invalid or expired refresh token");
+			}
+		}
+		else if ("otp".equals(grantType))
+		{
+			// Emailed 6-digit code grant. Request a code first via services/authentication/sendusercode.json
+			String email = inReq.getRequestParameter("email");
+			String code = inReq.getRequestParameter("code");
+
+			if (email == null || code == null)
+			{
+				putOauthError(inReq, "invalid_request", "email and code are required");
+				return;
+			}
+
+			User user = userManager.getUserByEmail(email);
+			if (user == null || !user.isEnabled())
+			{
+				putOauthError(inReq, "invalid_grant", "Invalid or expired code");
+				return;
+			}
+
+			Searcher codeSearcher = getSearcherManager().getSearcher("system", "templogincode");
+			Calendar cal = Calendar.getInstance();
+			cal.add(Calendar.MINUTE, -15); // codes are only good for 15 minutes when used as a login credential
+			Data found = codeSearcher.query().exact("securitycode", code).match("email", email.toLowerCase()).after("date", cal.getTime()).sort("date").searchOne();
+
+			if (found == null)
+			{
+				putOauthError(inReq, "invalid_grant", "Invalid or expired code");
+				return;
+			}
+
+			codeSearcher.delete(found, null); // one-time use
+
+			mintTokens(inReq, user, true);
+		}
+		else
+		{
+			putOauthError(inReq, "unsupported_grant_type", "grant_type must be 'password', 'otp', or 'refresh_token'");
+		}
+	}
+
+	protected void mintTokens(WebPageRequest inReq, User inUser, boolean inIncludeRefreshToken) throws Exception
+	{
+		BaseAutoLogin autologin = (BaseAutoLogin) getModuleManager().getBean(inReq.findPathValue("catalogid"), "autoLoginWithCookie");
+		int days = autologin.getPasswordExpiryDays(inReq);
+		inReq.putPageValue("access_token", getCookieEncryption().getTempEnterMediaKey(inUser));
+		inReq.putPageValue("token_type", "Bearer");
+		inReq.putPageValue("expires_in", days * 86400);
+		if (inIncludeRefreshToken)
+		{
+			inReq.putPageValue("refresh_token", getCookieEncryption().getEnterMediaKey(inUser));
+		}
+		inReq.putPageValue("commandSucceeded", "ok");
+	}
+
+	protected void putOauthError(WebPageRequest inReq, String inError, String inDescription)
+	{
+		inReq.putPageValue("oauth_error", inError);
+		inReq.putPageValue("oauth_error_description", inDescription);
+		inReq.putPageValue("commandSucceeded", "error");
+		if (inReq.getResponse() != null)
+		{
+			inReq.getResponse().setStatus(HttpServletResponse.SC_BAD_REQUEST);
+		}
 	}
 
 	/**
