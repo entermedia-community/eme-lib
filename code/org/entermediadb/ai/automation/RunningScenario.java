@@ -78,7 +78,7 @@ public class RunningScenario extends BaseMediaObject implements CatalogEnabled
 		}
 		if (!skipStatusStart)
 		{
-			inContext.fireStatusStarting(inSkillEnabled);
+			inSkillEnabled.getAgent().startupScenario(inContext);
 		}
 		inSkillEnabled.getAgent().process(inContext);
 

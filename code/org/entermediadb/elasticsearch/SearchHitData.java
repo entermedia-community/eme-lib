@@ -18,8 +18,6 @@ import org.openedit.data.SaveableData;
 import org.openedit.data.SearchDataEnabled;
 import org.openedit.data.Searcher;
 
-import netscape.javascript.JSObject;
-
 public class SearchHitData extends BaseData implements Data, MultiValued, SaveableData, SearchDataEnabled, org.openedit.data.SearchHitData
 {
 	private static final Log log = LogFactory.getLog(SearchHitData.class);
