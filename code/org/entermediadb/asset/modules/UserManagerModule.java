@@ -7,13 +7,10 @@
 package org.entermediadb.asset.modules;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collection;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.entermediadb.asset.Category;
@@ -43,13 +40,11 @@ import org.openedit.users.User;
 import org.openedit.users.UserManager;
 import org.openedit.users.UserManagerException;
 import org.openedit.users.authenticate.PasswordGenerator;
-import org.openedit.util.DateStorageUtil;
 import org.openedit.util.PathUtilities;
 import org.openedit.util.strainer.Filter;
 import org.openedit.util.strainer.FilterReader;
 import org.openedit.util.strainer.GroupFilter;
 import org.openedit.util.strainer.OrFilter;
-
 import com.stripe.model.Customer;
 
 /**
@@ -1075,12 +1070,11 @@ public class UserManagerModule extends BaseMediaModule
 	{
 		Searcher usersearcher = getUserSearcher(inReq);
 		HitTracker hits = usersearcher.getAllHits(inReq);
-		/*all.setHitsName("userTracker");
-		all.setCatalogId(getUserSearcher(inReq).getCatalogId());
-		inReq.putPageValue(all.getHitsName(), all);
-		inReq.putPageValue("hits", all);
-		inReq.putSessionValue(all.getSessionId(), all);
-		log.info(all.getHitsName() + " = " + all.size());*/
+		/*
+		 * all.setHitsName("userTracker"); all.setCatalogId(getUserSearcher(inReq).getCatalogId());
+		 * inReq.putPageValue(all.getHitsName(), all); inReq.putPageValue("hits", all);
+		 * inReq.putSessionValue(all.getSessionId(), all); log.info(all.getHitsName() + " = " + all.size());
+		 */
 
 		String name = inReq.findValue("hitsname");
 		hits.setHitsName(name);
