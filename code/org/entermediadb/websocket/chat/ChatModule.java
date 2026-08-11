@@ -649,50 +649,13 @@ public class ChatModule extends BaseMediaModule
 		// Search channel
 		if (currentchannel == null && !createnew)
 		{
-			Calendar now = DateStorageUtil.getStorageUtil().createCalendar();
-			now.add(Calendar.HOUR_OF_DAY, -1);
-
-			// TODO: Add flag for multi user
-			if (entity != null)
-			{
-				boolean isowner = false;
-				if (channeltype.equals("agententitychat"))
-				{
-					isowner = inReq.getUserName().equals(entity.get("owner"));
-				}
-				// Agent Entity Chats are private per user ?
-				if (!isowner)
-				{
-					currentchannel =
-						(MultiValued) channelsearcher.query().exact("dataid", entityid).exact("searchtype", channeldatamodule).after("refreshdate", now.getTime()).sort("refreshdateDown").searchOne();
-				}
-				else
-				{
-					currentchannel = (MultiValued) channelsearcher.query()
-						.exact("dataid", entityid)
-						.exact("searchtype", channeldatamodule)
-						.exact("user", inReq.getUserName())
-						.after("refreshdate", now.getTime())
-						.sort("refreshdateDown")
-						.searchOne();
-				}
-
-			}
-			else
-			{
-				// By user
-				currentchannel = (MultiValued) channelsearcher.query().exact("user", inReq.getUserName()).missing("dataid").after("refreshdate", now.getTime()).sort("refreshdateDown").searchOne();
-			}
+			currentchannel = findExistingChannel(inReq, channelsearcher, entity, channeldatamodule, channeltype);
 		}
+
 		if (currentchannel != null)
 		{
 			inReq.putPageValue("currentchannel", currentchannel);
 			return;
-		}
-
-		if (!createnew)
-		{
-			// return;
 		}
 
 		// Create New Channel
@@ -718,6 +681,57 @@ public class ChatModule extends BaseMediaModule
 		inReq.setRequestParameter("channel", currentchannel.getId());
 		inReq.putPageValue("currentchannel", currentchannel);
 		inReq.putPageValue("createnew", false);
+	}
+
+	protected MultiValued findExistingChannel(WebPageRequest inReq, Searcher channelsearcher, Data entity, String channeldatamodule, String channeltype)
+	{
+		MultiValued currentchannel = null;
+		if ("agenttutorchat".equals(channeltype))
+		{
+			currentchannel =
+				(MultiValued) channelsearcher.query().exact("dataid", entity).exact("searchtype", channeldatamodule).exact("user", inReq.getUserName()).sort("refreshdateDown").searchOne();
+			return currentchannel;
+		}
+
+		Calendar now = DateStorageUtil.getStorageUtil().createCalendar();
+		now.add(Calendar.HOUR_OF_DAY, -1);
+
+		// TODO: Add flag for multi user
+		if (entity != null)
+		{
+			boolean isowner = false;
+			if (channeltype.equals("agententitychat"))
+			{
+				isowner = inReq.getUserName().equals(entity.get("owner"));
+			}
+			// Agent Entity Chats are private per user ?
+			if (!isowner)
+			{
+				currentchannel = (MultiValued) channelsearcher.query()
+					.exact("dataid", entity.getId())
+					.exact("searchtype", channeldatamodule)
+					.after("refreshdate", now.getTime())
+					.sort("refreshdateDown")
+					.searchOne();
+			}
+			else
+			{
+				currentchannel = (MultiValued) channelsearcher.query()
+					.exact("dataid", entity.getId())
+					.exact("searchtype", channeldatamodule)
+					.exact("user", inReq.getUserName())
+					.after("refreshdate", now.getTime())
+					.sort("refreshdateDown")
+					.searchOne();
+			}
+		}
+		else
+		{
+			// By user
+			currentchannel = (MultiValued) channelsearcher.query().exact("user", inReq.getUserName()).missing("dataid").after("refreshdate", now.getTime()).sort("refreshdateDown").searchOne();
+		}
+
+		return currentchannel;
 	}
 
 	public void loadUserChannels(WebPageRequest inReq)
