@@ -192,6 +192,8 @@ public class AdminModule extends BaseMediaModule
 					foundUser.setValue("logincategoryid", userCategory.getId());
 					getUserManager(inReq).saveUser(foundUser);
 				}
+				String subject = "Login Code";
+				inReq.putPageValue("subject", subject);
 				passwordHelper.emailPasswordReminder(inReq, getPageManager(), userCode, emailaddress);
 			}
 			else
@@ -207,6 +209,8 @@ public class AdminModule extends BaseMediaModule
 			String userapproveremail = (String) inReq.getPageValue("userapproveremail");
 			if (userapproveremail != null)
 			{
+				String subject = "User Approval Request: " + emailaddress;
+				inReq.putPageValue("subject", subject);
 				passwordHelper.emailAdminAboutNewUser(inReq, getPageManager(), emailaddress, userapproveremail);
 			}
 			else
@@ -223,7 +227,7 @@ public class AdminModule extends BaseMediaModule
 
 				screenName = inReq.getRequestParameter("screenName");
 				String userCode = getUserManager(inReq).createNewTempLoginKey(null, emailaddress, firstName, lastName, screenName, false);
-				String subject = inReq.getRequestParameter("subject");
+				String subject = "Login Code";
 				inReq.putPageValue("subject", subject);
 				passwordHelper.emailPasswordReminder(inReq, getPageManager(), userCode, emailaddress);
 
