@@ -1019,6 +1019,11 @@ public class FinderModule extends BaseMediaModule
 
 	public void loadEmeProfile(WebPageRequest inReq)
 	{
+		Data emeprofile = (Data) inReq.getPageValue("emeprofile");
+		if (emeprofile != null)
+		{
+			return;
+		}
 		User user = inReq.getUser();
 		if (user == null)
 		{

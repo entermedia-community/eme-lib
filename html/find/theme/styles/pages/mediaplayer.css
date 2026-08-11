@@ -152,12 +152,11 @@ li.assettabnav {
 .lighttheme li.assettabnav {
 	border-color: var(--light-border);
 }
-#assettabnavs li a {
+
+#assettabnavs li.assettabnav a {
 	color: var(--themed-tab-btn-text);
 	line-height: 35px;
-	display: block;
 }
-
 #assettabnavs .gotoarrows {
 	font-size: 1.4rem;
 	line-height: 35px;
@@ -182,6 +181,14 @@ li.assettabnav {
 }
 .lighttheme #assettabnavs .gotoarrows.arrowenabled:hover {
 	color: var(--default-text);
+}
+#assettabnavs li a {
+	color: #fff;
+	display: block;
+	line-height: 33px;
+}
+#assettabnavs .expandmenu {
+	padding: 0 10px;
 }
 @media (min-width: 992px) {
 	#assettabnavs .expandmenu,
@@ -862,6 +869,7 @@ li.assettabnav {
 .tab-details {
 	height: calc(100% - 36px);
 	overflow-y: auto;
+	overflow-x: hidden;
 }
 .tab-details .asset-data-readwritemetadata {
 	position: absolute;
@@ -871,7 +879,7 @@ li.assettabnav {
 	border-top: 1px solid #555;
 }
 .asset-data-readwritemetadata a {
-	color: var(--themed-tab-btn-text);
+	color: #ffffff;
 	font-size: 0.8rem;
 	display: inline-block;
 	padding: 8px 12px;
