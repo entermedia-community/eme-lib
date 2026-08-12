@@ -409,7 +409,7 @@ public class OpenAiConnection extends BaseLlmConnection implements CatalogEnable
 		JSONObject resmessage = (JSONObject) choice.get("message");
 
 		String ocrResponse = (String) resmessage.get("content");
-		res.setMessage(ocrResponse);
+		res.setRawMessage(ocrResponse);
 
 		return res;
 

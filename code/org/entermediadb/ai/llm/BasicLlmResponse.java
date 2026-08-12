@@ -40,10 +40,12 @@ public class BasicLlmResponse implements LlmResponse
 	}
 
 	@Override
-	public String getMessage()
-	{
-		return fieldMessage;
-	}
+    public String getMessage()
+    {
+       
+        return fieldMessage;
+       
+    }
 
 	public void setMessagePlain(String inMessage)
 	{
@@ -199,5 +201,37 @@ public class BasicLlmResponse implements LlmResponse
 	public String getOperationState()
 	{
 		return fieldOperationState;
+	}
+
+	public void setRawMessage(String inMessage)
+	{
+		String dataMessage = "";
+		String mainMessage = inMessage; 
+
+	    //refactor: include only messageplain with new lines in between, and remove all other messageplain tags. This is to avoid including messageplain that are part of the main message.
+		int dataStart = mainMessage.indexOf("<messageplain>");
+		while (dataStart >= 0)
+		{
+			int dataEnd = mainMessage.indexOf("</messageplain>");
+			if (dataEnd <= dataStart)
+			{
+				break;
+			}
+			String dm = mainMessage.substring(dataStart + 14, dataEnd).trim();
+			if (!dm.isEmpty())
+			{
+				dataMessage += dm + " \n ";
+			}
+			mainMessage = mainMessage.substring(0, dataStart).trim() + mainMessage.substring(dataEnd + 15).trim();
+			dataStart = mainMessage.indexOf("<messageplain>");
+		}
+
+		mainMessage = mainMessage.replaceAll("(?s)<messageplain>.*?</messageplain>", "");
+		setMessage(mainMessage);
+
+		if (dataMessage.length() > 0 && getMessagePlain() == null)
+		{
+			setMessagePlain(dataMessage.trim());
+		}
 	}
 }

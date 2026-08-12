@@ -102,7 +102,7 @@ public class SearchingSkill extends BaseSkill
 				{
 					Map details = (Map) messagestructured.get("step_details");
 					String friendly_response = (String) details.get("friendly_response");
-					res.setMessage(friendly_response);
+					res.setRawMessage(friendly_response);
 				}
 				else
 				{
@@ -172,7 +172,7 @@ public class SearchingSkill extends BaseSkill
 						{
 							String messageprefix = inAgentContext.getMessagePrefix();
 							result = new BasicLlmResponse();
-							result.setMessage(messageprefix);
+							result.setRawMessage(messageprefix);
 
 						}
 						inAgentContext.setMessagePrefix(null);

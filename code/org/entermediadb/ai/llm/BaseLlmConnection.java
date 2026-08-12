@@ -333,43 +333,13 @@ public class BaseLlmConnection implements LlmConnection
 
 			BasicLlmResponse response = new BasicLlmResponse();
 
-			loadMessageResponse(string, response);
+			response.setRawMessage(string);
 
 			return response;
 		}
 		catch (OpenEditException e)
 		{
 			throw e;
-		}
-	}
-
-	public void loadMessageResponse(String inMessage, BasicLlmResponse response)
-	{
-		String dataMessage = "";
-		String mainMessage = inMessage;
-
-		int dataStart = mainMessage.indexOf("<messageplain>");
-		while (dataStart >= 0)
-		{
-			int dataEnd = mainMessage.indexOf("</messageplain>");
-			if (dataEnd <= dataStart)
-			{
-				break;
-			}
-			String dm = mainMessage.substring(dataStart + 14, dataEnd).trim();
-			if (!dm.isEmpty())
-			{
-				dataMessage += dm + " \n ";
-			}
-			mainMessage = mainMessage.substring(0, dataStart).trim() + mainMessage.substring(dataEnd + 15).trim();
-			dataStart = mainMessage.indexOf("<messageplain>");
-		}
-
-		response.setMessage(mainMessage);
-
-		if (dataMessage.length() > 0)
-		{
-			response.setMessagePlain(dataMessage.trim());
 		}
 	}
 

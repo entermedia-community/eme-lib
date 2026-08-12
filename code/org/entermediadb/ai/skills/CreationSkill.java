@@ -62,7 +62,7 @@ public class CreationSkill extends BaseSkill
 				AiCreation creation = inAgentContext.getAiCreationParams();
 				JSONObject content = response.getMessageStructured();
 				creation.setCreationFields(content);
-				response.setMessage("");
+				response.setRawMessage("");
 				response.setRunSkillEnabled("creation_image_create");
 				messageContext.setLastResponse(response);
 				return;

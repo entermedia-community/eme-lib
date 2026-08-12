@@ -71,8 +71,6 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 			archive.getUserProfileManager().setRoleOnUser(archive.getCatalogId(), agent, "guest");
 		}
 
-		log.info("Function monitorChannels call");
-
 		Searcher channels = archive.getSearcher("channel");
 
 		// TODO: How Do I know if this is still active?

@@ -40,6 +40,30 @@ public class OpenAiResponse extends BasicLlmResponse
     }
 
     @Override
+    public void setRawResponse(JSONObject inRawResponse) {
+        // TODO Auto-generated method stub
+        super.setRawResponse(inRawResponse);
+
+        JSONArray choices = (JSONArray) rawResponse.get("choices");
+        if (choices == null || choices.isEmpty())
+            return;
+
+        JSONObject choice = (JSONObject) choices.get(0);
+        JSONObject message = (JSONObject) choice.get("message"); 
+
+        String content = null;
+        if (message != null)
+        {
+            content = (String) message.get("content");
+        }
+        if (content != null)
+        {
+            setRawMessage(content);
+        }
+
+    }
+
+    @Override
     public JSONObject getMessageStructured()
     {
         /*
@@ -98,26 +122,6 @@ public class OpenAiResponse extends BasicLlmResponse
         }
 
         return null;
-    }
-
-    @Override
-    public String getMessage()
-    {
-        if (fieldMessage != null)
-        {
-            return fieldMessage;
-        }
-        if (rawResponse == null)
-            return null;
-
-        JSONArray choices = (JSONArray) rawResponse.get("choices");
-        if (choices == null || choices.isEmpty())
-            return null;
-
-        JSONObject choice = (JSONObject) choices.get(0);
-        JSONObject message = (JSONObject) choice.get("message");
-
-        return message != null ? (String) message.get("content") : null;
     }
 
     @Override

@@ -30,6 +30,8 @@ public interface LlmResponse
 
     void setMessagePlain(String inMessagePlain);
 
+    void setRawMessage(String inMessage);
+
     String getRunSkillEnabled();
 
     void setRunSkillEnabled(String inFunction);

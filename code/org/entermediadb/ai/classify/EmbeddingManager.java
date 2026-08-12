@@ -595,7 +595,7 @@ public class EmbeddingManager extends BaseAiManager
 	public void processRagResponseWithSource(AgentContext inAgentContext, JSONObject ragresponse, LlmResponse response)
 	{
 		String answer = null;
-
+		String formmatedanswer = null;
 		if (ragresponse == null)
 		{
 			answer = "Didn't get any response from RAG";
@@ -615,7 +615,7 @@ public class EmbeddingManager extends BaseAiManager
 			else
 			{
 				MarkdownUtil md = new MarkdownUtil();
-				answer = md.render(answer);
+				formmatedanswer = md.render(answer);
 			}
 
 			JSONArray sourcesdata = (JSONArray) ragresponse.get("sources");
@@ -673,8 +673,8 @@ public class EmbeddingManager extends BaseAiManager
 			inAgentContext.addContext("ragsources", sources);
 		}
 
+		inAgentContext.addContext("raganswerformatted", formmatedanswer);
 		inAgentContext.addContext("raganswer", answer);
-
 		LlmConnection llmconnection = getMediaArchive().getLlmConnection("embedding"); // agentChat
 
 		Data channel = inAgentContext.getChannel();
@@ -690,8 +690,8 @@ public class EmbeddingManager extends BaseAiManager
 		String templatepath = apphome + "/views/agentresponses/ragresponse.html";
 		String responsetext = llmconnection.loadInputFromTemplate(inAgentContext, templatepath);
 
-		response.setMessage(responsetext);
-		response.setMessagePlain(answer);
+		response.setRawMessage(responsetext);
+	
 	}
 
 	public void queueMissingEmbeddings(Map<String, Collection<MultiValued>> missing)
