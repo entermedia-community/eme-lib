@@ -833,7 +833,7 @@ public class AdminModule extends BaseMediaModule
 
 			Searcher codeSearcher = getSearcherManager().getSearcher("system", "templogincode");
 			Calendar cal = Calendar.getInstance();
-			cal.add(Calendar.MINUTE, -15); // codes are only good for 15 minutes when used as a login credential
+			cal.add(Calendar.HOUR, -1); // codes are only good for 15 minutes when used as a login credential
 			Data found = codeSearcher.query().exact("securitycode", code).match("email", email.toLowerCase()).after("date", cal.getTime()).sort("date").searchOne();
 
 			if (found == null)
@@ -863,7 +863,7 @@ public class AdminModule extends BaseMediaModule
 		inReq.putPageValue("access_token", getCookieEncryption().getTempEnterMediaKey(inUser));
 		inReq.putPageValue("token_type", "Bearer");
 		inReq.putPageValue("expires_in", days * 86400);
-		
+
 		if (inIncludeRefreshToken)
 		{
 			inReq.putPageValue("refresh_token", getCookieEncryption().getEnterMediaKey(inUser));
