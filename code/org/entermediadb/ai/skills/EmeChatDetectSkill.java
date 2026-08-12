@@ -116,12 +116,12 @@ public class EmeChatDetectSkill extends BaseSkill
 				log.error("No role selected for query: " + query);
 				return;
 			}
-			JSONObject roleObject = (JSONObject) responserole.get(0);
-			String rolename = (String) roleObject.get("name");
+			
+			
 			String roleid = null;
 			for (Data role : roles)
 			{
-				if (role.getName().equals(rolename))
+				if (role.getName().equals(responserole))
 				{
 					roleid = role.getId();
 					break;
