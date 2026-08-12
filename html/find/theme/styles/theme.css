@@ -499,9 +499,9 @@ button[type="submit"] {
 }
 
 .form-submit-btns.sticky {
-	backdrop-filter: blur(2px);
+	backdrop-filter: blur(3px);
 	position: sticky;
-	bottom: 32px;
+	bottom: 2px;
 	left: 0px;
 	z-index: 30000;
 	margin: 0 0 1px 2px;
