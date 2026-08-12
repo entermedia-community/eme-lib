@@ -17,12 +17,12 @@ public class AdaptiveTutorialAnswerSkill extends AdaptiveTutorialBaseSkill
 	@Override
 	public void process(AgentContext inAgentContext)
 	{
-		TutorMessageContext messageContext = (TutorMessageContext) inAgentContext;
+		TutorMessageContext tutorMessageContext = (TutorMessageContext) inAgentContext;
 
-		String channelid = messageContext.getChannel().getId();
-		String questionid = (String) messageContext.getContextValue("questionid");
-		String confidence = (String) messageContext.getContextValue("confidence");
-		String selectedoption = (String) messageContext.getContextValue("selectedoption");
+		String channelid = tutorMessageContext.getChannel().getId();
+		String questionid = (String) tutorMessageContext.getContextValue("questionid");
+		String confidence = (String) tutorMessageContext.getContextValue("confidence");
+		String selectedoption = (String) tutorMessageContext.getContextValue("selectedoption");
 
 		if (channelid == null || questionid == null || selectedoption == null)
 		{
@@ -60,36 +60,37 @@ public class AdaptiveTutorialAnswerSkill extends AdaptiveTutorialBaseSkill
 		answer.setValue("iscorrect", iscorrect);
 		answer.setValue("pointsearned", points);
 		answer.setValue("bonusearned", bonus);
-		answer.setValue("user", messageContext.getUserProfile().getUser().getId());
+		answer.setValue("user", tutorMessageContext.getUserProfile().getUser().getId());
 		answer.setValue("datecreated", new Date());
 
 		searcher.saveData(answer);
 
-		messageContext.putContextValue("iscorrect", iscorrect);
-		messageContext.putContextValue("correctoptiontext", question.get(question.get("correctoption")));
-		messageContext.putContextValue("confidence", confidence);
+		tutorMessageContext.putContextValue("iscorrect", iscorrect);
+		tutorMessageContext.putContextValue("correctoptiontext", question.get(question.get("correctoption")));
+		tutorMessageContext.putContextValue("confidence", confidence);
+		tutorMessageContext.putContextValue("rationale", question.get("rationale"));
 
 		LlmConnection llmconnection = getMediaArchive().getLlmConnection("localrender");
-		LlmResponse response = llmconnection.renderLocalAction(messageContext, "chat_tutor_answer");
+		LlmResponse response = llmconnection.renderLocalAction(tutorMessageContext, "chat_tutor_answer");
 
-		messageContext.setLastResponse(response);
-		messageContext.log("sent" + response.getMessagePlain());
+		tutorMessageContext.setLastResponse(response);
+		tutorMessageContext.log("sent" + response.getMessagePlain());
 
-		messageContext.setMessageAgentContext("sectionid", messageContext.getMessageAgentContext("sectionid"));
-		messageContext.setMessageAgentContext("componentid", messageContext.getMessageAgentContext("componentid"));
+		tutorMessageContext.setMessageAgentContext("sectionid", tutorMessageContext.getMessageAgentContext("sectionid"));
+		tutorMessageContext.setMessageAgentContext("componentid", tutorMessageContext.getMessageAgentContext("componentid"));
 
-		AgentEnabled skillEnabled = messageContext.getCurrentAgentEnable();
-		messageContext.fireStatusComplete(skillEnabled);
+		AgentEnabled skillEnabled = tutorMessageContext.getCurrentAgentEnable();
+		tutorMessageContext.fireStatusComplete(skillEnabled);
 
-		Data agentmessage = messageContext.getAgentMessage();
+		Data agentmessage = tutorMessageContext.getAgentMessage();
 
-		agentmessage.setValue("id", messageContext.getTutorialId() + "_progressupdate");
+		agentmessage.setValue("id", tutorMessageContext.getTutorialId() + "_progressupdate");
 		agentmessage.setValue("messagetype", "system");
 
-		RunningScenario scenario = messageContext.getCurrentScenario();
+		RunningScenario scenario = tutorMessageContext.getCurrentScenario();
 
 		AgentEnabled nextAgentEnabled = scenario.findEnabled("chat_tutor_progress");
-		TutorMessageContext nextContext = (TutorMessageContext) scenario.createAgentContext(messageContext, nextAgentEnabled);
+		TutorMessageContext nextContext = (TutorMessageContext) scenario.createAgentContext(tutorMessageContext, nextAgentEnabled);
 
 		scenario.runProcess(nextAgentEnabled, nextContext, true);
 	}

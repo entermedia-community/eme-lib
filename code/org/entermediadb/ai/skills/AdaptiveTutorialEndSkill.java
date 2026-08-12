@@ -12,23 +12,23 @@ public class AdaptiveTutorialEndSkill extends AdaptiveTutorialBaseSkill
 	@Override
 	public void process(AgentContext inAgentContext)
 	{
-		TutorMessageContext messageContext = (TutorMessageContext) inAgentContext;
+		TutorMessageContext tutorMessageContext = (TutorMessageContext) inAgentContext;
 
-		String tutorialid = (String) messageContext.getContextValue("tutorialid");
+		String tutorialid = (String) tutorMessageContext.getContextValue("tutorialid");
 		MultiValued tutorial = (MultiValued) getMediaArchive().query("entitytutorial").exact("id", tutorialid).searchOne();
 
-		messageContext.putContextValue("tutorial", tutorial);
+		tutorMessageContext.putContextValue("tutorial", tutorial);
 
 		LlmConnection llmconnection = getMediaArchive().getLlmConnection("localrender"); // Should stay
 		// search_start
 		LlmResponse response = llmconnection.renderLocalAction(inAgentContext, "chat_tutor_end");
 		// response.setNextSkillEnabled("auto_detect_conversation");
-		messageContext.setLastResponse(response);
-		messageContext.log("sent" + response.getMessagePlain());
+		tutorMessageContext.setLastResponse(response);
+		tutorMessageContext.log("sent" + response.getMessagePlain());
 		// }
 		// super.process(messageContext);
 
-		AgentEnabled skillEnabled = messageContext.getCurrentAgentEnable();
-		messageContext.fireStatusComplete(skillEnabled);
+		AgentEnabled skillEnabled = tutorMessageContext.getCurrentAgentEnable();
+		tutorMessageContext.fireStatusComplete(skillEnabled);
 	}
 }

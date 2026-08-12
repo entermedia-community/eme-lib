@@ -13,32 +13,32 @@ public class AdaptiveTutorialWelcomeSkill extends AdaptiveTutorialBaseSkill
 	@Override
 	public void process(AgentContext inAgentContext)
 	{
-		TutorMessageContext messageContext = (TutorMessageContext) inAgentContext;
+		TutorMessageContext tutorMessageContext = (TutorMessageContext) inAgentContext;
 
-		String channelid = messageContext.getChannel().getId();
+		String channelid = tutorMessageContext.getChannel().getId();
 		HitTracker messages = getMediaArchive().query("chatterbox").exact("channel", channelid).not("messagetype", "system").search();
 		if (messages.size() > 0)
 		{
 			return;
 		}
 
-		String tutorialid = (String) messageContext.getContextValue("tutorialid");
+		String tutorialid = (String) tutorMessageContext.getContextValue("tutorialid");
 
 		MultiValued tutorial = (MultiValued) getMediaArchive().query("entitytutorial").exact("id", tutorialid).searchOne();
 
-		messageContext.putContextValue("tutorial", tutorial);
+		tutorMessageContext.putContextValue("tutorial", tutorial);
 
 		LlmConnection llmconnection = getMediaArchive().getLlmConnection("localrender");
 		LlmResponse response = llmconnection.renderLocalAction(inAgentContext, "chat_tutor_welcome");
-		messageContext.setLastResponse(response);
-		messageContext.log("sent" + response.getMessagePlain());
+		tutorMessageContext.setLastResponse(response);
+		tutorMessageContext.log("sent" + response.getMessagePlain());
 
-		messageContext.setMessageAgentContext("sectionid", null);
-		messageContext.setMessageAgentContext("componentid", null);
-		messageContext.setMessageAgentContext("messagetype", "welcome");
+		tutorMessageContext.setMessageAgentContext("sectionid", null);
+		tutorMessageContext.setMessageAgentContext("componentid", null);
+		tutorMessageContext.setMessageAgentContext("messagetype", "welcome");
 
-		AgentEnabled skillEnabled = messageContext.getCurrentAgentEnable();
-		messageContext.fireStatusComplete(skillEnabled);
+		AgentEnabled skillEnabled = tutorMessageContext.getCurrentAgentEnable();
+		tutorMessageContext.fireStatusComplete(skillEnabled);
 
 		// RunningScenario scenario = messageContext.getCurrentScenario();
 

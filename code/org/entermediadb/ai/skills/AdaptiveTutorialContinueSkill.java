@@ -16,11 +16,11 @@ public class AdaptiveTutorialContinueSkill extends AdaptiveTutorialBaseSkill
 	@Override
 	public void process(AgentContext inAgentContext)
 	{
-		TutorMessageContext messageContext = (TutorMessageContext) inAgentContext;
+		TutorMessageContext tutorMessageContext = (TutorMessageContext) inAgentContext;
 
-		String tutorialid = messageContext.getTutorialId();
-		String sectionid = (String) messageContext.getMessageAgentContext("sectionid");
-		String componentid = (String) messageContext.getMessageAgentContext("componentid");
+		String tutorialid = tutorMessageContext.getTutorialId();
+		String sectionid = (String) tutorMessageContext.getMessageAgentContext("sectionid");
+		String componentid = (String) tutorMessageContext.getMessageAgentContext("componentid");
 
 		while (true)
 		{
@@ -28,7 +28,7 @@ public class AdaptiveTutorialContinueSkill extends AdaptiveTutorialBaseSkill
 			Map<String, Data> next = getNextSectionAndComponent(tutorialid, sectionid, componentid);
 			if (next == null)
 			{
-				endTutorial(messageContext);
+				endTutorial(tutorMessageContext);
 				return;
 			}
 
@@ -37,7 +37,7 @@ public class AdaptiveTutorialContinueSkill extends AdaptiveTutorialBaseSkill
 
 			if (topsection == null || topcomponent == null)
 			{
-				endTutorial(messageContext);
+				endTutorial(tutorMessageContext);
 				return;
 			}
 
@@ -46,12 +46,12 @@ public class AdaptiveTutorialContinueSkill extends AdaptiveTutorialBaseSkill
 				throw new IllegalStateException("Next component is the same as the current component. This should not happen.");
 			}
 
-			messageContext.setMessageAgentContext("sectionid", topsection.getId());
-			messageContext.setMessageAgentContext("componentid", topcomponent.getId());
+			tutorMessageContext.setMessageAgentContext("sectionid", topsection.getId());
+			tutorMessageContext.setMessageAgentContext("componentid", topcomponent.getId());
 
-			messageContext.setMessageAgentContext("componentcontent", topcomponent.get("content"));
-			messageContext.setMessageAgentContext("componenttype", topcomponent.get("componenttype"));
-			messageContext.setMessageAgentContext("contentrole", topcomponent.get("contentrole"));
+			tutorMessageContext.setMessageAgentContext("componentcontent", topcomponent.get("content"));
+			tutorMessageContext.setMessageAgentContext("componenttype", topcomponent.get("componenttype"));
+			tutorMessageContext.setMessageAgentContext("contentrole", topcomponent.get("contentrole"));
 
 			if ("mcq".equals(topcomponent.get("componenttype")))
 			{
@@ -74,10 +74,10 @@ public class AdaptiveTutorialContinueSkill extends AdaptiveTutorialBaseSkill
 					// questionjson.put("correctoption", question.get("correctoption"));
 					// questionjson.put("rationale", question.get("rationale"));
 					questionjson.put("mcqcognitivelevel", question.get("mcqcognitivelevel"));
-					messageContext.setMessageAgentContext("question", questionjson);
+					tutorMessageContext.setMessageAgentContext("question", questionjson);
 				}
-				messageContext.setMessageAgentContext("messagetype", "question");
-				messageContext.setMessageAgentContext("interactive", "yes");
+				tutorMessageContext.setMessageAgentContext("messagetype", "question");
+				tutorMessageContext.setMessageAgentContext("interactive", "yes");
 			}
 			else if ("asset".equals(topcomponent.get("componenttype")))
 			{
@@ -92,7 +92,7 @@ public class AdaptiveTutorialContinueSkill extends AdaptiveTutorialBaseSkill
 					{
 						JSONObject assetMap = new JSONObject();
 						assetMap.put("id", asset.getId());
-						String siteroot = (String) messageContext.getContextValue("siteroot");
+						String siteroot = (String) tutorMessageContext.getContextValue("siteroot");
 
 						String mediatype = getMediaArchive().getMediaRenderType(asset);
 						assetMap.put("mediatype", mediatype);
@@ -128,26 +128,26 @@ public class AdaptiveTutorialContinueSkill extends AdaptiveTutorialBaseSkill
 							String asseturl = siteroot + getMediaArchive().asLinkToPreview(asset, "image3000x3000");
 							assetMap.put("url", asseturl);
 						}
-						messageContext.setMessageAgentContext("asset", assetMap);
+						tutorMessageContext.setMessageAgentContext("asset", assetMap);
 					}
 				}
-				messageContext.setMessageAgentContext("messagetype", "asset");
+				tutorMessageContext.setMessageAgentContext("messagetype", "asset");
 			}
 			else
 			{
-				messageContext.setMessageAgentContext("messagetype", "text");
+				tutorMessageContext.setMessageAgentContext("messagetype", "text");
 			}
 
-			AgentEnabled skillEnabled = messageContext.getCurrentAgentEnable();
-			messageContext.fireStatusComplete(skillEnabled);
+			AgentEnabled skillEnabled = tutorMessageContext.getCurrentAgentEnable();
+			tutorMessageContext.fireStatusComplete(skillEnabled);
 
-			messageContext.setWaitTime(200l);
+			tutorMessageContext.setWaitTime(200l);
 
 			sectionid = topsection.getId();
 			componentid = topcomponent.getId();
 			if (shouldPause(topcomponent))
 			{
-				messageContext.setWaitTime(null);
+				tutorMessageContext.setWaitTime(null);
 				return;
 			}
 		}

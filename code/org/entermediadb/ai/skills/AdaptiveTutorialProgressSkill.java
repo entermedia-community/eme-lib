@@ -16,11 +16,11 @@ public class AdaptiveTutorialProgressSkill extends AdaptiveTutorialBaseSkill
 	@Override
 	public void process(AgentContext inAgentContext)
 	{
-		TutorMessageContext messageContext = (TutorMessageContext) inAgentContext;
+		TutorMessageContext tutorMessageContext = (TutorMessageContext) inAgentContext;
 
-		String userid = messageContext.getUserProfile().getUser().getId();
-		String tutorialid = messageContext.getTutorialId();
-		String channelid = messageContext.getChannel().getId();
+		String userid = tutorMessageContext.getUserProfile().getUser().getId();
+		String tutorialid = tutorMessageContext.getTutorialId();
+		String channelid = tutorMessageContext.getChannel().getId();
 
 		if (tutorialid == null || userid == null || channelid == null)
 		{
@@ -128,19 +128,19 @@ public class AdaptiveTutorialProgressSkill extends AdaptiveTutorialBaseSkill
 		progress.setValue("lastreviewed", new Date());
 		progresssearcher.saveData(progress);
 
-		Data agentmessage = messageContext.getAgentMessage();
+		Data agentmessage = tutorMessageContext.getAgentMessage();
 		agentmessage.setValue("messagetype", "system");
 
-		messageContext.setMessageAgentContext("messagetype", "progressupdate");
-		messageContext.setMessageAgentContext("tutorialid", tutorialid);
-		messageContext.setMessageAgentContext("beginnerprogress", String.format("%.4f", average_beginnerpoints));
-		messageContext.setMessageAgentContext("competentprogress", String.format("%.4f", average_competentpoints));
-		messageContext.setMessageAgentContext("expertprogress", String.format("%.4f", average_expertpoints));
+		tutorMessageContext.setMessageAgentContext("messagetype", "progressupdate");
+		tutorMessageContext.setMessageAgentContext("tutorialid", tutorialid);
+		tutorMessageContext.setMessageAgentContext("beginnerprogress", String.format("%.4f", average_beginnerpoints));
+		tutorMessageContext.setMessageAgentContext("competentprogress", String.format("%.4f", average_competentpoints));
+		tutorMessageContext.setMessageAgentContext("expertprogress", String.format("%.4f", average_expertpoints));
 
 		agentmessage.setValue("message", "Progress updated for tutorial " + tutorialid);
 
-		AgentEnabled skillEnabled = messageContext.getCurrentAgentEnable();
-		messageContext.fireStatusComplete(skillEnabled);
+		AgentEnabled skillEnabled = tutorMessageContext.getCurrentAgentEnable();
+		tutorMessageContext.fireStatusComplete(skillEnabled);
 
 	}
 }
