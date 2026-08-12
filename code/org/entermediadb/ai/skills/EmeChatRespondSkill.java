@@ -1,9 +1,12 @@
 package org.entermediadb.ai.skills;
 
 import java.util.Collection;
+
 import org.entermediadb.ai.AgentContext;
 import org.entermediadb.ai.BaseSkill;
-import org.entermediadb.ai.eme.EmeChatContext;
+import org.entermediadb.ai.ChatMessageContext;
+import org.entermediadb.ai.llm.LlmConnection;
+import org.entermediadb.ai.llm.LlmResponse;
 import org.openedit.Data;
 
 public class EmeChatRespondSkill extends BaseSkill
@@ -27,7 +30,7 @@ public class EmeChatRespondSkill extends BaseSkill
 		messageContext.setLastResponse(response);
 
 		// Check the messages and respond if needed
-		Collection<Data> history = (Collection<Data>) inContext.getContextValue("channelchathistory");
+		Collection<Data> history = (Collection<Data>) inAgentContext.getContextValue("channelchathistory");
 
 		if (history != null && !history.isEmpty())
 		{
@@ -43,7 +46,7 @@ public class EmeChatRespondSkill extends BaseSkill
 
 			// We may not need to resond at all if the user is just chatting and not asking for anything. We can
 			// just continue the scenario without responding.
-			super.process(inContext);
+			super.process(inAgentContext);
 
 		}
 
