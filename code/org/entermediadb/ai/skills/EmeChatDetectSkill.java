@@ -110,7 +110,7 @@ public class EmeChatDetectSkill extends BaseSkill
 			Collection<String> docids = getAssistantManager().findDocIdsForEntity("librarycollection", collectionid);
 			childContext.putContextValue("docids", docids);
 
-			JSONArray responserole = (JSONArray) response.getMessageStructured().get("role");
+			String responserole = (String) response.getMessageStructured().get("role");
 			if (responserole == null || responserole.isEmpty())
 			{
 				log.error("No role selected for query: " + query);
