@@ -3257,7 +3257,7 @@ td .emgridcell a i.module-icon {
 .entity-content {
 	background: #fff;
 	border-top: var(--1px-dark);
-	height: 100%;
+	height: 100%
 }
 .lighttheme .entity-content {
 	border-top: none;

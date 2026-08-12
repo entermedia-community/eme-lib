@@ -230,10 +230,5 @@ public class QuestionsMakeSuggestionsSkill extends BaseSkill
 		return answer;
 	}
 
-	public AssistantManager getAssistantManager()
-	{
-		AssistantManager assistantManager = (AssistantManager) getMediaArchive().getBean("assistantManager");
-		return assistantManager;
-	}
 
 }

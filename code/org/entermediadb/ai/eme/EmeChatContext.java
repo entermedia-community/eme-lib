@@ -1,9 +1,9 @@
 package org.entermediadb.ai.eme;
 
 import org.entermediadb.ai.AgentContext;
-import org.entermediadb.ai.llm.BaseAgentContext;
+import org.entermediadb.ai.ChatMessageContext;
 
-public class EmeChatContext extends BaseAgentContext
+public class EmeChatContext extends ChatMessageContext
 {
 	public EmeChatContext(AgentContext inContext) {
 		super(inContext);

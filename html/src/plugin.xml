@@ -2703,7 +2703,13 @@
 		</property>
 	</bean>
 
-	<bean id="chatResponderSkill" class="org.entermediadb.ai.skills.EmeChatRespondSkill" scope="prototype">
+	<bean id="emeChatDetectSkill" class="org.entermediadb.ai.skills.EmeChatDetectSkill" scope="prototype">
+		<property name="moduleManager">
+			<ref bean="moduleManager" />
+		</property>
+	</bean>
+
+	<bean id="emeChatRespondSkill" class="org.entermediadb.ai.skills.EmeChatRespondSkill" scope="prototype">
 		<property name="moduleManager">
 			<ref bean="moduleManager" />
 		</property>

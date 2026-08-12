@@ -78,10 +78,4 @@ public class QuestionsSkill extends BaseSkill
 
 	}
 
-	public AssistantManager getAssistantManager()
-	{
-		AssistantManager assistantManager = (AssistantManager) getMediaArchive().getBean("assistantManager");
-		return assistantManager;
-	}
-
 }

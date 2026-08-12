@@ -1,8 +1,6 @@
 package org.entermediadb.ai;
 
 import java.util.Collection;
-
-import org.entermediadb.ai.assistant.AssistantManager;
 import org.entermediadb.ai.llm.AgentEnabled;
 import org.openedit.CatalogEnabled;
 
@@ -40,12 +38,6 @@ public class BaseSkill extends BaseAiManager implements Skill, CatalogEnabled
 			inContext.getCurrentScenario().runProcess(agentEnabled, childContext);
 			// agentEnabled.getAgent().processend(childContext);
 		}
-	}
-
-	public AssistantManager getAssistantManager()
-	{
-		AssistantManager assistantManager = (AssistantManager) getMediaArchive().getBean("assistantManager");
-		return assistantManager;
 	}
 
 }

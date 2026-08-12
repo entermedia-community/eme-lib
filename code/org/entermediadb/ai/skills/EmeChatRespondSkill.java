@@ -16,10 +16,15 @@ public class EmeChatRespondSkill extends BaseSkill
 	}
 
 	@Override
-	public void process(AgentContext inContext)
+	public void process(AgentContext inAgentContext)
 	{
 		// TODO Auto-generated method stub
-		EmeChatContext chatMessageContext = new EmeChatContext(inContext);
+		ChatMessageContext messageContext = (ChatMessageContext) inAgentContext;
+		
+		LlmConnection llmconnection = getMediaArchive().getLlmConnection("localrender");
+		LlmResponse response = llmconnection.renderLocalAction(inAgentContext, "emechat_respond");
+		
+		messageContext.setLastResponse(response);
 
 		// Check the messages and respond if needed
 		Collection<Data> history = (Collection<Data>) inContext.getContextValue("channelchathistory");

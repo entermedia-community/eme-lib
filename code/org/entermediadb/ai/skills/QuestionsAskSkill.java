@@ -46,7 +46,12 @@ public class QuestionsAskSkill extends BaseSkill
 			if (entity != null)
 			{
 				AssistantManager assistant = (AssistantManager) getMediaArchive().getBean("assistantManager");
-				Collection<String> docids = assistant.findDocIdsForEntity(moduleid, entiyid);
+				Collection<String> docids = (Collection<String>) messageContext.getContextValue("docids");
+				if (docids == null || docids.isEmpty())
+				{
+					docids = assistant.findDocIdsForEntity(moduleid, entiyid);
+				}
+				
 				EmbeddingManager embeddings = (EmbeddingManager) getMediaArchive().getBean("embeddingManager");
 				LlmResponse response = embeddings.findAnswer(messageContext, docids, query);
 				messageContext.setLastResponse(response);
@@ -147,12 +152,6 @@ public class QuestionsAskSkill extends BaseSkill
 		EmbeddingManager embeddings = (EmbeddingManager) getMediaArchive().getBean("embeddingManager");
 		String answer = embeddings.findAnswer(docIds, inQuestion);
 		return answer;
-	}
-
-	public AssistantManager getAssistantManager()
-	{
-		AssistantManager assistantManager = (AssistantManager) getMediaArchive().getBean("assistantManager");
-		return assistantManager;
 	}
 
 }

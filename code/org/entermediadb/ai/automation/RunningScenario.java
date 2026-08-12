@@ -80,6 +80,7 @@ public class RunningScenario extends BaseMediaObject implements CatalogEnabled
 		{
 			inSkillEnabled.getAgent().startupScenario(inContext);
 		}
+		log.info("Running scenario: " + inContext.getCurrentScenario() + "  enabled skill: " + inSkillEnabled.getEnabledId());
 		inSkillEnabled.getAgent().process(inContext);
 
 		LlmResponse response = inContext.getLastResponse();

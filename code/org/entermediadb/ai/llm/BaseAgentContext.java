@@ -645,16 +645,16 @@ public class BaseAgentContext extends BaseData implements CatalogEnabled, AgentC
 
 	// Dont keep this shared across contexts. It should be set by the skill that is running it and only
 	// used for the next skill to determine what to run next. After that it should be cleared.
-	LlmResponse fieldLastResponse;
 
 	public LlmResponse getLastResponse()
 	{
-		return fieldLastResponse;
+		LlmResponse lastresponse = (LlmResponse) getContextValue("lastresponse");
+		return lastresponse;
 	}
 
 	public void setLastResponse(LlmResponse inLastResponse)
 	{
-		fieldLastResponse = inLastResponse;
+		putContextValue("lastresponse", inLastResponse);
 	}
 
 }

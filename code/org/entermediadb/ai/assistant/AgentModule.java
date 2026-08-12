@@ -267,7 +267,7 @@ public class AgentModule extends BaseMediaModule
 
 		AgentContext context = assistantManager.loadChatContext(applicationid, channelid);
 
-		context.setLocale(inReq.getLocale()); // ----
+		context.setLocale(inReq.getLocale()); 
 
 		inReq.putPageValue("agentcontext", context);
 

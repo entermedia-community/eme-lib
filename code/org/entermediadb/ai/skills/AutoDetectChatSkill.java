@@ -16,7 +16,7 @@ import org.openedit.MultiValued;
 import org.openedit.OpenEditException;
 
 public class AutoDetectChatSkill extends BaseSkill
-{
+{ 
 	private static final Log log = LogFactory.getLog(AutoDetectChatSkill.class);
 
 	@Override
