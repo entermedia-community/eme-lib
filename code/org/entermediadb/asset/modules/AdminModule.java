@@ -758,6 +758,9 @@ public class AdminModule extends BaseMediaModule
 		String grantType = inReq.getRequestParameter("grant_type");
 		UserManager userManager = getUserManager(inReq);
 
+		AuthenticationRequest aReq = null;
+		String password = null;
+
 		if ("password".equals(grantType))
 		{
 			String username = inReq.getRequestParameter("username");
@@ -765,7 +768,7 @@ public class AdminModule extends BaseMediaModule
 			{
 				username = inReq.getRequestParameter("email");
 			}
-			String password = inReq.getRequestParameter("password");
+			password = inReq.getRequestParameter("password");
 
 			User user = null;
 			if (username != null)
@@ -783,7 +786,7 @@ public class AdminModule extends BaseMediaModule
 				return;
 			}
 
-			AuthenticationRequest aReq = userManager.createAuthenticationRequest(inReq, password, user);
+			aReq = userManager.createAuthenticationRequest(inReq, password, user);
 			if (userManager.authenticate(aReq) && user.isEnabled())
 			{
 				mintTokens(inReq, user, true);
@@ -801,6 +804,8 @@ public class AdminModule extends BaseMediaModule
 			if (user != null && user.isEnabled())
 			{
 				mintTokens(inReq, user, false);
+				password = (String) inReq.getPageValue("access_token");
+				aReq = userManager.createAuthenticationRequest(inReq, password, user);
 			}
 			else
 			{
@@ -840,11 +845,15 @@ public class AdminModule extends BaseMediaModule
 			codeSearcher.delete(found, null); // one-time use
 
 			mintTokens(inReq, user, true);
+			password = (String) inReq.getPageValue("access_token");
+			aReq = userManager.createAuthenticationRequest(inReq, password, user);
 		}
 		else
 		{
 			putOauthError(inReq, "unsupported_grant_type", "grant_type must be 'password', 'otp', or 'refresh_token'");
 		}
+
+		loginAndRedirect(aReq, inReq);
 	}
 
 	protected void mintTokens(WebPageRequest inReq, User inUser, boolean inIncludeRefreshToken) throws Exception
@@ -854,6 +863,7 @@ public class AdminModule extends BaseMediaModule
 		inReq.putPageValue("access_token", getCookieEncryption().getTempEnterMediaKey(inUser));
 		inReq.putPageValue("token_type", "Bearer");
 		inReq.putPageValue("expires_in", days * 86400);
+		
 		if (inIncludeRefreshToken)
 		{
 			inReq.putPageValue("refresh_token", getCookieEncryption().getEnterMediaKey(inUser));
