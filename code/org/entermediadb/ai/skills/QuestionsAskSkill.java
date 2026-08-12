@@ -53,6 +53,21 @@ public class QuestionsAskSkill extends BaseSkill
 				
 				EmbeddingManager embeddings = (EmbeddingManager) getMediaArchive().getBean("embeddingManager");
 				LlmResponse response = embeddings.findAnswer(messageContext, docids, query);
+
+				Boolean cancelEmptyResponse = (Boolean) messageContext.getContextValue
+				("cancelemptyresponse");
+				
+				if (cancelEmptyResponse != null && cancelEmptyResponse.booleanValue())
+				{
+					String responseText = response.getMessage();
+					if (responseText != null && responseText.contains("The provided context"))
+					{
+						log.info("No answer found for query: " + query + " for entity: " + entiyid);
+						return;
+					}
+				}
+					
+
 				messageContext.setLastResponse(response);
 				messageContext.setWaitTime(null);
 				AgentEnabled skillEnabled = messageContext.getCurrentAgentEnable();

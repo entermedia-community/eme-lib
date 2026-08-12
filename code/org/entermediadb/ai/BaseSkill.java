@@ -10,7 +10,11 @@ public class BaseSkill extends BaseAiManager implements Skill, CatalogEnabled
 {
 	public void startupScenario(AgentContext inContext)
 	{
-		// fire websocket event
+		Boolean cancelStarting = (Boolean) inContext.getContextValue("cancelstartup" + inContext.getCurrentAgentEnable().getEnabledId());
+		if (cancelStarting != null && cancelStarting.booleanValue())
+		{
+			return;
+		}
 		AgentEnabled skillEnabled = inContext.getCurrentAgentEnable();
 		inContext.fireStatusStarting(skillEnabled);
 

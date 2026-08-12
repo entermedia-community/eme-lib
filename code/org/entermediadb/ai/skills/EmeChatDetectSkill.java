@@ -22,6 +22,15 @@ public class EmeChatDetectSkill extends BaseSkill
 	private static final Log log = LogFactory.getLog(EmeChatDetectSkill.class);
 
 	@Override
+	public void startupScenario(AgentContext inContext)
+	{
+		// super.startupScenario(inContext);
+		// dont send hi
+		log.info("Starting chat detect skill");
+	}
+
+
+	@Override
 	public void process(AgentContext inAgentContext)
 	{
 		// TODO Auto-generated method stub
@@ -102,6 +111,9 @@ public class EmeChatDetectSkill extends BaseSkill
 			AgentEnabled skillEnabled = running.findEnabled(skillenableid);
 			AgentContext childContext = running.createAgentContext(inAgentContext, skillEnabled);
 			childContext.setCurrentScenario(running);
+
+			childContext.putContextValue("cancelstartup" + skillenableid, true);
+			childContext.putContextValue("cancelemptyresponse", true);
 			
 			childContext.setValue("entityid", collectionid);
 			childContext.setValue("entitymoduleid", "librarycollection");
