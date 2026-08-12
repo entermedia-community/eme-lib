@@ -140,14 +140,17 @@ public class EmeChatDetectSkill extends BaseSkill
 				}
 			}
 			String emeprofileid = null;
+			String useralias = null;
 			for (MultiValued memeber : teamUsers)
 			{
 				if (memeber.containsValue("teamroles", roleid))
 				{
+					String userid = memeber.get("followeruser");
 					Data emeprofile = getMediaArchive().query("emeprofile").exact("owner", memeber.get("followeruser")).searchOne();
 					if (emeprofile != null)
 					{
 						emeprofileid = emeprofile.getId();
+						useralias = userid;
 					}
 					break;
 				}
@@ -158,7 +161,7 @@ public class EmeChatDetectSkill extends BaseSkill
 				Collection<String> profiledocids = getAssistantManager().findDocIdsForEntity("emeprofile", emeprofileid);
 				docids.addAll(profiledocids);
 			}
-
+			agentmessage.setValue("useralias", useralias);
 
 			running.runProcess(skillEnabled, childContext);
 		}
