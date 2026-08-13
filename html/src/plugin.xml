@@ -34,6 +34,9 @@
 		<property name="cacheManager">
 			<ref bean="cacheManager" />
 		</property>
+		<property name="cookieEncryption">
+			<ref bean="stringEncryption" />
+		</property>
 	</bean>
 	<bean id="autoLoginWithCookie" class="org.entermediadb.authenticate.AutoLoginWithCookie">
 		<property name="moduleManager">
@@ -1398,7 +1401,7 @@
 			<ref bean="eventManager" />
 		</property>
 		<property name="xmlSearcher">
-							<ref bean="xmlFolderSearcher" />
+			<ref bean="xmlFolderSearcher" />
 
 		</property>
 	</bean>
@@ -1423,7 +1426,7 @@
 			<ref bean="eventManager" />
 		</property>
 		<property name="xmlSearcher">
-							<ref bean="xmlFolderSearcher" />
+			<ref bean="xmlFolderSearcher" />
 		</property>
 	</bean>
 
@@ -1787,7 +1790,7 @@
 	</bean>
 
 
-<bean id="elasticSettingsMenuSearcher" class="org.entermediadb.elasticsearch.searchers.ElasticSettingsMenuSearcher" scope="prototype">
+	<bean id="elasticSettingsMenuSearcher" class="org.entermediadb.elasticsearch.searchers.ElasticSettingsMenuSearcher" scope="prototype">
 
 		<property name="xmlSearcher">
 			<ref bean="xmlFolderSearcher" />

@@ -94,7 +94,7 @@ public class AutoLoginOAuth extends AutoLoginWithCookie implements AutoLoginProv
 			return null;
 		}
 
-		String userid = (String) userdata.get("username");
+		String userid = (String) userdata.get("id");
 		String firstname = (String) userdata.get("firstname");
 		String lastname = (String) userdata.get("lastname");
 		String email = (String) userdata.get("email");
