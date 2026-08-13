@@ -74,7 +74,7 @@ public class AutoLoginOAuth extends AutoLoginWithCookie implements AutoLoginProv
 		return connection;
 	}
 
-	protected User autoLoginRemoteFromMd5Value(WebPageRequest inReq, String uandpass)
+	protected synchronized User autoLoginRemoteFromMd5Value(WebPageRequest inReq, String uandpass)
 	{
 		// Rest API call?
 		Data remote = getSearcherManager().getCachedData("system", "systemsettings", "upstream_authentication_mediadb");
