@@ -20,10 +20,19 @@
 		<property name="autoLoginProviders">
 			<list>
 				<ref bean="autoLoginWithCookie" />
+				<ref bean="autoLoginOAuth" />
 				<ref bean="autoLoginByHeader" />
 				<ref bean="autoLoginLti" />
 				<ref bean="autoLoginByToken" />
 			</list>
+		</property>
+	</bean>
+	<bean id="autoLoginOAuth" class="org.entermediadb.authenticate.AutoLoginOAuth">
+		<property name="moduleManager">
+			<ref bean="moduleManager" />
+		</property>
+		<property name="cacheManager">
+			<ref bean="cacheManager" />
 		</property>
 	</bean>
 	<bean id="autoLoginWithCookie" class="org.entermediadb.authenticate.AutoLoginWithCookie">
