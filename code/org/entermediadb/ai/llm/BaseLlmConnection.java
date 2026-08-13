@@ -18,7 +18,7 @@ import org.apache.http.util.EntityUtils;
 import org.entermediadb.ai.AgentContext;
 import org.entermediadb.ai.llm.http.HttpResponse;
 import org.entermediadb.asset.MediaArchive;
-import org.entermediadb.net.HttpSharedConnection;
+import org.openedit.util.HttpSharedConnection;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.openedit.Data;

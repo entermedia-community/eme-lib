@@ -22,7 +22,7 @@ import org.apache.oltu.oauth2.common.message.types.GrantType;
 import org.entermediadb.asset.Asset;
 import org.entermediadb.asset.MediaArchive;
 import org.entermediadb.asset.sources.AssetSource;
-import org.entermediadb.net.HttpSharedConnection;
+import org.openedit.util.HttpSharedConnection;
 import org.entermediadb.util.EmTokenResponse;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;

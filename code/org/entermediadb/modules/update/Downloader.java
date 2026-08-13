@@ -25,7 +25,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.client.LaxRedirectStrategy;
-import org.entermediadb.net.HttpSharedConnection;
+import org.openedit.util.HttpSharedConnection;
 import org.openedit.OpenEditException;
 import org.openedit.util.FileUtils;
 import org.openedit.util.OutputFiller;

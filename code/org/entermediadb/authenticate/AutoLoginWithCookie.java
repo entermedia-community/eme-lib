@@ -93,14 +93,7 @@ public class AutoLoginWithCookie extends BaseAutoLogin implements AutoLoginProvi
 					ok = autoLoginFromMd5Value(inReq, md5);
 				}
 			}
-			if (ok == null && inReq.getRequest() != null)
-			{
-				String auth = inReq.getRequest().getHeader("Authorization");
-				if (auth != null && auth.regionMatches(true, 0, "Bearer ", 0, 7))
-				{
-					ok = autoLoginFromMd5Value(inReq, auth.substring(7).trim());
-				}
-			}
+
 		}
 
 		if (ok != null)

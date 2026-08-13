@@ -18,7 +18,7 @@ import org.dom4j.Element;
 import org.entermediadb.asset.MediaArchive;
 import org.entermediadb.asset.convert.ConvertInstructions;
 import org.entermediadb.asset.convert.ConvertResult;
-import org.entermediadb.net.HttpSharedConnection;
+import org.openedit.util.HttpSharedConnection;
 import org.openedit.BaseWebPageRequest;
 import org.openedit.CatalogEnabled;
 import org.openedit.Data;

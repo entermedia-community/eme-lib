@@ -26,7 +26,7 @@ import org.entermediadb.ai.llm.LlmResponse;
 import org.entermediadb.asset.MediaArchive;
 import org.entermediadb.asset.util.JsonUtil;
 import org.entermediadb.find.EntityManager;
-import org.entermediadb.net.HttpSharedConnection;
+import org.openedit.util.HttpSharedConnection;
 import org.entermediadb.scripts.ScriptLogger;
 import org.entermediadb.util.Inflector;
 import org.entermediadb.websocket.chat.ChatServer;

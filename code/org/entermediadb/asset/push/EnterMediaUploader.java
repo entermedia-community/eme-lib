@@ -8,7 +8,7 @@ import org.apache.http.util.EntityUtils;
 import org.entermediadb.asset.Asset;
 import org.entermediadb.asset.MediaArchive;
 import org.entermediadb.net.HttpMimeBuilder;
-import org.entermediadb.net.HttpSharedConnection;
+import org.openedit.util.HttpSharedConnection;
 import org.json.simple.JSONObject;
 import org.openedit.Data;
 import org.openedit.users.User;

@@ -9,7 +9,7 @@ import org.apache.commons.logging.LogFactory;
 import org.entermediadb.asset.Asset;
 import org.entermediadb.asset.MediaArchive;
 import org.entermediadb.elasticsearch.SearchHitData;
-import org.entermediadb.net.HttpSharedConnection;
+import org.openedit.util.HttpSharedConnection;
 import org.openedit.Data;
 import org.openedit.data.SearcherManager;
 import org.openedit.hittracker.HitTracker;
