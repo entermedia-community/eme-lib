@@ -38,8 +38,13 @@ public class AutoLoginOAuth extends AutoLoginWithCookie implements AutoLoginProv
 			String auth = inReq.getRequest().getHeader("Authorization");
 			if (auth != null && auth.regionMatches(true, 0, "Bearer ", 0, 7))
 			{
-				// Go check the upstream server
-				ok = autoLoginRemoteFromMd5Value(inReq, auth.substring(7).trim());
+				ok = autoLoginFromMd5Value(inReq, auth.substring(7).trim());
+
+				if (ok == null)
+				{
+					// Go check the upstream server
+					ok = autoLoginRemoteFromMd5Value(inReq, auth.substring(7).trim());
+				}
 			}
 		}
 		if (ok != null)

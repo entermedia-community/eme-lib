@@ -190,7 +190,7 @@ public abstract class BaseAutoLogin implements AutoLoginProvider
 					}
 					catch (Exception oex)
 					{
-						log.error(oex.getMessage(), oex);
+						log.error(oex.getMessage());
 						return null;
 					}
 				}
