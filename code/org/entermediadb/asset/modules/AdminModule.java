@@ -853,7 +853,10 @@ public class AdminModule extends BaseMediaModule
 			putOauthError(inReq, "unsupported_grant_type", "grant_type must be 'password', 'otp', or 'refresh_token'");
 		}
 
-		loginAndRedirect(aReq, inReq);
+		if (aReq != null)
+		{
+			loginAndRedirect(aReq, inReq);
+		}
 	}
 
 	protected void mintTokens(WebPageRequest inReq, User inUser, boolean inIncludeRefreshToken) throws Exception
