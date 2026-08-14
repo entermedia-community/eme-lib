@@ -20,10 +20,10 @@
 		<property name="autoLoginProviders">
 			<list>
 				<ref bean="autoLoginWithCookie" />
-				<ref bean="autoLoginOAuth" />
 				<ref bean="autoLoginByHeader" />
 				<ref bean="autoLoginLti" />
 				<ref bean="autoLoginByToken" />
+				<ref bean="autoLoginOAuth" />
 			</list>
 		</property>
 	</bean>

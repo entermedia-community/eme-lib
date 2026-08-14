@@ -1,9 +1,7 @@
 package org.entermediadb.authenticate;
 
 import java.util.Map;
-
 import javax.servlet.http.HttpServletRequest;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.entermediadb.google.GoogleManager;
@@ -65,11 +63,10 @@ public class AutoLoginByToken extends BaseAutoLogin implements AutoLoginProvider
 					usermanager.saveUser(user);
 				}
 			}
-			else
-				if (type.equals("entermedia"))
-				{
-					user = autoLoginFromMd5Value(inReq, accesskey);
-				}
+			else if (type.equals("entermedia"))
+			{
+				user = autoLoginFromMd5Value(inReq, accesskey);
+			}
 
 			if (user != null)
 			{

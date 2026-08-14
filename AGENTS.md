@@ -4,7 +4,7 @@
 
 ### Overview
 
-EME-LIB is a custom Java base framework that is deployable using a script called resources/bin/eme.sh. The embded Tomcat library runs on https://localhost:8080 by default. It is expected NGINX will proxy the port 8080 in a production environmernt.
+EME-LIB is a custom Java base framework that is deployable using a script called resources/bin/eme.sh. The embded Tomcat library runs on http://localhost:8080 by default. It is expected NGINX will proxy the port 8080 in a production environmernt.
 
 The two most important folders are:
 
