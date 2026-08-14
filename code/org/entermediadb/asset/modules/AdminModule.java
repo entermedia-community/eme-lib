@@ -783,6 +783,7 @@ public class AdminModule extends BaseMediaModule
 			if (user == null || password == null)
 			{
 				putOauthError(inReq, "invalid_grant", "Invalid username or password");
+				log.info("Invalid username or password for user " + (user == null ? "null" : user.getUserName()));
 				return;
 			}
 
@@ -794,6 +795,8 @@ public class AdminModule extends BaseMediaModule
 			else
 			{
 				putOauthError(inReq, "invalid_grant", "Invalid username or password");
+				log.info("Invalid username or password for user " + (user == null ? "null" : user.getUserName()));
+				return;
 			}
 		}
 		else if ("refresh_token".equals(grantType))
@@ -810,6 +813,8 @@ public class AdminModule extends BaseMediaModule
 			else
 			{
 				putOauthError(inReq, "invalid_grant", "Invalid or expired refresh token");
+				log.info("Invalid or expired refresh token " + refreshToken + " for user " + (user == null ? "null" : user.getUserName()));
+				return;
 			}
 		}
 		else if ("otp".equals(grantType))
@@ -821,6 +826,7 @@ public class AdminModule extends BaseMediaModule
 			if (email == null || code == null)
 			{
 				putOauthError(inReq, "invalid_request", "email and code are required");
+				log.info("Missing parameters " + email + " and " + code);
 				return;
 			}
 
@@ -828,6 +834,7 @@ public class AdminModule extends BaseMediaModule
 			if (user == null || !user.isEnabled())
 			{
 				putOauthError(inReq, "invalid_grant", "Invalid or expired code");
+				log.info("No such user " + email);
 				return;
 			}
 
@@ -839,6 +846,7 @@ public class AdminModule extends BaseMediaModule
 			if (found == null)
 			{
 				putOauthError(inReq, "invalid_grant", "Invalid or expired code");
+				log.info("No such code " + code + " for user " + email);
 				return;
 			}
 
@@ -851,11 +859,17 @@ public class AdminModule extends BaseMediaModule
 		else
 		{
 			putOauthError(inReq, "unsupported_grant_type", "grant_type must be 'password', 'otp', or 'refresh_token'");
+			log.info("Unsupported grant_type " + grantType);
+			return;
 		}
 
 		if (aReq != null)
 		{
 			loginAndRedirect(aReq, inReq);
+		}
+		else
+		{
+			log.info("No authentication request created for grant_type " + grantType);
 		}
 	}
 
