@@ -53,7 +53,7 @@ public class SmartCreatorCreateQuestionsSkill extends BaseSkill
 
 			String contextcontent = "";
 
-			int ordering = -1;
+			int ordering = 0;
 
 			for (Data componentcontent : componentcontents)
 			{
