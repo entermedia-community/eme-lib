@@ -790,7 +790,7 @@ public class BaseAsset extends SearchHitData implements MultiValued, SaveableDat
 	}
 
 	@Override
-	public int getInt(String inKey)
+	public Integer getInt(String inKey)
 	{
 		String val = get(inKey);
 		if (val == null)
@@ -864,60 +864,58 @@ public class BaseAsset extends SearchHitData implements MultiValued, SaveableDat
 			}
 			log.debug("saving keyword " + getId() + " " + inValue);
 		}
-		else
-			if ("category-exact".equals(inKey) || "category".equals(inKey))
+		else if ("category-exact".equals(inKey) || "category".equals(inKey))
+		{
+			if (inValue != null)
 			{
-				if (inValue != null)
+				// This is annoying. We will need to fix categories when we save this asset
+				Collection catids = null;
+				if (inValue instanceof Collection)
 				{
-					// This is annoying. We will need to fix categories when we save this asset
-					Collection catids = null;
-					if (inValue instanceof Collection)
+					catids = (Collection) inValue;
+				}
+				else
+				{
+
+					String ids = ((String) inValue).replaceAll(" ", "|");
+					String[] vals = VALUEDELMITER.split(ids);
+					catids = Arrays.asList(vals);
+				}
+
+				Collection cats = new HashSet();
+				for (Iterator iterator = catids.iterator(); iterator.hasNext();)
+				{
+					Object row = iterator.next();
+					if (row instanceof Category)
 					{
-						catids = (Collection) inValue;
+						cats.add(row);
 					}
 					else
 					{
-
-						String ids = ((String) inValue).replaceAll(" ", "|");
-						String[] vals = VALUEDELMITER.split(ids);
-						catids = Arrays.asList(vals);
-					}
-
-					Collection cats = new HashSet();
-					for (Iterator iterator = catids.iterator(); iterator.hasNext();)
-					{
-						Object row = iterator.next();
-						if (row instanceof Category)
+						String id = (String) row;
+						String[] ids = VALUEDELMITER.split(id.replaceAll(" ", "|"));
+						for (int i = 0; i < ids.length; i++)
 						{
-							cats.add(row);
-						}
-						else
-						{
-							String id = (String) row;
-							String[] ids = VALUEDELMITER.split(id.replaceAll(" ", "|"));
-							for (int i = 0; i < ids.length; i++)
+							Category cat = getMediaArchive().getCategory(ids[i]);
+							if (cat != null)
 							{
-								Category cat = getMediaArchive().getCategory(ids[i]);
-								if (cat != null)
-								{
-									cats.add(cat);
-								}
+								cats.add(cat);
 							}
 						}
 					}
-					inKey = "category-exact";
-					inValue = cats;
 				}
+				inKey = "category-exact";
+				inValue = cats;
 			}
-			else
-				if (inValue instanceof Map)
-				{
-					PropertyDetail detail = getMediaArchive().getAssetPropertyDetails().getDetail(inKey);
-					if (detail != null && detail.isMultiLanguage())
-					{
-						inValue = new LanguageMap((Map) inValue);
-					}
-				}
+		}
+		else if (inValue instanceof Map)
+		{
+			PropertyDetail detail = getMediaArchive().getAssetPropertyDetails().getDetail(inKey);
+			if (detail != null && detail.isMultiLanguage())
+			{
+				inValue = new LanguageMap((Map) inValue);
+			}
+		}
 
 		super.setValue(inKey, inValue);
 	}
@@ -1081,30 +1079,28 @@ public class BaseAsset extends SearchHitData implements MultiValued, SaveableDat
 					jsonarray.addAll((Collection) value);
 					json.put(key, jsonarray);
 				}
+				else if (value instanceof Map)
+				{
+					JSONObject jsonmap = new JSONObject((Map) value);
+					json.put(key, jsonmap);
+				}
 				else
-					if (value instanceof Map)
-					{
-						JSONObject jsonmap = new JSONObject((Map) value);
-						json.put(key, jsonmap);
-					}
-					else
-					{
-						json.put(key, value);
-					}
+				{
+					json.put(key, value);
+				}
 			}
 			output.append(json.toJSONString());
 		}
+		else if (!getProperties().isEmpty())
+		{
+			JSONObject json = new JSONObject(getSearchData());
+			json.putAll(getProperties());
+			output.append(json.toJSONString());
+		}
 		else
-			if (!getProperties().isEmpty())
-			{
-				JSONObject json = new JSONObject(getSearchData());
-				json.putAll(getProperties());
-				output.append(json.toJSONString());
-			}
-			else
-			{
-				output.append(getSearchHit().getSourceAsString());
-			}
+		{
+			output.append(getSearchHit().getSourceAsString());
+		}
 		output.append(" \n}");
 		return output.toString();
 	}

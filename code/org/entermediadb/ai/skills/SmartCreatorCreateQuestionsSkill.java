@@ -12,6 +12,7 @@ import org.entermediadb.ai.llm.LlmConnection;
 import org.entermediadb.ai.llm.LlmResponse;
 import org.json.simple.JSONObject;
 import org.openedit.Data;
+import org.openedit.MultiValued;
 import org.openedit.data.Searcher;
 
 public class SmartCreatorCreateQuestionsSkill extends BaseSkill
@@ -49,17 +50,20 @@ public class SmartCreatorCreateQuestionsSkill extends BaseSkill
 		for (Data section : componentsSection)
 		{
 			String sectionid = section.getId();
-			Collection<Data> componentcontents = componentSearcher.query().exact("componentsectionid", sectionid).sort("ordering").search();
+			Collection<MultiValued> componentcontents = componentSearcher.query().exact("componentsectionid", sectionid).sort("ordering").search();
 
 			String contextcontent = "";
 
 			int ordering = 0;
 
-			for (Data componentcontent : componentcontents)
+			for (MultiValued componentcontent : componentcontents)
 			{
-				int currentOrdering = Integer.parseInt(componentcontent.get("ordering"));
+				Integer currentOrdering = componentcontent.getInt("ordering");
 
-				ordering = Math.max(ordering, currentOrdering);
+				if (currentOrdering != null)
+				{
+					ordering = Math.max(ordering, currentOrdering);
+				}
 
 				String componenttype = componentcontent.get("componenttype");
 				if ("asset".equals(componenttype))
