@@ -54,19 +54,16 @@ public class SmartCreatorCreateQuestionsSkill extends BaseSkill
 			String contextcontent = "";
 
 			int ordering = -1;
+
 			for (Data componentcontent : componentcontents)
 			{
 				int currentOrdering = Integer.parseInt(componentcontent.get("ordering"));
-				if (ordering == -1)
-				{
-					ordering = currentOrdering;
-				}
-				componentcontent.setValue("ordering", currentOrdering + 1);
+
+				ordering = Math.max(ordering, currentOrdering);
 
 				String componenttype = componentcontent.get("componenttype");
 				if ("asset".equals(componenttype))
 				{
-					// TODO: We could also include the asset description or other metadata here if needed
 					continue;
 				}
 				if ("mcq".equals(componenttype))
@@ -75,8 +72,6 @@ public class SmartCreatorCreateQuestionsSkill extends BaseSkill
 				}
 				contextcontent += componentcontent.get("content");
 			}
-
-			componentSearcher.saveAllData(componentcontents, null);
 
 			if (contextcontent.trim().length() == 0)
 			{
@@ -95,6 +90,7 @@ public class SmartCreatorCreateQuestionsSkill extends BaseSkill
 				String questiontext = (String) questionmap.get("question");
 				List<String> choices = (List<String>) questionmap.get("choices");
 				Object correct_answer_index = questionmap.get("correct_answer_index");
+				String rationale = (String) questionmap.get("rationale");
 				Integer correctindex = null;
 				if (correct_answer_index instanceof Long)
 				{
@@ -129,6 +125,7 @@ public class SmartCreatorCreateQuestionsSkill extends BaseSkill
 				}
 				question.setValue("correctoption", QUESTION_CHOICES[correctindex]);
 				question.setValue("mcqcognitivelevel", cognitive_level);
+				question.setValue("rationale", rationale);
 				questionSearcher.saveData(question);
 
 				Data componentContent = componentSearcher.createNewData();
@@ -136,6 +133,7 @@ public class SmartCreatorCreateQuestionsSkill extends BaseSkill
 				componentContent.setValue("questionid", question.getId());
 				componentContent.setValue("modificationdate", new Date());
 				componentContent.setValue("componentsectionid", sectionid);
+				ordering += 1;
 				componentContent.setValue("ordering", ordering);
 				componentSearcher.saveData(componentContent);
 			}
