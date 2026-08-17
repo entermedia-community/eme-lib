@@ -1,6 +1,7 @@
 package org.entermediadb.ai.skills;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import org.entermediadb.ai.AgentContext;
@@ -151,7 +152,7 @@ public class AdaptiveTutorialContinueSkill extends AdaptiveTutorialBaseSkill
 			componentid = topcomponent.getId();
 			MultiValued newMessage = (MultiValued) getMediaArchive().getSearcher("chatterbox").createNewData();
 			newMessage.setJSONValue("agentcontextvalues", tutorMessageContext.getMessageAgentContext());
-			getMediaArchive().saveData("chatterbox", newMessage);
+			newMessage.setValue("date", new Date());
 			tutorMessageContext.setAgentMessage(newMessage);
 		}
 	}
