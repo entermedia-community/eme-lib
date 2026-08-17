@@ -141,15 +141,16 @@ public class AdaptiveTutorialContinueSkill extends AdaptiveTutorialBaseSkill
 			AgentEnabled skillEnabled = tutorMessageContext.getCurrentAgentEnable();
 			tutorMessageContext.fireStatusComplete(skillEnabled);
 
-			tutorMessageContext.setWaitTime(200l);
-
-			sectionid = topsection.getId();
-			componentid = topcomponent.getId();
 			if (shouldPause(topcomponent))
 			{
 				tutorMessageContext.setWaitTime(null);
 				return;
 			}
+
+			sectionid = topsection.getId();
+			componentid = topcomponent.getId();
+			MultiValued newMessage = (MultiValued) getMediaArchive().getSearcher("chatterbox").createNewData();
+			tutorMessageContext.setAgentMessage(newMessage);
 		}
 	}
 
