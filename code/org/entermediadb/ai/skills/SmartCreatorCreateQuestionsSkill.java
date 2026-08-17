@@ -80,7 +80,6 @@ public class SmartCreatorCreateQuestionsSkill extends BaseSkill
 			if (contextcontent.trim().length() == 0)
 			{
 				log.info("Skipping section because it has no content: " + sectionid);
-				// TODO: Use embedding server to use just the section title to generate questions
 				continue;
 			}
 
