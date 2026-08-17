@@ -150,6 +150,8 @@ public class AdaptiveTutorialContinueSkill extends AdaptiveTutorialBaseSkill
 			sectionid = topsection.getId();
 			componentid = topcomponent.getId();
 			MultiValued newMessage = (MultiValued) getMediaArchive().getSearcher("chatterbox").createNewData();
+			newMessage.setJSONValue("agentcontextvalues", tutorMessageContext.getMessageAgentContext());
+			getMediaArchive().saveData("chatterbox", newMessage);
 			tutorMessageContext.setAgentMessage(newMessage);
 		}
 	}
