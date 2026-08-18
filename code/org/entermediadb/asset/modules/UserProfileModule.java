@@ -237,7 +237,21 @@ public class UserProfileModule extends BaseMediaModule
 		 */
 
 		Map params = inReq.getParameterMap();
-		String[] fieldsarray = (String[]) params.get("field");
+		Object fields = params.get("field");
+
+		String[] fieldsarray;
+
+		if (fields instanceof String)
+		{
+			String field = (String) fields;
+			fieldsarray = new String[1];
+			fieldsarray[0] = field;
+		}
+		else
+		{
+			fieldsarray = (String[]) params.get("field");
+		}
+
 		Collection formfields = new ArrayList();
 		for (int i = 0; i < fieldsarray.length; i++)
 		{
