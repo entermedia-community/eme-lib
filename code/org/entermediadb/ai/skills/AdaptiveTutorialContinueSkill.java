@@ -154,6 +154,10 @@ public class AdaptiveTutorialContinueSkill extends AdaptiveTutorialBaseSkill
 			newMessage.setJSONValue("agentcontextvalues", tutorMessageContext.getMessageAgentContext());
 			newMessage.setValue("date", new Date());
 			tutorMessageContext.setAgentMessage(newMessage);
+			tutorMessageContext.setMessageAgentContext("sectionid", sectionid);
+			tutorMessageContext.setMessageAgentContext("componentid", componentid);
+			tutorMessageContext.setMessageAgentContext("tutorialid", tutorialid);
+			getMediaArchive().saveData("chatterbox", newMessage);
 		}
 	}
 
