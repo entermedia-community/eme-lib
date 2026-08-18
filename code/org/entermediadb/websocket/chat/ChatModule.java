@@ -654,6 +654,11 @@ public class ChatModule extends BaseMediaModule
 
 		if (currentchannel != null)
 		{
+			Calendar now = Calendar.getInstance();
+			now.add(Calendar.SECOND, -1);
+			currentchannel.setValue("refreshdate", now.getTime());
+			channelsearcher.saveData(currentchannel);
+
 			inReq.putPageValue("currentchannel", currentchannel);
 			return;
 		}
