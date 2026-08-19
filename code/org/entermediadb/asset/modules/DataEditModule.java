@@ -1444,6 +1444,21 @@ public class DataEditModule extends BaseMediaModule
 
 	public void parseMultPart(WebPageRequest inReq) throws Exception
 	{
+		if (inReq.getRequest() == null)
+		{
+			return;
+		}
+		String type = inReq.getRequest().getContentType();
+		if (type != null && type.startsWith("application/json"))
+		{
+			inReq.getJsonRequest(); // This will read in the body and setup the parameters
+			return;
+		}
+		else if (type == null || !type.startsWith("multipart"))
+		{
+			return;
+		}
+
 		FileUpload command = new FileUpload();
 		command.setPageManager(getPageManager());
 		UploadRequest properties = command.parseArguments(inReq);

@@ -1456,13 +1456,13 @@ public class AssetEditModule extends BaseMediaModule
 		Searcher searcher = null;
 		String searchtype = inReq.findValue("searchtype");
 		String pageval = inReq.findActionValue("pageval");
-
+		Boolean savetarget = false;
 		if (pageval == null)
 		{
 			pageval = "data";
 		}
-		Data target = (Data) inReq.getPageValue(pageval);
 
+		Data target = (Data) inReq.getPageValue(pageval);
 		if (target != null)
 		{
 			id = target.get("id");
@@ -1504,8 +1504,11 @@ public class AssetEditModule extends BaseMediaModule
 			{
 				target = searcher.createNewData();
 				String[] fields = inReq.getRequestParameters("field");
-				searcher.updateData(inReq, fields, target); // TODO: Skip if save = false
-				searcher.saveData(target, inReq.getUser());
+				if (savetarget)
+				{
+					searcher.updateData(inReq, fields, target);
+					searcher.saveData(target, inReq.getUser());
+				}
 				id = target.getId();
 				inReq.setRequestParameter("id", id);
 			}
@@ -1540,7 +1543,14 @@ public class AssetEditModule extends BaseMediaModule
 			}
 			else if ("chatterbox".equals(searchtype) && target == null)
 			{
-
+				String channel = inReq.getRequestParameter("channel");
+				Data channeldata = archive.getCachedData("channel", channel);
+				if (channeldata != null)
+				{
+					searchtype = channeldata.get("searchtype");
+					String channeldataid = channeldata.get("dataid");
+					target = archive.getCachedData(searchtype, channeldataid);
+				}
 			}
 
 			if (sourcepath == null && target != null)
@@ -1622,12 +1632,12 @@ public class AssetEditModule extends BaseMediaModule
 			archive.getAssetEditor().createNewVersionData(current, originalfile.getContentItem(), inReq.getUserName(), Version.UPLOADED, null);
 
 			inReq.putPageValue("newasset", current);
-			if (target != null)
+
+			if (target != null && savetarget)
 			{
 				target.setValue(detailid, current.getId());
 				inReq.setRequestParameter(detailid + ".value", current.getId());
 				searcher.saveData(target, inReq.getUser());
-
 			}
 
 			savedassets.add(current);

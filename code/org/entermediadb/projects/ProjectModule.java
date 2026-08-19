@@ -1809,10 +1809,12 @@ public class ProjectModule extends BaseMediaModule
 				Date now = new Date();
 				Searcher chatterboxsearcher = archive.getSearcher("chatterbox");
 				message = chatterboxsearcher.createNewData();
-
+				String messagetext = inReq.getRequestParameter("chatmessage");
 				message.setValue("user", inReq.getUserName());
 				message.setValue("date", now);
 				message.setValue("channel", channel);
+
+				message.setValue("message", messagetext);
 				String entityid = inReq.getRequestParameter("entityid");
 				message.setValue("entityid", entityid);
 
