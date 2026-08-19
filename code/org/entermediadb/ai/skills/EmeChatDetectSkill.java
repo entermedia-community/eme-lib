@@ -54,6 +54,8 @@ public class EmeChatDetectSkill extends BaseSkill
 			return;
 		}
 
+		inAgentContext.putContextValue("messagereload", false);
+
 		String entityid = inAgentContext.get("entityid");
 
 		Data entity = getMediaArchive().getCachedData("collectiveproject", entityid);
@@ -94,6 +96,8 @@ public class EmeChatDetectSkill extends BaseSkill
 		scenario = selectedtool.split("\\.")[0];
 		String skillenableid = selectedtool.split("\\.")[1];
 
+		log.info("Selected tool: " + selectedtool + " for scenario: " + scenario + " and skill: " + skillenableid);
+
 		JSONObject functionArgs = response.getFunctionArguments();
 		inAgentContext.addContext("messagestructured", response.getMessageStructured());
 		inAgentContext.addContext("userquery", query);
@@ -102,7 +106,7 @@ public class EmeChatDetectSkill extends BaseSkill
 		if (scenario != null)
 		{
 
-			RunningScenario running = (RunningScenario) getMediaArchive().getBean("runningscenario", false);;
+			RunningScenario running = (RunningScenario) getMediaArchive().getBean("runningscenario", false);
 			running.setId(scenario);
 
 			AgentEnabled skillEnabled = running.findEnabled(skillenableid);

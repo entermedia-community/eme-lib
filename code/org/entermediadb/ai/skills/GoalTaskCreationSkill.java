@@ -10,6 +10,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.entermediadb.ai.AgentContext;
 import org.entermediadb.ai.BaseSkill;
+import org.entermediadb.ai.llm.BasicLlmResponse;
 import org.entermediadb.ai.llm.LlmConnection;
 import org.entermediadb.ai.llm.LlmResponse;
 import org.json.simple.JSONObject;
@@ -22,54 +23,33 @@ public class GoalTaskCreationSkill extends BaseSkill
 	@Override
 	public void process(AgentContext inContext)
 	{
+
+		Data goal = (Data) inContext.getContextValue("goal");
+		if (goal != null)
+		{
+			createOutline(inContext, goal);
+			getMediaArchive().saveData("projectgoal", goal);
+
+			BasicLlmResponse response = new BasicLlmResponse();
+			response.setNextSkillEnabled("emechat_responder_welcome");
+
+			inContext.putContextValue("messagereload", true);
+			inContext.setLastResponse(response);
+			super.process(inContext);
+
+			return;
+		}
+
 		Collection<Data> goals = getMediaArchive().query("projectgoal").exact("projectstatus", "open").exact("taggedbyllm", "false").search();
 		if (goals == null || goals.isEmpty())
 		{
 			return;
 		}
 		List<Data> tosave = new ArrayList<>();
-		for (Data goal : goals)
+		for (Data agoal : goals)
 		{
-			String goalid = goal.getId();
-			log.info("Processing Goal: " + goalid);
-
-			inContext.put("goalid", goalid);
-			inContext.put("goal", goal);
-
-			// Get the docids for the collection and set it in the context
-			String collectionid = goal.get("collectionid");
-			Collection<String> docids = getAssistantManager().findDocIdsForEntity("librarycollection", collectionid);
-
-			String goalowner = goal.get("owner");
-			Data ownerprofile = getAssistantManager().getEmeProfileForUser(goalowner);
-			if (ownerprofile != null)
-			{
-				Collection<String> profiledocids = getAssistantManager().findDocIdsForEntity("emeprofile", ownerprofile.getId());
-				docids.addAll(profiledocids);
-			}
-			inContext.putContextValue("docids", docids);
-
-			String goaldescription = goal.get("name");
-
-			// Get a list of tasks (embeding call, question suggest like) that is appropied for the goal
-			LlmConnection llmconnection = getMediaArchive().getLlmConnection("embedding");
-			Map payload = new HashMap();
-
-			String prompt = "Create a brief agenda of maximum 3 items for a goal of " + goaldescription;
-
-			payload.put("query", prompt);
-
-			payload.put("parent_ids", docids);
-			// log.info("Sending: " + payload);
-			LlmResponse response = llmconnection.callJson("/create_outline", payload);
-
-			JSONObject outlineJson = response.getRawResponse();
-			Collection<String> outline = (Collection<String>) outlineJson.get("outline");
-
-			createTasksForGoal(inContext, goal, outline);
-
-			goal.setValue("taggedbyllm", "true");
-			tosave.add(goal);
+			createOutline(inContext, agoal);
+			tosave.add(agoal);
 
 		}
 		getMediaArchive().saveData("projectgoal", tosave);
@@ -78,6 +58,49 @@ public class GoalTaskCreationSkill extends BaseSkill
 
 		// ToDo: Create a new skill to assign tasks to Agents based in their roles
 
+	}
+
+	private void createOutline(AgentContext inContext, Data goal)
+	{
+		String goalid = goal.getId();
+		log.info("Processing Goal: " + goalid);
+
+		inContext.put("goalid", goalid);
+		inContext.put("goal", goal);
+
+		// Get the docids for the collection and set it in the context
+		String collectionid = goal.get("collectionid");
+		Collection<String> docids = getAssistantManager().findDocIdsForEntity("librarycollection", collectionid);
+
+		String goalowner = goal.get("owner");
+		Data ownerprofile = getAssistantManager().getEmeProfileForUser(goalowner);
+		if (ownerprofile != null)
+		{
+			Collection<String> profiledocids = getAssistantManager().findDocIdsForEntity("emeprofile", ownerprofile.getId());
+			docids.addAll(profiledocids);
+		}
+		inContext.putContextValue("docids", docids);
+
+		String goaldescription = goal.get("name");
+
+		// Get a list of tasks (embeding call, question suggest like) that is appropied for the goal
+		LlmConnection llmconnection = getMediaArchive().getLlmConnection("embedding");
+		Map payload = new HashMap();
+
+		String prompt = "Create a brief agenda of maximum 3 items for a goal of " + goaldescription;
+
+		payload.put("query", prompt);
+
+		payload.put("parent_ids", docids);
+		// log.info("Sending: " + payload);
+		LlmResponse response = llmconnection.callJson("/create_outline", payload);
+
+		JSONObject outlineJson = response.getRawResponse();
+		Collection<String> outline = (Collection<String>) outlineJson.get("outline");
+
+		createTasksForGoal(inContext, goal, outline);
+
+		goal.setValue("taggedbyllm", "true");
 	}
 
 	public void createTasksForGoal(AgentContext inContext, Data goal, Collection<String> inOutline)

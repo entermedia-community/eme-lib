@@ -40,7 +40,8 @@ public class OpenAiResponse extends BasicLlmResponse
     }
 
     @Override
-    public void setRawResponse(JSONObject inRawResponse) {
+    public void setRawResponse(JSONObject inRawResponse)
+    {
         // TODO Auto-generated method stub
         super.setRawResponse(inRawResponse);
 
@@ -49,7 +50,7 @@ public class OpenAiResponse extends BasicLlmResponse
             return;
 
         JSONObject choice = (JSONObject) choices.get(0);
-        JSONObject message = (JSONObject) choice.get("message"); 
+        JSONObject message = (JSONObject) choice.get("message");
 
         String content = null;
         if (message != null)
@@ -144,7 +145,8 @@ public class OpenAiResponse extends BasicLlmResponse
             return (String) functionCall.get("name");
         }
         JSONArray functionCalls = (JSONArray) message.get("tool_calls");
-        functionCall = (JSONObject) functionCalls.get(0);
+        // Could be multiple tools, use always the last one
+        functionCall = (JSONObject) functionCalls.get(functionCalls.size() - 1);
         JSONObject function = (JSONObject) functionCall.get("function");
 
         return function != null ? (String) function.get("name") : null;
@@ -176,11 +178,10 @@ public class OpenAiResponse extends BasicLlmResponse
         {
             return ((Long) totalTokens).intValue();
         }
-        else
-            if (totalTokens instanceof Integer)
-            {
-                return (Integer) totalTokens;
-            }
+        else if (totalTokens instanceof Integer)
+        {
+            return (Integer) totalTokens;
+        }
         return 0;
     }
 
