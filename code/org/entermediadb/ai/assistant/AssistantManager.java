@@ -1054,20 +1054,17 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 	public void handleStatusComplete(AgentContext inContext, AgentEnabled inAgentEnabled)
 	{
 
-		if (!(inContext instanceof ChatMessageContext))
+		MultiValued agentmessage = (MultiValued) inContext.getContextValue("agentmessage");
+		if (agentmessage == null)
 		{
 			return;
 		}
-
-		ChatMessageContext chatMessageContext = (ChatMessageContext) inContext;
-
-		MultiValued agentmessage = chatMessageContext.getAgentMessage();
-		LlmResponse response = chatMessageContext.getLastResponse();
+		LlmResponse response = inContext.getLastResponse();
 
 		try
 		{
 			String updatedMessage = null;
-			String messagePrefix = chatMessageContext.getMessagePrefix();
+			String messagePrefix = inContext.getMessagePrefix();
 
 			if (response != null && response.getMessage() != null)
 			{
@@ -1143,6 +1140,11 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 			functionMessageUpdate.put("nextfunctionname", nextFunctionName);
 			functionMessageUpdate.put("functionname", inAgentEnabled.getEnabledId());
 			functionMessageUpdate.put("date", DateStorageUtil.getStorageUtil().getJsonFormat().format(new Date()));
+			Boolean messagereload = (Boolean) inContext.getContextValue("messagereload");
+			if (messagereload != null && messagereload.booleanValue())
+			{
+				functionMessageUpdate.put("command", "messagereload");
+			}
 
 			ChatServer server = (ChatServer) getMediaArchive().getBean("chatServer");
 
@@ -1160,18 +1162,18 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 
 		Long waittime = 200l;
 
-		RunningScenario currentscenario = chatMessageContext.getCurrentScenario();
+		RunningScenario currentscenario = inContext.getCurrentScenario();
 		if (currentscenario != null)
 		{
-			Long wait = chatMessageContext.getWaitTime();
+			Long wait = inContext.getWaitTime();
 			if (wait != null && wait instanceof Long)
 			{
-				chatMessageContext.setWaitTime(null);
+				inContext.setWaitTime(null);
 				waittime = wait;
 				log.info("Previous function requested to wait " + waittime + " milliseconds");
 				try
 				{
-					Thread.sleep(wait);
+					Thread.sleep(waittime);
 				}
 				catch (InterruptedException ex)
 				{
