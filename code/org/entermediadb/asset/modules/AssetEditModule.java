@@ -1450,12 +1450,13 @@ public class AssetEditModule extends BaseMediaModule
 			return;
 		}
 
-		String moduleid = inReq.findPathValue("module");
+		// String moduleid = inReq.findPathValue("module");
 
 		String id = null;
 		Searcher searcher = null;
-
+		String searchtype = inReq.findValue("searchtype");
 		String pageval = inReq.findActionValue("pageval");
+
 		if (pageval == null)
 		{
 			pageval = "data";
@@ -1465,8 +1466,6 @@ public class AssetEditModule extends BaseMediaModule
 		if (target != null)
 		{
 			id = target.get("id");
-
-			String searchtype = inReq.findValue("searchtype");
 			if (searchtype != null)
 			{
 				searcher = archive.getSearcher(searchtype);
@@ -1480,12 +1479,6 @@ public class AssetEditModule extends BaseMediaModule
 		// If no pageval with data provided
 		if (target == null)
 		{
-
-			if (moduleid == null)
-			{
-				moduleid = inReq.findValue("searchtype");
-			}
-
 			id = inReq.getRequestParameter("id");
 
 			if (id == null)
@@ -1496,14 +1489,18 @@ public class AssetEditModule extends BaseMediaModule
 			{
 				id = inReq.getRequestParameter("entityid");
 			}
-			if (moduleid != null && id != null)
+			String entitymoduleid = inReq.findValue("entitymoduleid");
+
+			if (entitymoduleid != null)
 			{
-				target = archive.getData(moduleid, id);
+				searcher = archive.getSearcher(entitymoduleid);
+				if (id != null)
+				{
+					target = archive.getData(entitymoduleid, id);
+				}
 			}
 
-			searcher = archive.getSearcher(moduleid);
-
-			if (target == null && id == null && searcher != null) // new record
+			if (target == null && searcher != null) // new record
 			{
 				target = searcher.createNewData();
 				String[] fields = inReq.getRequestParameters("field");
@@ -1532,7 +1529,7 @@ public class AssetEditModule extends BaseMediaModule
 			String categoryuploadpath = null;
 
 			// Saving Theme Logo
-			if ("theme".equals(moduleid))
+			if ("theme".equals(searchtype))
 			{
 				sourcepath = "System/";
 				if (target != null && target.getName() != null)
@@ -1540,6 +1537,10 @@ public class AssetEditModule extends BaseMediaModule
 					sourcepath += target.getName() + "/";
 				}
 				sourcepath += item.getName();
+			}
+			else if ("chatterbox".equals(searchtype) && target == null)
+			{
+
 			}
 
 			if (sourcepath == null && target != null)
@@ -1550,7 +1551,7 @@ public class AssetEditModule extends BaseMediaModule
 				variables.put("filename", item.getName());
 				variables.put("data", target);
 
-				Data module = archive.getCachedData("module", moduleid);
+				Data module = archive.getCachedData("module", searchtype);
 				if (module != null)
 				{
 					Category cat = archive.getEntityManager().calculateUploadCategory(module, target, variables, inReq.getUser());

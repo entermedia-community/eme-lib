@@ -122,7 +122,6 @@ public class EmeChatDetectSkill extends BaseSkill
 
 			// Get the docids for the collection and set it in the context
 			Collection<String> docids = getAssistantManager().findDocIdsForEntity("librarycollection", collectionid);
-			childContext.putContextValue("docids", docids);
 
 			String responserole = (String) response.getMessageStructured().get("role");
 			if (responserole == null || responserole.isEmpty())
@@ -146,7 +145,7 @@ public class EmeChatDetectSkill extends BaseSkill
 			{
 				if (memeber.containsValue("teamroles", roleid))
 				{
-					emeprofile = getAssistantManager().getEmeProfileForUser(memeber.get("id"));
+					emeprofile = getAssistantManager().getEmeProfileForUser(memeber.get("followeruser"));
 					break;
 				}
 			}
@@ -155,8 +154,9 @@ public class EmeChatDetectSkill extends BaseSkill
 			{
 				Collection<String> profiledocids = getAssistantManager().findDocIdsForEntity("emeprofile", emeprofile.getId());
 				docids.addAll(profiledocids);
-				useralias = emeprofile.get("id");
+				useralias = emeprofile.get("owner");
 			}
+			childContext.putContextValue("docids", docids);
 			agentmessage.setValue("useralias", useralias);
 
 			running.runProcess(skillEnabled, childContext);
