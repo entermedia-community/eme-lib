@@ -288,7 +288,7 @@ public class ChatServer
 				String entityid = (String) inMap.get("dataid");
 				if (entityid == null || entityid.equals("") || entityid.equals("null"))
 				{
-					entityid = channel.get("entityid");
+					entityid = channel.get("dataid");
 				}
 				if (entityid == null && channel != null)
 				{

@@ -593,6 +593,10 @@ public class ChatModule extends BaseMediaModule
 		MediaArchive archive = getMediaArchive(inReq);
 		Searcher channelsearcher = archive.getSearcher("channel");
 		String channel = inReq.findValue("channel");
+		if (channel == null)
+		{
+			channel = inReq.getRequestParameter("channel");
+		}
 		MultiValued currentchannel = null;
 
 		if (channel != null)
@@ -707,14 +711,11 @@ public class ChatModule extends BaseMediaModule
 			boolean isowner = false;
 			if (channeltype.equals("agententitychat"))
 			{
-				isowner = inReq.getUserName().equals(entity.get("owner"));
-			}
-			// Agent Entity Chats are private per user ?
-			if (!isowner)
-			{
+				// isowner = inReq.getUserName().equals(entity.get("owner"));
 				currentchannel = (MultiValued) channelsearcher.query()
 					.exact("dataid", entity.getId())
 					.exact("searchtype", channeldatamodule)
+					.exact("user", inReq.getUserName())
 					.after("refreshdate", now.getTime())
 					.sort("refreshdateDown")
 					.searchOne();
@@ -724,7 +725,6 @@ public class ChatModule extends BaseMediaModule
 				currentchannel = (MultiValued) channelsearcher.query()
 					.exact("dataid", entity.getId())
 					.exact("searchtype", channeldatamodule)
-					.exact("user", inReq.getUserName())
 					.after("refreshdate", now.getTime())
 					.sort("refreshdateDown")
 					.searchOne();
