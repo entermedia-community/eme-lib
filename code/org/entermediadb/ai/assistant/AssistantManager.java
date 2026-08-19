@@ -1193,4 +1193,15 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 			// // Save the current state
 		}
 	}
+
+	public Data getEmeProfileForUser(String userid)
+	{
+		Data emeprofile = getMediaArchive().query("emeprofile").exact("owner", userid).searchOne();
+		if (emeprofile != null)
+		{
+			return emeprofile;
+		}
+		return null;
+	}
+
 }

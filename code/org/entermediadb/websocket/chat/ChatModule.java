@@ -814,4 +814,18 @@ public class ChatModule extends BaseMediaModule
 		}
 	}
 
+	public void createMessage(WebPageRequest inReq)
+	{
+		String channel = inReq.getRequestParameter("channel");
+		Data chat = getMediaArchive(inReq).getSearcher("chatterbox").createNewData();
+		chat.setValue("channel", channel);
+		chat.setValue("user", inReq.getUserName());
+		chat.setValue("date", new Date());
+		chat.setValue("chatmessagestatus", "completed");
+		getMediaArchive(inReq).saveData("chatterbox", chat);
+		inReq.putPageValue("chat", chat);
+		inReq.putPageValue("data", chat);
+
+	}
+
 }

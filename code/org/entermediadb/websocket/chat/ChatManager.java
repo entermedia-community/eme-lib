@@ -254,4 +254,11 @@ public class ChatManager implements CatalogEnabled
 
 	public void monitorChannels(WebPageRequest inReq) throws Exception
 	{}
+
+	public void broadcastUpdatedMessage(WebPageRequest inReq)
+	{
+
+		ChatServer server = getChatServer();
+		// server.broadcastUpdatedMessage(inReq, inChannelId, inMessageId);
+	}
 }

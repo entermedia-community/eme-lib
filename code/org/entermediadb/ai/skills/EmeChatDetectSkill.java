@@ -29,30 +29,22 @@ public class EmeChatDetectSkill extends BaseSkill
 		log.info("Starting chat detect skill");
 	}
 
-
 	@Override
 	public void process(AgentContext inAgentContext)
 	{
-		// TODO Auto-generated method stub
 		ChatMessageContext messageContext = (ChatMessageContext) inAgentContext;
 		MultiValued agentmessage = messageContext.getAgentMessage();
-		// MultiValued currentfunction = messageContext.getCurrentFunction();
 
 		MultiValued usermessage = (MultiValued) getMediaArchive().getCachedData("chatterbox", agentmessage.get("replytoid"));
 		String query = usermessage.get("message");
 
-		//String agentFn = inAgentContext.getCurrentAgentEnable().getAutomationEnabledData().getId();
-
 		inAgentContext.put("userquery", query);
 
-		//Collection<Data> toplevelfunctions = getMediaArchive().query("aifunction").exact("toplevel", true).search();
-		//inAgentContext.put("toplevelfunctions", toplevelfunctions);
-
-		Collection<Data> channelchathistory = (Collection<Data> ) inAgentContext.getContextValue("channelchathistory");
+		Collection<Data> channelchathistory = (Collection<Data>) inAgentContext.getContextValue("channelchathistory");
 
 		if (channelchathistory == null || channelchathistory.isEmpty())
 		{
-			//Firstime message
+			// Firstime message
 			LlmConnection llmconnection = getMediaArchive().getLlmConnection("localrender");
 			LlmResponse response = llmconnection.renderLocalAction(inAgentContext, "emechat_respond_welcome");
 			response.setNextSkillEnabled("emechat_responder_welcome");
@@ -63,7 +55,7 @@ public class EmeChatDetectSkill extends BaseSkill
 		}
 
 		String entityid = inAgentContext.get("entityid");
-		
+
 		Data entity = getMediaArchive().getCachedData("collectiveproject", entityid);
 		String collectionid = entity.get("parentcollectionid");
 
@@ -93,7 +85,13 @@ public class EmeChatDetectSkill extends BaseSkill
 			log.error("No tool selected for query: " + query);
 			return;
 		}
-		String scheario = selectedtool.split("\\.")[0];
+		String scenario = null;
+		if (!selectedtool.contains("."))
+		{
+			log.error("Selected tool needs the format: scenario.skillenabled. Selected tool:" + selectedtool);
+			return;
+		}
+		scenario = selectedtool.split("\\.")[0];
 		String skillenableid = selectedtool.split("\\.")[1];
 
 		JSONObject functionArgs = response.getFunctionArguments();
@@ -101,24 +99,28 @@ public class EmeChatDetectSkill extends BaseSkill
 		inAgentContext.addContext("userquery", query);
 		inAgentContext.addContext("arguments", functionArgs);
 
-		
-		if (scheario != null)
+		if (scenario != null)
 		{
 
 			RunningScenario running = (RunningScenario) getMediaArchive().getBean("runningscenario", false);;
-			running.setId(scheario);
-			
+			running.setId(scenario);
+
 			AgentEnabled skillEnabled = running.findEnabled(skillenableid);
+			if (skillEnabled == null)
+			{
+				log.error("No skill enabled found for id: " + skillenableid);
+				return;
+			}
 			AgentContext childContext = running.createAgentContext(inAgentContext, skillEnabled);
 			childContext.setCurrentScenario(running);
 
 			childContext.putContextValue("cancelstartup" + skillenableid, true);
 			childContext.putContextValue("cancelemptyresponse", true);
-			
+
 			childContext.setValue("entityid", collectionid);
 			childContext.setValue("entitymoduleid", "librarycollection");
 
-			//Get the docids for the collection and set it in the context
+			// Get the docids for the collection and set it in the context
 			Collection<String> docids = getAssistantManager().findDocIdsForEntity("librarycollection", collectionid);
 			childContext.putContextValue("docids", docids);
 
@@ -128,8 +130,7 @@ public class EmeChatDetectSkill extends BaseSkill
 				log.error("No role selected for query: " + query);
 				return;
 			}
-			
-			
+
 			String roleid = null;
 			for (Data role : roles)
 			{
@@ -139,33 +140,27 @@ public class EmeChatDetectSkill extends BaseSkill
 					break;
 				}
 			}
-			String emeprofileid = null;
 			String useralias = null;
+			Data emeprofile = null;
 			for (MultiValued memeber : teamUsers)
 			{
 				if (memeber.containsValue("teamroles", roleid))
 				{
-					String userid = memeber.get("followeruser");
-					Data emeprofile = getMediaArchive().query("emeprofile").exact("owner", memeber.get("followeruser")).searchOne();
-					if (emeprofile != null)
-					{
-						emeprofileid = emeprofile.getId();
-						useralias = userid;
-					}
+					emeprofile = getAssistantManager().getEmeProfileForUser(memeber.get("id"));
 					break;
 				}
 			}
 
-			if (emeprofileid != null)
+			if (emeprofile != null)
 			{
-				Collection<String> profiledocids = getAssistantManager().findDocIdsForEntity("emeprofile", emeprofileid);
+				Collection<String> profiledocids = getAssistantManager().findDocIdsForEntity("emeprofile", emeprofile.getId());
 				docids.addAll(profiledocids);
+				useralias = emeprofile.get("id");
 			}
 			agentmessage.setValue("useralias", useralias);
 
 			running.runProcess(skillEnabled, childContext);
 		}
-
 
 	}
 

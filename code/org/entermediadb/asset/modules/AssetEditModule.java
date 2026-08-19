@@ -263,11 +263,10 @@ public class AssetEditModule extends BaseMediaModule
 				{
 					store.getAssetSearcher().saveData(asset, inRequest.getUser());
 				}
-				else
-					if (oldvalue != null && !oldvalue.equals(value))
-					{
-						store.getAssetSearcher().saveData(asset, inRequest.getUser());
-					}
+				else if (oldvalue != null && !oldvalue.equals(value))
+				{
+					store.getAssetSearcher().saveData(asset, inRequest.getUser());
+				}
 			}
 		}
 	}
@@ -1407,12 +1406,11 @@ public class AssetEditModule extends BaseMediaModule
 			{
 				asset = (Asset) inReq.getSessionValue(assetid);
 			}
-			else
-				if (assetid == null)
-				{
-					String id = hits.getFirstSelected();
-					asset = getMediaArchive(inReq).getAsset(id);
-				}
+			else if (assetid == null)
+			{
+				String id = hits.getFirstSelected();
+				asset = getMediaArchive(inReq).getAsset(id);
+			}
 			if (asset != null)
 			{
 				inReq.putPageValue("asset", asset);
@@ -1429,13 +1427,6 @@ public class AssetEditModule extends BaseMediaModule
 	/* Only used for Field Uploads */
 	public void handleUploads(WebPageRequest inReq)
 	{
-
-		// final MediaArchive archive = getMediaArchive(inReq);
-		// final Map metadata = readMetaData(inReq,archive,"");
-		//
-		// final Map pages = savePages(inReq,archive,inPages);
-		// final User user = inReq.getUser();
-		//
 		MediaArchive archive = getMediaArchive(inReq);
 
 		UploadRequest properties = (UploadRequest) inReq.getPageValue("uploadrequest");
@@ -1575,7 +1566,7 @@ public class AssetEditModule extends BaseMediaModule
 			if (sourcepath == null)
 			{
 				sourcepath = getAssetImporter().getAssetUtilities().createSourcePath(inReq, archive, item.getName());
-				// Todo: Remove the iten.getName
+				// Todo: Remove the item.getName
 			}
 
 			absolutesourcepath = "/WEB-INF/data/" + archive.getCatalogId() + "/originals/" + sourcepath;

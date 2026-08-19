@@ -1408,27 +1408,6 @@ public class ProjectModule extends BaseMediaModule
 		inReq.putPageValue("instancemonitorid", inReq.getRequestParameter("instancemonitorid"));
 	}
 
-	public void loadCommunityTag(WebPageRequest inReq)
-	{
-		// Todo: Base on siteroot
-		if (inReq.getPageValue("communitytag") != null)
-		{
-			return;
-		}
-		String communitytagid = inReq.findPathValue("communitytag");
-
-		if (communitytagid == null)
-		{
-			return;
-		}
-		MediaArchive archive = getMediaArchive(inReq);
-		Data communitytag = archive.getCachedData("communitytag", communitytagid);
-		if (communitytag != null)
-		{
-			inReq.putPageValue("communitytag", communitytag);
-		}
-	}
-
 	public Map loadGoalsInMessages(WebPageRequest inReq)
 	{
 		Map goalspermessage = new HashMap<String, Data>();
@@ -1814,9 +1793,10 @@ public class ProjectModule extends BaseMediaModule
 
 		Collection savedassets = (Collection) inReq.getPageValue("savedassets");
 
+		Data message = null;
+		// Check if messageid is passed in
 		String messageid = inReq.getRequestParameter("messageid");
-
-		Data message = archive.getData("chatterbox", messageid);
+		message = archive.getData("chatterbox", messageid);
 		Boolean broadcast = false;
 		if (message == null)
 		{
@@ -1865,7 +1845,6 @@ public class ProjectModule extends BaseMediaModule
 		String[] assetids = inReq.getRequestParameters("assetid");
 		if (assetids != null)
 		{
-
 			for (int i = 0; i < assetids.length; i++)
 			{
 				String assetid = assetids[i];
@@ -1873,7 +1852,6 @@ public class ProjectModule extends BaseMediaModule
 				asset.addValue("attachedtomessageid", message.getId());
 				tosave.add(asset);
 			}
-
 		}
 
 		archive.saveAssets(tosave);

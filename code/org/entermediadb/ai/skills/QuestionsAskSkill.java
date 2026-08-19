@@ -50,23 +50,21 @@ public class QuestionsAskSkill extends BaseSkill
 				{
 					docids = assistant.findDocIdsForEntity(moduleid, entiyid);
 				}
-				
+
 				EmbeddingManager embeddings = (EmbeddingManager) getMediaArchive().getBean("embeddingManager");
 				LlmResponse response = embeddings.findAnswer(messageContext, docids, query);
 
-				Boolean cancelEmptyResponse = (Boolean) messageContext.getContextValue
-				("cancelemptyresponse");
-				
+				Boolean cancelEmptyResponse = (Boolean) messageContext.getContextValue("cancelemptyresponse");
+
 				if (cancelEmptyResponse != null && cancelEmptyResponse.booleanValue())
 				{
 					String responseText = response.getMessage();
-					if (responseText != null && responseText.contains("The provided context"))
+					if (responseText != null && (responseText.contains("The provided context") || responseText.contains("Empty Response")))
 					{
 						log.info("No answer found for query: " + query + " for entity: " + entiyid);
 						return;
 					}
 				}
-					
 
 				messageContext.setLastResponse(response);
 				messageContext.setWaitTime(null);

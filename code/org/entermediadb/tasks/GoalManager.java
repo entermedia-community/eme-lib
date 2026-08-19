@@ -297,14 +297,12 @@ public class GoalManager implements CatalogEnabled
 		archive.saveData("statuschanges", tosave);
 	}
 
-	public Data createGoal(WebPageRequest inReq, Data message, String intaskstatus)
+	public Data createGoal(String inUser, Data message, String inCollectionid)
 	{
 		MediaArchive archive = getMediaArchive();
-		Searcher chatsearcher = archive.getSearcher("chatterbox");
 
 		String topic = message.get("channel");
 		String content = message.get("message");
-		String collectionid = inReq.getRequestParameter("collectionid");
 
 		Searcher searcher = archive.getSearcher("projectgoal");
 		MultiValued goal = (MultiValued) searcher.query().exact("chatparentid", message.getId()).searchOne();
@@ -316,10 +314,10 @@ public class GoalManager implements CatalogEnabled
 			goal.setValue("ticketlevel", "2");
 			goal.setValue("projectstatus", "open");
 			goal.setValue("creationdate", new Date());
-			goal.setValue("collectionid", collectionid);
+			goal.setValue("collectionid", inCollectionid);
 			goal.setValue("chatparentid", message.getId());
-			goal.addValue("userlikes", inReq.getUserName());
-			goal.setValue("owner", inReq.getUserName());
+			goal.addValue("userlikes", inUser);
+			goal.setValue("owner", inUser);
 			// goal.setValue("details",content);
 			try
 			{
@@ -331,14 +329,14 @@ public class GoalManager implements CatalogEnabled
 				// ignore
 			}
 			searcher.saveData(goal);
-			addStatus(archive, goal, inReq.getUserName());
+			addStatus(archive, goal, inUser);
 
 		}
 
 		return goal;
 	}
 
-	public void createTask(MultiValued inGoal, Data inMessage, String intaskstatus)
+	public void createTask(MultiValued inGoal, Data inMessage, String inUser, String intaskstatus)
 	{
 		Searcher tasksearcher = (Searcher) getMediaArchive().getSearcher("goaltask");
 
@@ -347,12 +345,12 @@ public class GoalManager implements CatalogEnabled
 		// String ashtml = XmlUtil.safeHtml(content);
 
 		Data task = tasksearcher.createNewData();
-		String userid = inMessage.get("user");
+
 		task.setValue("projectgoal", inGoal.getId());
 		String collectionid = inGoal.get("collectionid");
 		task.setValue("collectionid", collectionid);
 		// task.setValue("projectdepartment",categoryid);
-		task.setValue("completedby", userid);
+		task.setValue("completedby", inUser);
 		task.setValue("taskstatus", intaskstatus); // On Agenda
 		// task.setValue("projectdepartmentparents",cat.getParentCategories());
 
@@ -362,6 +360,12 @@ public class GoalManager implements CatalogEnabled
 		// task.setName(tasks[i]);
 		tasksearcher.saveData(task);
 
+	}
+
+	public void createTask(MultiValued inGoal, Data inMessage, String intaskstatus)
+	{
+		String userid = inMessage.get("user");
+		createTask(inGoal, inMessage, userid, intaskstatus);
 	}
 
 	public void createTasks(MultiValued inGoal, Data inMessage, String intaskstatus)

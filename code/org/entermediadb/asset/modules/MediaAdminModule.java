@@ -39,6 +39,7 @@ import org.openedit.page.Page;
 import org.openedit.page.PageProperty;
 import org.openedit.page.PageSettings;
 import org.openedit.page.manage.PageManager;
+import org.openedit.servlet.SiteData;
 import org.openedit.users.User;
 import org.openedit.util.DateStorageUtil;
 import org.openedit.util.JSONParser;
@@ -1332,6 +1333,44 @@ public class MediaAdminModule extends BaseMediaModule
 	{
 		String catalogid = inReq.findValue("catalogid");
 		getWorkspaceManager().createMediaDbAiFunctionEndPoints(catalogid);
+	}
+
+	public void loadCommunityTag(WebPageRequest inReq)
+	{
+		// Todo: Base on siteroot
+		if (inReq.getPageValue("communitytag") != null)
+		{
+			return;
+		}
+		String communitytagid = inReq.findPathValue("communitytag");
+
+		if (communitytagid == null)
+		{
+			return;
+		}
+		MediaArchive archive = getMediaArchive(inReq);
+		Data community = archive.getCachedData("communitytag", communitytagid);
+		if (community != null)
+		{
+			inReq.putPageValue("communitytag", community);
+			// String siteid = inReq.findPathValue("siteid");
+
+			String applicationid = community.get("defaultapplicationid");
+
+			inReq.putPageValue("communityhome", applicationid);
+			String communitylink = applicationid;
+			if (community.get("externaldomain") != null)
+			{
+				SiteData sitedata = (SiteData) inReq.getPageValue("sitedata");
+				if (sitedata != null) // We are on a domain
+				{
+					communitylink = ""; // tag.get("externaldomain"); //or ?
+				}
+			}
+			inReq.putPageValue("communitylink", communitylink);
+
+		}
+
 	}
 
 }

@@ -2724,6 +2724,18 @@
 		</property>
 	</bean>
 
+	<bean id="chatCreateGoalSkill" class="org.entermediadb.ai.skills.ChatCreateGoalSkill" scope="prototype">
+		<property name="moduleManager">
+			<ref bean="moduleManager" />
+		</property>
+	</bean>
+
+	<bean id="goalTaskCreationSkill" class="org.entermediadb.ai.skills.GoalTaskCreationSkill" scope="prototype">
+		<property name="moduleManager">
+			<ref bean="moduleManager" />
+		</property>
+	</bean>
+
 	<bean id="questionsMakeSuggestionsSkill" class="org.entermediadb.ai.skills.QuestionsMakeSuggestionsSkill" scope="prototype">
 		<property name="moduleManager">
 			<ref bean="moduleManager" />

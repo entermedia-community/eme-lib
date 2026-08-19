@@ -101,11 +101,10 @@ public class TaskModule extends BaseMediaModule
 			// userq.addOrsGroup("goaltrackercolumn", filter);
 			// }
 		}
-		else
-			if (!userq.contains("collectionid"))
-			{
-				userq.addExact("collectionid", collection.getId());
-			}
+		else if (!userq.contains("collectionid"))
+		{
+			userq.addExact("collectionid", collection.getId());
+		}
 		all = searcher.cachedSearch(inReq, userq);
 		// }
 		if (all == null)
@@ -553,20 +552,19 @@ public class TaskModule extends BaseMediaModule
 						changed = true;
 					}
 				}
-				else
-					if (!(projectstatus.equals("completed") || projectstatus.equals("closed")))
+				else if (!(projectstatus.equals("completed") || projectstatus.equals("closed")))
+				{
+					changed = true;
+					// Add to the front
+					if (goalids.isEmpty())
 					{
-						changed = true;
-						// Add to the front
-						if (goalids.isEmpty())
-						{
-							goalids.add(goal.getId());
-						}
-						else
-						{
-							goalids.add(0, goal.getId());
-						}
+						goalids.add(goal.getId());
 					}
+					else
+					{
+						goalids.add(0, goal.getId());
+					}
+				}
 				if (changed)
 				{
 					cat.setValue("countdata", goalids);
@@ -1550,11 +1548,10 @@ public class TaskModule extends BaseMediaModule
 						hasone = true;
 					}
 				}
-				else
-					if ("5".equals(task.get("taskstatus")))
-					{
-						found.add(task);
-					}
+				else if ("5".equals(task.get("taskstatus")))
+				{
+					found.add(task);
+				}
 			}
 			if (!found.isEmpty() && hasone)
 			{
@@ -1671,6 +1668,12 @@ public class TaskModule extends BaseMediaModule
 		inReq.putPageValue("recentactivities", results);
 	}
 
+	private GoalManager getGoalManager(MediaArchive inArchive)
+	{
+		GoalManager goalm = (GoalManager) inArchive.getBean("goalManager");
+		return goalm;
+	}
+
 	public void createGoalFromMessage(WebPageRequest inReq)
 	{
 		MediaArchive archive = getMediaArchive(inReq);
@@ -1679,12 +1682,10 @@ public class TaskModule extends BaseMediaModule
 
 		Data message = (Data) chatsearcher.searchById(messageid);
 
-		GoalManager goalm = (GoalManager) archive.getBean("goalManager");
-
 		String taskstatus = inReq.getRequestParameter("taskstatus");
 
-		Data goal = goalm.createGoal(inReq, message, taskstatus);
-		goalm.createTask((MultiValued) goal, message, taskstatus);
+		Data goal = getGoalManager(archive).createGoal(inReq.getUserName(), message, inReq.getRequestParameter("collectionid"));
+		getGoalManager(archive).createTask((MultiValued) goal, message, taskstatus);
 
 		// Searcher searcher = archive.getSearcher("projectgoal");
 		// searcher.saveData(goal);
@@ -1724,7 +1725,7 @@ public class TaskModule extends BaseMediaModule
 
 		String taskstatus = inReq.getRequestParameter("taskstatus");
 
-		Data goal = goalm.createGoal(inReq, message, taskstatus);
+		Data goal = goalm.createGoal(inReq.getUserName(), message, inReq.getRequestParameter("collectionid"));
 		// Create actions/Tasks on this goal
 		goalm.createTasks((MultiValued) goal, message, taskstatus);
 

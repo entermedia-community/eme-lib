@@ -27,7 +27,7 @@
   
   <path-action name="Admin.autoLogin"/>
   <property name="communitytag">default</property>
-  <path-action name="ProjectModule.loadCommunityTag"/>
+  <path-action name="MediaAdminModule.loadCommunityTag"/>
   <path-action name="MediaArchiveModule.loadApplicationId"/>
   <path-action name="MediaArchiveModule.loadComponentHome"/>
   <path-action name="ProfileModule.loadUserProfile"/>

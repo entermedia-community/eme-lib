@@ -170,31 +170,27 @@ public class EmbeddingManager extends BaseAiManager
 		{
 			embedHtmlData(inLogger, inEntity, inModuleId);
 		}
+		else if (inModuleId.equals("userpost"))
+		{
+			embedBlogData(inLogger, inEntity, inModuleId);
+		}
+		else if (inModuleId.equals("asset"))
+		{
+			// embedAssetData(inContext, inEntity, inModuleId);
+		}
+		else if (inModuleId.equals("projectgoal"))
+		{
+			// embedCollectionData(inContext, inEntity, inModuleId);
+		}
+		else if (inModuleId.equals("entitydocument") || inModuleId.equals("entityasset"))
+		{
+			Collection pages = getMediaArchive().query(inModuleId + "page").exact(inModuleId, inEntity.getId()).search();
+			embedDocumentData(inLogger, inEntity, pages, inModuleId);
+		}
 		else
-			if (inModuleId.equals("userpost"))
-			{
-				embedBlogData(inLogger, inEntity, inModuleId);
-			}
-			else
-				if (inModuleId.equals("asset"))
-				{
-					// embedAssetData(inContext, inEntity, inModuleId);
-				}
-				else
-					if (inModuleId.equals("projectgoal"))
-					{
-						// embedCollectionData(inContext, inEntity, inModuleId);
-					}
-					else
-						if (inModuleId.equals("entitydocument") || inModuleId.equals("entityasset"))
-						{
-							Collection pages = getMediaArchive().query(inModuleId + "page").exact(inModuleId, inEntity.getId()).search();
-							embedDocumentData(inLogger, inEntity, pages, inModuleId);
-						}
-						else
-						{
-							embedEntityData(inLogger, inEntity, inModuleId);
-						}
+		{
+			embedEntityData(inLogger, inEntity, inModuleId);
+		}
 
 		// Save after successful embedding
 		searcher.saveData(inEntity, null);
@@ -406,15 +402,14 @@ public class EmbeddingManager extends BaseAiManager
 						{
 							entityassetfield = field.getId();
 						}
+						else if (entityassetfield == null && field.getId().equals("primaryimage"))
+						{
+							entityassetfield = field.getId();
+						}
 						else
-							if (entityassetfield == null && field.getId().equals("primaryimage"))
-							{
-								entityassetfield = field.getId();
-							}
-							else
-							{
-								contextFields.add(field);
-							}
+						{
+							contextFields.add(field);
+						}
 					}
 				}
 
@@ -610,7 +605,9 @@ public class EmbeddingManager extends BaseAiManager
 		{
 			if (answer.equalsIgnoreCase("Empty Response"))
 			{
-				answer = "No relevant information found for your question.";
+				// answer = "No relevant information found for your question.";
+				response.setRawMessage(answer);
+				return;
 			}
 			else
 			{
@@ -691,7 +688,7 @@ public class EmbeddingManager extends BaseAiManager
 		String responsetext = llmconnection.loadInputFromTemplate(inAgentContext, templatepath);
 
 		response.setRawMessage(responsetext);
-	
+
 	}
 
 	public void queueMissingEmbeddings(Map<String, Collection<MultiValued>> missing)
