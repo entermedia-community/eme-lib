@@ -1,9 +1,10 @@
 package org.entermediadb.ai.skills;
 
+import java.util.Date;
 import org.entermediadb.ai.AgentContext;
 import org.entermediadb.ai.TutorMessageContext;
 import org.entermediadb.ai.llm.AgentEnabled;
-import org.openedit.Data;
+import org.openedit.MultiValued;
 
 public class AdaptiveTutorialEndSkill extends AdaptiveTutorialBaseSkill
 {
@@ -14,8 +15,12 @@ public class AdaptiveTutorialEndSkill extends AdaptiveTutorialBaseSkill
 
 		String tutorialid = (String) tutorMessageContext.getContextValue("tutorialid");
 
-		Data agentmessage = tutorMessageContext.getAgentMessage();
-		agentmessage.setValue("messagetype", "system");
+		MultiValued newMessage = (MultiValued) getMediaArchive().getSearcher("chatterbox").createNewData();
+		newMessage.setValue("date", new Date());
+		newMessage.setValue("channel", tutorMessageContext.getChannel().getId());
+		newMessage.setValue("user", "agent");
+		newMessage.setValue("messagetype", "system");
+		tutorMessageContext.setAgentMessage(newMessage);
 
 		tutorMessageContext.setMessageAgentContext("messagetype", "end");
 		tutorMessageContext.setMessageAgentContext("tutorialid", tutorialid);

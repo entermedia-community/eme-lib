@@ -5,17 +5,20 @@ import java.util.HashMap;
 import java.util.Map;
 import org.entermediadb.ai.BaseSkill;
 import org.entermediadb.ai.TutorMessageContext;
+import org.entermediadb.ai.automation.RunningScenario;
 import org.entermediadb.ai.llm.AgentEnabled;
 import org.openedit.MultiValued;
 
 public class AdaptiveTutorialBaseSkill extends BaseSkill
 {
-	public void endTutorial(TutorMessageContext messageContext)
+	public void endTutorial(TutorMessageContext tutorMessageContext)
 	{
-		AgentEnabled currentAgentEnabled = messageContext.getCurrentScenario().findEnabled("chat_tutor_end");
+		RunningScenario scenario = tutorMessageContext.getCurrentScenario();
 
-		messageContext.setCurrentAgentEnable(currentAgentEnabled);
-		messageContext.fireStatusComplete(currentAgentEnabled);
+		AgentEnabled nextAgentEnabled = scenario.findEnabled("chat_tutor_end");
+
+		TutorMessageContext nextContext = (TutorMessageContext) scenario.createAgentContext(tutorMessageContext, nextAgentEnabled);
+		scenario.runProcess(nextAgentEnabled, nextContext, true);
 	}
 
 	public Map<String, Double> getCognitiveLevelPoints()
