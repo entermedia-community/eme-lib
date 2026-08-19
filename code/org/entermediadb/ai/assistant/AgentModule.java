@@ -162,6 +162,11 @@ public class AgentModule extends BaseMediaModule
 
 		// Get the contenxt and update it first
 		String channelid = inReq.getRequestParameter("channel");
+		if (channelid == null)
+		{
+			// log.error("Channel is required to send welcome message");
+			return;
+		}
 		String applicationid = inReq.findValue("applicationid");
 		ChatMessageContext chatAgentContext = assistantManager.loadChatContext(applicationid, channelid);
 		if (chatAgentContext == null)
@@ -267,7 +272,7 @@ public class AgentModule extends BaseMediaModule
 
 		AgentContext context = assistantManager.loadChatContext(applicationid, channelid);
 
-		context.setLocale(inReq.getLocale()); 
+		context.setLocale(inReq.getLocale());
 
 		inReq.putPageValue("agentcontext", context);
 
