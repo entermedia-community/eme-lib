@@ -150,6 +150,14 @@ public class AdaptiveTutorialContinueSkill extends AdaptiveTutorialBaseSkill
 
 			sectionid = topsection.getId();
 			componentid = topcomponent.getId();
+
+			Map<String, Data> hasNext = getNextSectionAndComponent(tutorialid, sectionid, componentid);
+			if (hasNext == null)
+			{
+				endTutorial(tutorMessageContext);
+				return;
+			}
+
 			MultiValued newMessage = (MultiValued) getMediaArchive().getSearcher("chatterbox").createNewData();
 			newMessage.setJSONValue("agentcontextvalues", tutorMessageContext.getMessageAgentContext());
 			newMessage.setValue("date", new Date());
