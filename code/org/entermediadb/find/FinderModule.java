@@ -1024,6 +1024,10 @@ public class FinderModule extends BaseMediaModule
 		if (myemeprofile == null)
 		{
 			User user = inReq.getUser();
+			if (user == null)
+			{
+				return;
+			}
 			myemeprofile = getMediaArchive(inReq).query("emeprofile").exact("owner", user.getId()).cachedSearchOne();
 			inReq.putPageValue("myemeprofile", myemeprofile);
 		}
