@@ -4820,7 +4820,7 @@ ul.summary-secondary-nav li a:hover {
 }
 .site-switcher .btn,
 .entityNavBarContainer a.ajax,
-#header .btn-topnav,
+.mediacenterheader .btn-topnav,
 .closeemdialog {
 	box-shadow: var(--raised-shadow);
 }

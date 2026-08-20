@@ -128,16 +128,6 @@ body {
 	background-color: #ffffff;
 	border-bottom: 1px solid #f3f4f6;
 }
-.personal-brand,
-.top-breadcrumb {
-	line-height: 32px;
-	font-weight: bold;
-	font-size: 1.25rem;
-	color: #4a4a4a;
-}
-.chat-main {
-	padding-top: 72px;
-}
 .pickfromiframe {
 	display: none;
 }
