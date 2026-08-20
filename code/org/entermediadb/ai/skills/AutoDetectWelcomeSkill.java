@@ -6,6 +6,7 @@ import org.entermediadb.ai.ChatMessageContext;
 import org.entermediadb.ai.llm.AgentEnabled;
 import org.entermediadb.ai.llm.LlmConnection;
 import org.entermediadb.ai.llm.LlmResponse;
+import org.openedit.Data;
 import org.openedit.MultiValued;
 
 public class AutoDetectWelcomeSkill extends BaseSkill

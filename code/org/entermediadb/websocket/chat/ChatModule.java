@@ -668,8 +668,13 @@ public class ChatModule extends BaseMediaModule
 		}
 
 		// Create New Channel
+		User user = inReq.getUser();
+		if (user == null)
+		{
+			throw new IllegalArgumentException("User is required");
+		}
 		currentchannel = (MultiValued) channelsearcher.createNewData();
-		String channelname = "Chat - " + inReq.getUserName();
+		String channelname = "Chat - " + user.getScreenName();
 
 		currentchannel.setName(channelname);
 		// Could be null if we are in general chat

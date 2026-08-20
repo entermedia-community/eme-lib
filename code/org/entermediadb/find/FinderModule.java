@@ -1019,19 +1019,23 @@ public class FinderModule extends BaseMediaModule
 
 	public void loadEmeProfile(WebPageRequest inReq)
 	{
+		// Get my emeprofile
+		Data myemeprofile = (Data) inReq.getPageValue("myemeprofile");
+		if (myemeprofile == null)
+		{
+			User user = inReq.getUser();
+			myemeprofile = getMediaArchive(inReq).query("emeprofile").exact("owner", user.getId()).cachedSearchOne();
+			inReq.putPageValue("myemeprofile", myemeprofile);
+		}
+		// Loads other users emeprofile if we are viewing their profile
 		Data emeprofile = (Data) inReq.getPageValue("emeprofile");
 		if (emeprofile != null)
 		{
 			return;
 		}
-		User user = inReq.getUser();
-		if (user == null)
-		{
-			return;
-		}
-		MediaArchive archive = getMediaArchive(inReq);
-		Data hit = archive.query("emeprofile").exact("owner", user.getId()).cachedSearchOne();
-		inReq.putPageValue("emeprofile", hit);
+
+		// Profile Loader should always set it.
+		inReq.putPageValue("emeprofile", myemeprofile);
 	}
 
 	public void loadEmeProfileData(WebPageRequest inReq)

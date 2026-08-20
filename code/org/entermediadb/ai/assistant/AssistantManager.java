@@ -380,6 +380,17 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 		Data channel = archive.getCachedData("channel", agentmessage.get("channel"));
 		chatMessageContext.putContextValue("channel", channel);
 
+		// Define alias on emeprofile chats
+		if ("emeprofile".equals(channel.get("searchtype")))
+		{
+			Data emeprofile = getMediaArchive().getCachedData("emeprofile", channel.get("dataid"));
+			if (emeprofile != null)
+			{
+				String useralias = emeprofile.get("owner");
+				agentmessage.setValue("useralias", useralias);
+			}
+		}
+
 		chatMessageContext.putContextValue("usermessage", usermessage);
 		chatMessageContext.putContextValue("agentmessage", agentmessage);
 
