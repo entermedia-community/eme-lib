@@ -2724,6 +2724,12 @@
 		</property>
 	</bean>
 
+	<bean id="emeTeamChatRespondSkill" class="org.entermediadb.ai.skills.EmeTeamChatRespondSkill" scope="prototype">
+		<property name="moduleManager">
+			<ref bean="moduleManager" />
+		</property>
+	</bean>
+
 	<bean id="chatCreateGoalSkill" class="org.entermediadb.ai.skills.ChatCreateGoalSkill" scope="prototype">
 		<property name="moduleManager">
 			<ref bean="moduleManager" />

@@ -81,7 +81,8 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 		// TODO: Only process one "open" channel at a time. What ever the last one they
 		// clicked on
 
-		HitTracker allchannels = channels.query().orgroup("channeltype", "agentchat,agententitychat,agenttutorchat,emeteamchat").after("refreshdate", now.getTime()).sort("refreshdateDown").search();
+		HitTracker allchannels =
+			channels.query().orgroup("channeltype", "agentchat,agententitychat,agenttutorchat,emeteamchat,emechat").after("refreshdate", now.getTime()).sort("refreshdateDown").search();
 
 		Searcher chats = archive.getSearcher("chatterbox");
 		for (Iterator iterator = allchannels.iterator(); iterator.hasNext();)
