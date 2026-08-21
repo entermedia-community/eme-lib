@@ -674,13 +674,22 @@ public class ChatModule extends BaseMediaModule
 			throw new IllegalArgumentException("User is required");
 		}
 		currentchannel = (MultiValued) channelsearcher.createNewData();
-		String channelname = "Chat - " + user.getScreenName();
+		String channelname = null;
+		if ("emeprofile".equals(channeldatamodule))
+		{
+			channelname = user.getScreenName();;
+		}
+		else
+		{
+			channelname = entity.getName();
+		}
 
 		currentchannel.setName(channelname);
 		// Could be null if we are in general chat
 		currentchannel.setValue("searchtype", channeldatamodule);
 		currentchannel.setValue("dataid", entityid);
-		currentchannel.setValue("user", inReq.getUser());
+
+		currentchannel.setValue("user", user.getUserName());
 
 		String applicationid = inReq.findValue("applicationid");
 		currentchannel.setValue("chatapplicationid", applicationid);
@@ -716,14 +725,27 @@ public class ChatModule extends BaseMediaModule
 			boolean isowner = false;
 			if (channeltype.equals("agententitychat"))
 			{
-				// isowner = inReq.getUserName().equals(entity.get("owner"));
-				currentchannel = (MultiValued) channelsearcher.query()
-					.exact("dataid", entity.getId())
-					.exact("searchtype", channeldatamodule)
-					.exact("user", inReq.getUserName())
-					.after("refreshdate", now.getTime())
-					.sort("refreshdateDown")
-					.searchOne();
+				isowner = inReq.getUserName().equals(entity.get("owner"));
+				if (isowner)
+				{
+					// Owner of the entity can see all chats
+					currentchannel = (MultiValued) channelsearcher.query()
+						.exact("dataid", entity.getId())
+						.exact("searchtype", channeldatamodule)
+						.after("refreshdate", now.getTime())
+						.sort("refreshdateDown")
+						.searchOne();
+				}
+				else
+				{
+					currentchannel = (MultiValued) channelsearcher.query()
+						.exact("dataid", entity.getId())
+						.exact("searchtype", channeldatamodule)
+						.exact("user", inReq.getUserName())
+						.after("refreshdate", now.getTime())
+						.sort("refreshdateDown")
+						.searchOne();
+				}
 			}
 			else
 			{

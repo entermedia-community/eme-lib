@@ -254,7 +254,10 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 			}
 
 			Data channel = getMediaArchive().getCachedData("channel", inChannelId);
-			agentContext.setChannel(channel);
+			if (channel != null)
+			{
+				agentContext.setChannel(channel);
+			}
 
 			Data entity = archive.getCachedData((String) agentContext.getValue("entitymoduleid"), agentContext.get("entityid"));
 			Data entitymodule = archive.getCachedData("module", agentContext.get("entitymoduleid"));
