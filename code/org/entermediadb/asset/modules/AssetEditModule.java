@@ -1456,7 +1456,7 @@ public class AssetEditModule extends BaseMediaModule
 		Searcher searcher = null;
 		String searchtype = inReq.findValue("searchtype");
 		String pageval = inReq.findActionValue("pageval");
-		Boolean savetarget = false;
+		Boolean savetarget = true;
 		if (pageval == null)
 		{
 			pageval = "data";
@@ -1493,10 +1493,14 @@ public class AssetEditModule extends BaseMediaModule
 
 			if (entitymoduleid != null)
 			{
-				searcher = archive.getSearcher(entitymoduleid);
+				searchtype = entitymoduleid;
+			}
+			if (searchtype != null)
+			{
+				searcher = archive.getSearcher(searchtype);
 				if (id != null)
 				{
-					target = archive.getData(entitymoduleid, id);
+					target = archive.getData(searchtype, id);
 				}
 			}
 
@@ -1541,7 +1545,7 @@ public class AssetEditModule extends BaseMediaModule
 				}
 				sourcepath += item.getName();
 			}
-			else if ("chatterbox".equals(searchtype) && target == null)
+			else if ("chatterbox".equals(searchtype))
 			{
 				String channel = inReq.getRequestParameter("channel");
 				Data channeldata = archive.getCachedData("channel", channel);
@@ -1550,6 +1554,7 @@ public class AssetEditModule extends BaseMediaModule
 					searchtype = channeldata.get("searchtype");
 					String channeldataid = channeldata.get("dataid");
 					target = archive.getCachedData(searchtype, channeldataid);
+					savetarget = false;
 				}
 			}
 
@@ -1633,10 +1638,14 @@ public class AssetEditModule extends BaseMediaModule
 
 			inReq.putPageValue("newasset", current);
 
-			if (target != null && savetarget)
+			if (detailid != null)
+			{
+				inReq.setRequestParameter(detailid + ".value", current.getId());
+			}
+
+			if (detailid != null && target != null && savetarget)
 			{
 				target.setValue(detailid, current.getId());
-				inReq.setRequestParameter(detailid + ".value", current.getId());
 				searcher.saveData(target, inReq.getUser());
 			}
 
