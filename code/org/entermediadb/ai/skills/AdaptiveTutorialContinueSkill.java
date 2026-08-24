@@ -72,8 +72,8 @@ public class AdaptiveTutorialContinueSkill extends AdaptiveTutorialBaseSkill
 					options.put("option_f", question.get("option_f"));
 					questionjson.put("options", options);
 
-					// questionjson.put("correctoption", question.get("correctoption"));
-					// questionjson.put("rationale", question.get("rationale"));
+					questionjson.put("correctoption", question.get("correctoption"));
+					questionjson.put("rationale", question.get("rationale"));
 					questionjson.put("mcqcognitivelevel", question.get("mcqcognitivelevel"));
 					tutorMessageContext.setMessageAgentContext("question", questionjson);
 				}

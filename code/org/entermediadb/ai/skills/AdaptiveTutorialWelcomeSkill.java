@@ -39,14 +39,6 @@ public class AdaptiveTutorialWelcomeSkill extends AdaptiveTutorialBaseSkill
 
 		AgentEnabled skillEnabled = tutorMessageContext.getCurrentAgentEnable();
 		tutorMessageContext.fireStatusComplete(skillEnabled);
-
-		// RunningScenario scenario = messageContext.getCurrentScenario();
-
-		// AgentEnabled nextAgentEnabled = scenario.findEnabled("chat_tutor_continue");
-		// TutorMessageContext nextContext = (TutorMessageContext)
-		// scenario.createAgentContext(messageContext, nextAgentEnabled);
-		// nextContext.setWaitTime(200l);
-		// scenario.runProcess(nextAgentEnabled, nextContext, true);
 	}
 
 }

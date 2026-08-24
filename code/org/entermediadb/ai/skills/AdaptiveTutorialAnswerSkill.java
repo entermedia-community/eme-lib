@@ -1,7 +1,6 @@
 package org.entermediadb.ai.skills;
 
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 import org.entermediadb.ai.AgentContext;
 import org.entermediadb.ai.TutorMessageContext;
@@ -9,6 +8,7 @@ import org.entermediadb.ai.automation.RunningScenario;
 import org.entermediadb.ai.llm.AgentEnabled;
 import org.entermediadb.ai.llm.LlmConnection;
 import org.entermediadb.ai.llm.LlmResponse;
+import org.json.simple.JSONObject;
 import org.openedit.Data;
 import org.openedit.data.Searcher;
 
@@ -66,18 +66,28 @@ public class AdaptiveTutorialAnswerSkill extends AdaptiveTutorialBaseSkill
 		searcher.saveData(answer);
 
 		tutorMessageContext.putContextValue("iscorrect", iscorrect);
-		tutorMessageContext.putContextValue("correctoptiontext", question.get(question.get("correctoption")));
+		tutorMessageContext.putContextValue("question", question);
 		tutorMessageContext.putContextValue("confidence", confidence);
-		tutorMessageContext.putContextValue("rationale", question.get("rationale"));
+		tutorMessageContext.putContextValue("selectedoption", selectedoption);
 
-		LlmConnection llmconnection = getMediaArchive().getLlmConnection("localrender");
-		LlmResponse response = llmconnection.renderLocalAction(tutorMessageContext, "chat_tutor_answer");
+		LlmConnection llmconnection = getMediaArchive().getLlmConnection("thinking");
+		LlmResponse response = llmconnection.callStructure(tutorMessageContext, "chat_tutor_feedback");
 
+		JSONObject feedback = response.getMessageStructured();
+		String feedbackText = (String) feedback.get("message");
+		
 		tutorMessageContext.setLastResponse(response);
 		tutorMessageContext.log("sent" + response.getMessagePlain());
 
 		tutorMessageContext.setMessageAgentContext("sectionid", tutorMessageContext.getMessageAgentContext("sectionid"));
 		tutorMessageContext.setMessageAgentContext("componentid", tutorMessageContext.getMessageAgentContext("componentid"));
+
+		tutorMessageContext.setMessageAgentContext("componentcontent", feedbackText);
+		tutorMessageContext.setMessageAgentContext("selectedoption", selectedoption);
+		tutorMessageContext.setMessageAgentContext("confidence", confidence);
+		tutorMessageContext.setMessageAgentContext("answerid", answer.getId());
+		tutorMessageContext.setMessageAgentContext("messagetype", "answereval");
+		tutorMessageContext.setMessageAgentContext("iscorrect", iscorrect);
 
 		AgentEnabled skillEnabled = tutorMessageContext.getCurrentAgentEnable();
 		tutorMessageContext.fireStatusComplete(skillEnabled);
