@@ -70,15 +70,8 @@ public class GoalTaskCreationSkill extends BaseSkill
 
 		// Get the docids for the collection and set it in the context
 		String collectionid = goal.get("collectionid");
-		Collection<String> docids = getAssistantManager().findDocIdsForEntity("librarycollection", collectionid);
-
-		String goalowner = goal.get("owner");
-		Data ownerprofile = getAssistantManager().getEmeProfileForUser(goalowner);
-		if (ownerprofile != null)
-		{
-			Collection<String> profiledocids = getAssistantManager().findDocIdsForEntity("emeprofile", ownerprofile.getId());
-			docids.addAll(profiledocids);
-		}
+		String ownerid = goal.get("owner");
+		Collection<String> docids = loadOwnerKnowlege(ownerid, collectionid);
 		inContext.putContextValue("docids", docids);
 
 		String goaldescription = goal.get("name");
@@ -90,7 +83,6 @@ public class GoalTaskCreationSkill extends BaseSkill
 		String prompt = "Create a brief agenda of maximum 3 items for a goal of " + goaldescription;
 
 		payload.put("query", prompt);
-
 		payload.put("parent_ids", docids);
 		// log.info("Sending: " + payload);
 		LlmResponse response = llmconnection.callJson("/create_outline", payload);
@@ -103,6 +95,7 @@ public class GoalTaskCreationSkill extends BaseSkill
 		goal.setValue("taggedbyllm", "true");
 	}
 
+	
 	public void createTasksForGoal(AgentContext inContext, Data goal, Collection<String> inOutline)
 	{
 		List<Data> tosave = new ArrayList<>();

@@ -2735,6 +2735,13 @@
 			<ref bean="moduleManager" />
 		</property>
 	</bean>
+	
+	<bean id="goalProcessorSkill" class="org.entermediadb.ai.skills.GoalProcessorSkill" scope="prototype">
+		<property name="moduleManager">
+			<ref bean="moduleManager" />
+		</property>
+	</bean>
+	
 
 	<bean id="goalTaskCreationSkill" class="org.entermediadb.ai.skills.GoalTaskCreationSkill" scope="prototype">
 		<property name="moduleManager">
