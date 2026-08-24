@@ -892,9 +892,20 @@ button#clearmainsearch:hover {
 
 .emheader .navbar-toggler:hover,
 .mediacenterheader .navbar-toggler:hover,
-.mediacenterheader .btn-topnav:hover {
+.mediacenterheader .btn-topnav:hover,
+.mediacenterheader .btn-group:hover .btn-topnav {
 	background: var(--themed-nav-btn-hover);
 	color: var(--themed-nav-btn-text);
+}
+.mediacenterheader .btn-group > a:first-child {
+	margin-right: 0;
+	border-top-right-radius: 0;
+	border-bottom-right-radius: 0;
+}
+.mediacenterheader .btn-group .btn-topnav-arrow {
+	margin-left: 0;
+	border-top-left-radius: 0;
+	border-bottom-left-radius: 0;
 }
 
 .navbar-toggler-icon {
