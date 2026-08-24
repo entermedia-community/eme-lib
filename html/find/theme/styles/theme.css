@@ -562,6 +562,20 @@ p.info {
 	font-size: 0.9rem !important;
 }
 
+.btn-cta-ai {
+	color: var(--themed-btn-cta-ai-text) !important;
+	background: var(--themed-btn-cta-ai) !important;
+	font-size: 0.85rem !important;
+	font-weight: 500;
+}
+
+.btn-cta-ai i {
+	color: var(--themed-btn-cta-ai-text) !important;
+}
+
+.btn-cta-ai:hover {
+	background: var(--themed-btn-cta-ai-hover) !important;
+}
 .icon-btn-sm,
 .icon-btn {
 	display: flex;
