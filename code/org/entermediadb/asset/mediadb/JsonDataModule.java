@@ -105,7 +105,7 @@ public class JsonDataModule extends BaseJsonModule
 
 		AssistantManager assistantManager = (AssistantManager) getMediaArchive(catalogid).getBean("assistantManager");
 		String applicationid = channel.get("chatapplicationid");
-		ChatMessageContext context = assistantManager.loadChatContext(applicationid, channelid);
+		ChatMessageContext context = assistantManager.loadChatContext(applicationid, channel);
 
 		String entitymoduleid = (String) request.get("entitymoduleid");
 		context.setValue("entitymoduleid", entitymoduleid);

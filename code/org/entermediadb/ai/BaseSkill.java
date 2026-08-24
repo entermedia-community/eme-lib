@@ -1,7 +1,7 @@
 package org.entermediadb.ai;
 
+import java.util.ArrayList;
 import java.util.Collection;
-
 import org.entermediadb.ai.assistant.AssistantManager;
 import org.entermediadb.ai.llm.AgentEnabled;
 import org.openedit.CatalogEnabled;
@@ -53,8 +53,22 @@ public class BaseSkill extends BaseAiManager implements Skill, CatalogEnabled
 		return assistantManager;
 	}
 
-	protected Collection<String> loadOwnerKnowlege(String collectionid, String  inUserId) {
+	protected Collection<String> loadOwnerKnowlege(String collectionid, String inUserId)
+	{
 		Collection<String> docids = getAssistantManager().findDocIdsForEntity("librarycollection", collectionid);
+
+		Data ownerprofile = getAssistantManager().getEmeProfileForUser(inUserId);
+		if (ownerprofile != null)
+		{
+			Collection<String> profiledocids = getAssistantManager().findDocIdsForEntity("emeprofile", ownerprofile.getId());
+			docids.addAll(profiledocids);
+		}
+		return docids;
+	}
+
+	protected Collection<String> loadOwnerKnowlege(String inUserId)
+	{
+		Collection<String> docids = new ArrayList<>();
 
 		Data ownerprofile = getAssistantManager().getEmeProfileForUser(inUserId);
 		if (ownerprofile != null)

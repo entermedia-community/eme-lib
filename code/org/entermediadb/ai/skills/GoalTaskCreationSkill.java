@@ -71,7 +71,7 @@ public class GoalTaskCreationSkill extends BaseSkill
 		// Get the docids for the collection and set it in the context
 		String collectionid = goal.get("collectionid");
 		String ownerid = goal.get("owner");
-		Collection<String> docids = loadOwnerKnowlege(ownerid, collectionid);
+		Collection<String> docids = loadOwnerKnowlege(collectionid, ownerid);
 		inContext.putContextValue("docids", docids);
 
 		String goaldescription = goal.get("name");
@@ -80,7 +80,7 @@ public class GoalTaskCreationSkill extends BaseSkill
 		LlmConnection llmconnection = getMediaArchive().getLlmConnection("embedding");
 		Map payload = new HashMap();
 
-		String prompt = "Create a brief agenda of maximum 3 items for a goal of " + goaldescription;
+		String prompt = "Create a maximum of 3 action items for a goal of " + goaldescription;
 
 		payload.put("query", prompt);
 		payload.put("parent_ids", docids);
@@ -95,7 +95,6 @@ public class GoalTaskCreationSkill extends BaseSkill
 		goal.setValue("taggedbyllm", "true");
 	}
 
-	
 	public void createTasksForGoal(AgentContext inContext, Data goal, Collection<String> inOutline)
 	{
 		List<Data> tosave = new ArrayList<>();
@@ -107,6 +106,7 @@ public class GoalTaskCreationSkill extends BaseSkill
 			task.setValue("taskstatus", "0");
 			task.setValue("creationdate", new Date());
 			task.setValue("completedby", goal.get("owner"));
+
 			tosave.add(task);
 		}
 

@@ -42,13 +42,35 @@ public class EmeTeamChatRespondSkill extends BaseSkill
 
 		String entityid = inAgentContext.get("entityid");
 
-		Data entity = getMediaArchive().getCachedData("collectiveproject", entityid);
+		Data channel = messageContext.getChannel();
+		String channelsearchtype = channel.get("searchtype");
+
+		Data entity = getMediaArchive().getCachedData(channelsearchtype, entityid);
 		if (entity == null)
 		{
-			log.error("No collective project found for id: " + entityid);
+			log.error("No entity id: " + entityid);
 			return;
 		}
-		String collectionid = entity.get("parentcollectionid");
+
+		String collectionid = null;
+		if ("librarycollection".equals(channelsearchtype))
+		{
+			collectionid = entity.getId();
+		}
+		else if ("collectiveproject".equals(channelsearchtype))
+		{
+			collectionid = entity.get("parentcollectionid");
+		}
+		else if ("goaltask".equals(channelsearchtype))
+		{
+			collectionid = entity.get("collectionid");
+		}
+
+		if (collectionid == null)
+		{
+			log.error("No collection id found for entity: " + entityid);
+			return;
+		}
 
 		Collection<MultiValued> teamUsers = getMediaArchive().query("librarycollectionusers").exact("collectionid", collectionid).exact("ontheteam", "true").exists("teamroles").search();
 		Collection<Data> roles = new ArrayList<Data>();

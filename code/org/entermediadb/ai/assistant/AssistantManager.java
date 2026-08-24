@@ -162,24 +162,24 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 	// }
 	//
 
-	public ChatMessageContext loadChatContext(String applicationId, String inChannelId)
+	public ChatMessageContext loadChatContext(String applicationId, Data inChannel)
 	{
 		MediaArchive archive = getMediaArchive();
 		CacheManager cache = archive.getCacheManager();
-		ChatMessageContext chatMessageContext = (ChatMessageContext) cache.get("chatMessageContext", inChannelId);
+		ChatMessageContext chatMessageContext = (ChatMessageContext) cache.get("chatMessageContext", inChannel.getId());
 		if (chatMessageContext == null)
 		{
-			chatMessageContext = new ChatMessageContext(loadContext(applicationId, inChannelId));
+			chatMessageContext = new ChatMessageContext(loadContext(applicationId, inChannel));
 
-			cache.put("chatMessageContext", inChannelId, chatMessageContext);
+			cache.put("chatMessageContext", inChannel.getId(), chatMessageContext);
 		}
 		if (chatMessageContext.getChannel() == null)
 		{
-			Data channel = getMediaArchive().getCachedData("channel", inChannelId);
-			chatMessageContext.setChannel(channel);
-		}
-		Collection<MultiValued> messages = archive.query("chatterbox").exact("channel", inChannelId).sort("dateDown").search();
 
+			chatMessageContext.setChannel(inChannel);
+		}
+		Collection<MultiValued> messages = archive.query("chatterbox").exact("channel", inChannel.getId()).sort("dateDown").search();
+		chatMessageContext.putContextValue("channelchathistory", messages);
 		if (messages.isEmpty())
 		{
 			return chatMessageContext;
@@ -206,29 +206,37 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 			}
 		}
 
+		Object currentscenario = chatMessageContext.getContextValue("currentscenario");
+		if (currentscenario instanceof String)
+		{
+			RunningScenario running = (RunningScenario) getMediaArchive().getBean("runningscenario", false);
+			running.setId((String) currentscenario);
+			chatMessageContext.setCurrentScenario(running);
+		}
+
 		return chatMessageContext;
 	}
 
-	public AgentContext loadContext(String applicationId, String inChannelId)
+	public AgentContext loadContext(String applicationId, Data inChannel)
 	{
 		MediaArchive archive = getMediaArchive();
-		AgentContext agentContext = (AgentContext) archive.getCacheManager().get("agentContext", inChannelId);
+		AgentContext agentContext = (AgentContext) archive.getCacheManager().get("agentContext", inChannel.getId());
 		if (agentContext == null)
 		{
 			// TODO: Replace agentcontext with chatterbox message data (load messages and their add their data
 			// to the context)
 			Searcher searcher = archive.getSearcher("agentcontext");
-			agentContext = (AgentContext) searcher.query().exact("channel", inChannelId).searchOne();
+			agentContext = (AgentContext) searcher.query().exact("channel", inChannel.getId()).searchOne();
 			// hitory?
 			if (agentContext == null)
 			{
 				agentContext = new BaseAgentContext();
-				Data channel = getMediaArchive().getCachedData("channel", inChannelId);
+				Data channel = getMediaArchive().getCachedData("channel", inChannel.getId());
 				if (channel == null)
 				{
 					log.error("Should not have to create new channel");
 					channel = getMediaArchive().getSearcher("channel").createNewData();
-					channel.setId(inChannelId);
+					channel.setId(inChannel.getId());
 					channel.setValue("date", new Date());
 					channel.setValue("refreshdate", new Date());
 					// String siteid = PathUtilities.extractDirectoryPath(getMediaArchive().getCatalogId());
@@ -236,7 +244,7 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 					getMediaArchive().saveData("channel", channel);
 				}
 
-				agentContext.setValue("channel", inChannelId);
+				agentContext.setValue("channel", inChannel.getId());
 				String entitymoduleid = channel.get("searchtype");
 				if (channel.get("dataid") != null)
 				{
@@ -253,11 +261,7 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 				agentContext.putContextValue("siteroot", communitytag.get("externaldomain"));
 			}
 
-			Data channel = getMediaArchive().getCachedData("channel", inChannelId);
-			if (channel != null)
-			{
-				agentContext.setChannel(channel);
-			}
+			agentContext.setChannel(inChannel);
 
 			Data entity = archive.getCachedData((String) agentContext.getValue("entitymoduleid"), agentContext.get("entityid"));
 			Data entitymodule = archive.getCachedData("module", agentContext.get("entitymoduleid"));
@@ -285,7 +289,7 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 		MediaArchive archive = getMediaArchive();
 
 		String applicationid = inChannel.get("chatapplicationid");
-		ChatMessageContext chatMessageContext = loadChatContext(applicationid, inChannel.getId());
+		ChatMessageContext chatMessageContext = loadChatContext(applicationid, inChannel);
 
 		ChatServer server = (ChatServer) archive.getBean("chatServer");
 
@@ -311,8 +315,6 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 		chatMessageContext.putContextValue("message", usermessage);
 
 		chatMessageContext.putContextValue("assistant", this);
-
-		chatMessageContext.putContextValue("channelchathistory", loadChannelChatHistory(inChannel));
 
 		// Add new agentmessage
 		MultiValued agentmessage = newAgentMessage(usermessage, chatMessageContext);

@@ -167,8 +167,9 @@ public class AgentModule extends BaseMediaModule
 			// log.error("Channel is required to send welcome message");
 			return;
 		}
+		Data channel = mediaArchive.getCachedData("channel", channelid);
 		String applicationid = inReq.findValue("applicationid");
-		ChatMessageContext chatAgentContext = assistantManager.loadChatContext(applicationid, channelid);
+		ChatMessageContext chatAgentContext = assistantManager.loadChatContext(applicationid, channel);
 		if (chatAgentContext == null)
 		{
 			// log.error("Chat context is required to send welcome message");
@@ -258,25 +259,21 @@ public class AgentModule extends BaseMediaModule
 		AssistantManager assistantManager = (AssistantManager) getMediaArchive(inReq).getBean("assistantManager");
 
 		// Get the contenxt and update it first
-		String channelid = inReq.getRequestParameter("channel");
-		if (channelid == null)
+		Data currentchannel = (Data) inReq.getPageValue("currentchannel");
+		if (currentchannel == null)
 		{
-			Data currentchannel = (Data) inReq.getPageValue("currentchannel");
-			if (currentchannel == null)
-			{
-				return null;
-			}
-			channelid = currentchannel.getId();
+			throw new Exception("Channel is required to load context");
 		}
+
 		String applicationid = inReq.findValue("applicationid");
 
-		AgentContext context = assistantManager.loadChatContext(applicationid, channelid);
+		AgentContext context = assistantManager.loadChatContext(applicationid, currentchannel);
 
 		context.setLocale(inReq.getLocale());
 
 		inReq.putPageValue("agentcontext", context);
 
-		inReq.setRequestParameter("channel", channelid);
+		inReq.setRequestParameter("channel", currentchannel.getId());
 		// inReq.setRequestParameter("toplevelaifunctionid", "auto_detect_welcome");
 		// inReq.setRequestParameter("functionname", "auto_detect_welcome");
 
