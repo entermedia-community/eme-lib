@@ -13,7 +13,6 @@
 package org.entermediadb.asset.modules;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
@@ -32,7 +31,6 @@ import org.entermediadb.users.PasswordHelper;
 import org.openedit.Data;
 import org.openedit.OpenEditException;
 import org.openedit.WebPageRequest;
-import org.openedit.data.Searcher;
 import org.openedit.data.SearcherManager;
 import org.openedit.page.Page;
 import org.openedit.page.PageRequestKeys;
@@ -193,7 +191,10 @@ public class AdminModule extends BaseMediaModule
 				}
 				String subject = "Login Code";
 				inReq.putPageValue("subject", subject);
-				passwordHelper.emailPasswordReminder(inReq, getPageManager(), userCode, emailaddress);
+				if (!"testautologinuser".equals(username))
+				{
+					passwordHelper.emailPasswordReminder(inReq, getPageManager(), userCode, emailaddress);
+				}
 			}
 			else
 			{
@@ -793,7 +794,7 @@ public class AdminModule extends BaseMediaModule
 		{
 			String refreshToken = inReq.getRequestParameter("refresh_token");
 			BaseAutoLogin autologin = (BaseAutoLogin) getModuleManager().getBean(inReq.findPathValue("catalogid"), "autoLoginWithCookie");
-			
+
 			User user = refreshToken == null ? null : autologin.validateEnterMediaKey(inReq, refreshToken);
 			if (user != null && user.isEnabled())
 			{
