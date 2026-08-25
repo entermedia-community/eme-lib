@@ -115,7 +115,13 @@ public class AutomationModule extends BaseMediaModule
 
 		String currentskkillenabled = inReq.findValue("skillenabledid");
 		UserProfile userProfile = inReq.getUserProfile();
-		manager.runScenario(id, userProfile, inReq.getParameterMap(), currentskkillenabled, logger);
+
+		String applicationid = (String) inReq.findValue("applicationid");
+
+		Map parameters = (Map) inReq.getParameterMap();
+		parameters.put("triggerapplicationid", applicationid);
+
+		manager.runScenario(id, userProfile, parameters, currentskkillenabled, logger);
 	}
 
 	public void handleAgentSaved(WebPageRequest inReq)
@@ -241,16 +247,14 @@ public class AutomationModule extends BaseMediaModule
 			{
 				scenarioIds.add((String) node.get("id"));
 			}
-			else
-				if (node.get("type").equals("agent"))
-				{
-					agentIds.add((String) node.get("id"));
-				}
-				else
-					if (node.get("type").equals("label"))
-					{
-						labelIds.add((String) node.get("id"));
-					}
+			else if (node.get("type").equals("agent"))
+			{
+				agentIds.add((String) node.get("id"));
+			}
+			else if (node.get("type").equals("label"))
+			{
+				labelIds.add((String) node.get("id"));
+			}
 		}
 
 		MediaArchive archive = getMediaArchive(inReq);

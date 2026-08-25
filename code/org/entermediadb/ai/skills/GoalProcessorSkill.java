@@ -71,6 +71,10 @@ public class GoalProcessorSkill extends BaseSkill
 				channel = getMediaArchive().getSearcher("channel").createNewData();
 				channel.setValue("dataid", task.getId());
 				channel.setValue("searchtype", "goaltask");
+				String applicationid = (String) inContext.getContextValue("triggerapplicationid");
+				channel.setValue("user", goal.get("owner"));
+				channel.setValue("date", new Date());
+				channel.setValue("chatapplicationid", applicationid);
 				channel.setValue("channeltype", "agententitychat");
 				getMediaArchive().saveData("channel", channel);
 			}

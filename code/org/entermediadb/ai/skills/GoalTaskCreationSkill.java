@@ -80,7 +80,7 @@ public class GoalTaskCreationSkill extends BaseSkill
 		LlmConnection llmconnection = getMediaArchive().getLlmConnection("embedding");
 		Map payload = new HashMap();
 
-		String prompt = "Create a maximum of 3 action items for a goal of " + goaldescription;
+		String prompt = "Create a maximum of 3 detailed tasks items for a goal of " + goaldescription;
 
 		payload.put("query", prompt);
 		payload.put("parent_ids", docids);
