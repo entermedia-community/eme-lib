@@ -1049,19 +1049,21 @@ public class FinderModule extends BaseMediaModule
 		String requestedPath = urlutil.getOriginalPath();
 		String[] url = requestedPath.split("/");
 		String viewid = url[4];
-		if (viewid == null)
+		if (!"profiles".equals(url[0]) && viewid == null)
 		{
 			return;
 		}
 		MediaArchive archive = getMediaArchive(inReq);
-		Data viewdata = archive.getCachedData("view", viewid);
-		inReq.putPageValue("viewdata", viewdata);
-		inReq.putPageValue("entityviewdata", viewdata);
 
-		inReq.putPageValue("entitymoduleviewid", viewid);
 		inReq.putPageValue("entity", emeprofile);
 		Data module = archive.getCachedData("module", "emeprofile");
 		inReq.putPageValue("entitymodule", module);
+
+		Data viewdata = archive.getCachedData("view", viewid);
+
+		inReq.putPageValue("viewdata", viewdata);
+		inReq.putPageValue("entitymoduleviewdata", viewdata);
+		inReq.putPageValue("entitymoduleviewid", viewid);
 
 		inReq.putPageValue("parententityid", emeprofile.getId());
 		inReq.putPageValue("parententitymoduleid", "emeprofile");
@@ -1093,7 +1095,7 @@ public class FinderModule extends BaseMediaModule
 
 		inReq.putPageValue("viewdata", viewdata);
 		// inReq.putPageValue("entitymoduleviewdata", viewdata);
-		inReq.putPageValue("entityviewdata", viewdata);
+		inReq.putPageValue("entitymoduleviewdata", viewdata);
 
 		inReq.putPageValue("entitymoduleviewid", viewid);
 		inReq.putPageValue("entity", librarycollection);

@@ -1166,8 +1166,16 @@ public class EntityModule extends BaseMediaModule
 
 		// already loaded?
 		Data entity = (Data) inPageRequest.getPageValue("entity");
+		Data entitymodule = null;
 		if (entity != null)
 		{
+			entitymodule = (Data) inPageRequest.getPageValue("entitymodule");
+			if (entitymodule == null)
+			{
+				entitymodule = getMediaArchive(inPageRequest).getCachedData("module", entity.get("entitysourcetype"));
+				inPageRequest.putPageValue("entitymodule", entitymodule);
+			}
+
 			return entity;
 		}
 
@@ -1195,7 +1203,7 @@ public class EntityModule extends BaseMediaModule
 			}
 		}
 
-		Data entitymodule = getMediaArchive(inPageRequest).getCachedData("module", entitymoduleid);
+		entitymodule = getMediaArchive(inPageRequest).getCachedData("module", entitymoduleid);
 		inPageRequest.putPageValue("entitymodule", entitymodule);
 
 		if (entityid == null)
