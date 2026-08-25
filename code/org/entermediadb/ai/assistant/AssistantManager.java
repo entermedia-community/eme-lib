@@ -179,7 +179,8 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 			chatMessageContext.setChannel(inChannel);
 		}
 		Collection<MultiValued> messages = archive.query("chatterbox").exact("channel", inChannel.getId()).sort("dateDown").search();
-		chatMessageContext.putContextValue("channelchathistory", messages);
+		Collection<MultiValued> filtered = loadChannelChatHistory(messages);
+		chatMessageContext.putContextValue("channelchathistory", filtered);
 		if (messages.isEmpty())
 		{
 			return chatMessageContext;
@@ -449,25 +450,15 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 		return total;
 	}
 
-	protected Collection<Data> loadChannelChatHistory(String inChannelId)
+	protected Collection<MultiValued> loadChannelChatHistory(Collection<MultiValued> messages)
 	{
-		Data channel = getMediaArchive().getCachedData("channel", inChannelId);
-		if (channel == null)
+		//HitTracker messages = getMediaArchive().query("chatterbox").exact("channel", inChannel).sort("dateUp").search();
+
+		Collection<MultiValued> recent = new ArrayList<MultiValued>();
+
+		for (Iterator<MultiValued> iterator = messages.iterator(); iterator.hasNext();)
 		{
-			return Collections.emptyList();
-		}
-		return loadChannelChatHistory(channel);
-	}
-
-	protected Collection<Data> loadChannelChatHistory(Data inChannel)
-	{
-		HitTracker messages = getMediaArchive().query("chatterbox").exact("channel", inChannel).sort("dateUp").search();
-
-		Collection<Data> recent = new ArrayList<Data>();
-
-		for (Iterator iterator = messages.iterator(); iterator.hasNext();)
-		{
-			Data message = (Data) iterator.next();
+			MultiValued message = iterator.next();
 			if ("system".equals(message.get("messagetype")))
 			{
 				continue;

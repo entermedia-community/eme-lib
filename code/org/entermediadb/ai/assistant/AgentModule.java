@@ -3,6 +3,9 @@ package org.entermediadb.ai.assistant;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.entermediadb.ai.AgentContext;
 import org.entermediadb.ai.ChatMessageContext;
 import org.entermediadb.ai.automation.RunningScenario;
@@ -22,7 +25,7 @@ import org.openedit.hittracker.HitTracker;
 
 public class AgentModule extends BaseMediaModule
 {
-
+	private static final Log log = LogFactory.getLog(AgentModule.class);
 	public AssistantManager getAssistantManager(WebPageRequest inReq)
 	{
 		String catalogid = inReq.findValue("catalogid");
@@ -164,7 +167,7 @@ public class AgentModule extends BaseMediaModule
 		String channelid = inReq.getRequestParameter("channel");
 		if (channelid == null)
 		{
-			// log.error("Channel is required to send welcome message");
+			//log.error("Channel is required to send welcome message");
 			return;
 		}
 		Data channel = mediaArchive.getCachedData("channel", channelid);
@@ -196,10 +199,15 @@ public class AgentModule extends BaseMediaModule
 				{
 					currentscenarioid = "chat_detection";
 				}
-
 			}
 		}
-		if (chatAgentContext.getCurrentScenario() == null || currentscenarioid == null || !currentscenarioid.equals(chatAgentContext.getCurrentScenario().getId()))
+
+		//See if change of scenario
+		if (chatAgentContext.getCurrentScenario() != null && !currentscenarioid.equals(chatAgentContext.getCurrentScenario().getId()))
+		{
+			chatAgentContext.setCurrentScenario(null);
+		}
+		if (chatAgentContext.getCurrentScenario() == null)
 		{
 			// Scenario changed. Clear the context and start over.
 			RunningScenario running = (RunningScenario) mediaArchive.getBean("runningscenario", false);
@@ -212,9 +220,7 @@ public class AgentModule extends BaseMediaModule
 			if (functionname == null)
 			{
 				functionname = chatAgentContext.getCurrentScenario().getId() + "_welcome";
-
 			}
-
 		}
 		else if (functionname != null)
 		{
