@@ -1164,6 +1164,13 @@ public class EntityModule extends BaseMediaModule
 			}
 		}
 
+		// already loaded?
+		Data entity = (Data) inPageRequest.getPageValue("entity");
+		if (entity != null)
+		{
+			return entity;
+		}
+
 		String entityid = inPageRequest.getRequestParameter("entityid");
 
 		if (entityid == null)
@@ -1200,7 +1207,7 @@ public class EntityModule extends BaseMediaModule
 			inPageRequest.putPageValue("ismulti", true);
 		}
 
-		Data entity = getMediaArchive(inPageRequest).getCachedData(inPageRequest, entitymoduleid, entityid);
+		entity = getMediaArchive(inPageRequest).getCachedData(inPageRequest, entitymoduleid, entityid);
 		inPageRequest.putPageValue("entity", entity);
 
 		return entity;
