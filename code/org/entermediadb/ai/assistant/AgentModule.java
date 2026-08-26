@@ -26,6 +26,7 @@ import org.openedit.hittracker.HitTracker;
 public class AgentModule extends BaseMediaModule
 {
 	private static final Log log = LogFactory.getLog(AgentModule.class);
+
 	public AssistantManager getAssistantManager(WebPageRequest inReq)
 	{
 		String catalogid = inReq.findValue("catalogid");
@@ -167,7 +168,7 @@ public class AgentModule extends BaseMediaModule
 		String channelid = inReq.getRequestParameter("channel");
 		if (channelid == null)
 		{
-			//log.error("Channel is required to send welcome message");
+			// log.error("Channel is required to send welcome message");
 			return;
 		}
 		Data channel = mediaArchive.getCachedData("channel", channelid);
@@ -178,6 +179,7 @@ public class AgentModule extends BaseMediaModule
 			// log.error("Chat context is required to send welcome message");
 			return;
 		}
+		chatAgentContext.setLocale(inReq.getLocale());
 		// Refresh drop down area?
 		inReq.putPageValue("agentcontext", chatAgentContext);
 
@@ -202,7 +204,7 @@ public class AgentModule extends BaseMediaModule
 			}
 		}
 
-		//See if change of scenario
+		// See if change of scenario
 		if (chatAgentContext.getCurrentScenario() != null && !currentscenarioid.equals(chatAgentContext.getCurrentScenario().getId()))
 		{
 			chatAgentContext.setCurrentScenario(null);

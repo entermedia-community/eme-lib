@@ -452,7 +452,8 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 
 	protected Collection<MultiValued> loadChannelChatHistory(Collection<MultiValued> messages)
 	{
-		//HitTracker messages = getMediaArchive().query("chatterbox").exact("channel", inChannel).sort("dateUp").search();
+		// HitTracker messages = getMediaArchive().query("chatterbox").exact("channel",
+		// inChannel).sort("dateUp").search();
 
 		Collection<MultiValued> recent = new ArrayList<MultiValued>();
 
