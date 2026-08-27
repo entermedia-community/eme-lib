@@ -23,10 +23,13 @@ public class AdaptiveTutorialContinueSkill extends AdaptiveTutorialBaseSkill
 		String sectionid = (String) tutorMessageContext.getMessageAgentContext("sectionid");
 		String componentid = (String) tutorMessageContext.getMessageAgentContext("componentid");
 
+		Collection<Data> answeredQuestions = getMediaArchive().query("tutoranswer").exact("sectionid", sectionid).exact("user", tutorMessageContext.getUserProfile().getUser().getId()).search();
+		Collection<String> questionIds = answeredQuestions.stream().map(a -> a.get("entityquestion")).toList();
+
 		while (true)
 		{
 
-			Map<String, Data> next = getNextSectionAndComponent(tutorialid, sectionid, componentid);
+			Map<String, Data> next = getNextSectionAndComponent(tutorialid, sectionid, componentid, questionIds);
 			if (next == null)
 			{
 				endTutorial(tutorMessageContext);
@@ -94,6 +97,10 @@ public class AdaptiveTutorialContinueSkill extends AdaptiveTutorialBaseSkill
 						JSONObject assetMap = new JSONObject();
 						assetMap.put("id", asset.getId());
 						String siteroot = (String) tutorMessageContext.getContextValue("siteroot");
+						if (siteroot == null)
+						{
+							siteroot = "";
+						}
 
 						String mediatype = getMediaArchive().getMediaRenderType(asset);
 						assetMap.put("mediatype", mediatype);
@@ -171,7 +178,7 @@ public class AdaptiveTutorialContinueSkill extends AdaptiveTutorialBaseSkill
 		}
 	}
 
-	public Map<String, Data> getNextSectionAndComponent(String tutorialid, String sectionid, String componentid)
+	public Map<String, Data> getNextSectionAndComponent(String tutorialid, String sectionid, String componentid, Collection<String> questionIds)
 	{
 		Data currentsection = null;
 		if (sectionid != null)
@@ -205,12 +212,17 @@ public class AdaptiveTutorialContinueSkill extends AdaptiveTutorialBaseSkill
 			if (currentcomponent != null)
 			{
 				int currentOrdering = currentcomponent.getInt("ordering");
-				nextcomponent = getMediaArchive().query("componentcontent").exact("componentsectionid", currentsection.getId()).moreThan("ordering", currentOrdering).sort("ordering").searchOne();
+				nextcomponent = getMediaArchive().query("componentcontent")
+					.exact("componentsectionid", currentsection.getId())
+					.notgroup("questionid", questionIds)
+					.moreThan("ordering", currentOrdering)
+					.sort("ordering")
+					.searchOne();
 			}
 		}
 		else
 		{
-			nextcomponent = getMediaArchive().query("componentcontent").exact("componentsectionid", currentsection.getId()).sort("ordering").searchOne();
+			nextcomponent = getMediaArchive().query("componentcontent").exact("componentsectionid", currentsection.getId()).notgroup("questionid", questionIds).sort("ordering").searchOne();
 		}
 
 		if (nextcomponent == null)
@@ -221,7 +233,7 @@ public class AdaptiveTutorialContinueSkill extends AdaptiveTutorialBaseSkill
 			}
 			else
 			{
-				return getNextSectionAndComponent(tutorialid, nextSection.getId(), null);
+				return getNextSectionAndComponent(tutorialid, nextSection.getId(), null, questionIds);
 			}
 		}
 

@@ -62,6 +62,7 @@ public class AdaptiveTutorialAnswerSkill extends AdaptiveTutorialBaseSkill
 		answer.setValue("bonusearned", bonus);
 		answer.setValue("user", tutorMessageContext.getUserProfile().getUser().getId());
 		answer.setValue("datecreated", new Date());
+		answer.setValue("lastpenalty", new Date());
 
 		searcher.saveData(answer);
 
@@ -75,7 +76,7 @@ public class AdaptiveTutorialAnswerSkill extends AdaptiveTutorialBaseSkill
 
 		JSONObject feedback = response.getMessageStructured();
 		String feedbackText = (String) feedback.get("message");
-		
+
 		tutorMessageContext.setLastResponse(response);
 		tutorMessageContext.log("sent" + response.getMessagePlain());
 

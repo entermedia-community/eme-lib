@@ -35,12 +35,12 @@ public class AdaptiveTutorialProgressSkill extends AdaptiveTutorialBaseSkill
 
 		Collection<String> questionids = allcomponentwithquestions.stream().map(a -> a.get("questionid")).distinct().toList();
 		Collection<Data> allquestions = getMediaArchive().query("entityquestion").ids(questionids).search();
-		Collection<Data> allanswers = getMediaArchive().query("tutoranswer").orgroup("entityquestion", questionids).exact("user", userid).exact("channel", channelid).search();
+		Collection<MultiValued> allanswers = getMediaArchive().query("tutoranswer").orgroup("entityquestion", questionids).exact("user", userid).exact("channel", channelid).search();
 
 		Collection<Map<String, Object>> combined = allquestions.stream().map(q -> {
 			Map<String, Object> map = new HashMap<>();
 			map.put("question", q);
-			Data answer = allanswers.stream().filter(a -> a.get("entityquestion").equals(q.getId())).findFirst().orElse(null);
+			MultiValued answer = allanswers.stream().filter(a -> a.get("entityquestion").equals(q.getId())).findFirst().orElse(null);
 			map.put("answer", answer);
 			return map;
 		}).toList();
@@ -74,6 +74,8 @@ public class AdaptiveTutorialProgressSkill extends AdaptiveTutorialBaseSkill
 		double total_competentpoints = 0.0;
 		double total_expertpoints = 0.0;
 
+		Long now = new Date().getTime();
+
 		for (Map<String, Object> map : combined)
 		{
 			Data question = (Data) map.get("question");
@@ -81,6 +83,15 @@ public class AdaptiveTutorialProgressSkill extends AdaptiveTutorialBaseSkill
 
 			if (answer != null)
 			{
+				int answerAge = 0;
+				Date answerDate = answer.getDate("lastpenalty");
+
+				if (answerDate != null)
+				{
+					Long timePassed = now - answerDate.getTime();
+					answerAge = (int) (timePassed / 86400000L);
+				}
+
 				Double pointsearned = answer.getDouble("pointsearned");
 				if (pointsearned == null)
 				{
@@ -92,6 +103,18 @@ public class AdaptiveTutorialProgressSkill extends AdaptiveTutorialBaseSkill
 					bonusearned = 0.0;
 				}
 				double totalpoints = pointsearned + bonusearned;
+
+				if (answerAge > 0)
+				{
+					double penalty = totalpoints * (answerAge / 100.0);
+					totalpoints -= penalty;
+					if (totalpoints < 0)
+					{
+						totalpoints = 0.0;
+					}
+					answer.setValue("lastpenalty", new Date());
+					getMediaArchive().saveData("tutoranswer", answer);
+				}
 
 				String cognitivelevel = question.get("mcqcognitivelevel");
 				if ("beginner".equals(cognitivelevel))
