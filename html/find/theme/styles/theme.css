@@ -115,19 +115,6 @@ body {
 	z-index: 1000;
 }
 
-.mediacenterheader.personal-menu {
-	position: sticky;
-	width: stretch;
-	height: 72px;
-	top: 0;
-	left: 0;
-	transition:
-		left 0.3s ease,
-		width 0.3s ease;
-	--themed-logo-height: 32px;
-	background-color: #ffffff;
-	border-bottom: 1px solid #f3f4f6;
-}
 .pickfromiframe {
 	display: none;
 }

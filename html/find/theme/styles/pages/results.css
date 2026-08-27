@@ -3257,7 +3257,6 @@ td .emgridcell a i.module-icon {
 }
 .entity-content {
 	background: #fff;
-	border-top: var(--1px-dark);
 	height: 100%;
 }
 .lighttheme .entity-content {
@@ -4420,7 +4419,7 @@ a.toggledialogtree h3 {
 .entity-action-header {
 	display: flex;
 	align-items: center;
-	padding: 4px;
+	padding: 8px;
 	border-bottom: var(--1px-light);
 }
 
