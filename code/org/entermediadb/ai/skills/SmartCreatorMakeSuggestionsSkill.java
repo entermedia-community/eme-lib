@@ -32,10 +32,8 @@ public class SmartCreatorMakeSuggestionsSkill extends BaseSkill
 		instructions.setTargetModule(playbackentitymodule);
 		messageContext.setAiSmartCreatorSteps(instructions);
 
-		// oldway?
 		String entityid = messageContext.get("entityid");
 		String entitymoduleid = messageContext.get("entitymoduleid");
-		// --
 
 		MultiValued entity = (MultiValued) getMediaArchive().getCachedData(entitymoduleid, entityid);
 		messageContext.addContext("entity", entity);

@@ -79,7 +79,10 @@ public class GoalTaskCreationSkill extends BaseSkill
 
 		// Get a list of tasks (embeding call, question suggest like) that is appropied for the goal
 		LlmConnection llmconnection = getMediaArchive().getLlmConnection("embedding");
-		Map payload = new HashMap();
+		JSONObject payload = new JSONObject();
+
+		// You are a project manager expert. Given a context and a user query, generate a list of relevant
+		// task list.
 
 		String prompt = "Create a maximum of 3 detailed tasks items for a goal of " + goaldescription;
 

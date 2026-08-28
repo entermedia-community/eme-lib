@@ -324,4 +324,24 @@ public class AutomationModule extends BaseMediaModule
 
 	}
 
+	public void embedScenarios(WebPageRequest inReq)
+	{
+		MediaArchive archive = getMediaArchive(inReq);
+
+		Collection scenarios = archive.query("automationscenario").exact("isvisible", true).sort("ordering").search();
+		for (Iterator iterator = scenarios.iterator(); iterator.hasNext();)
+		{
+			Data scenario = (Data) iterator.next();
+			String description = scenario.get("longdescription");
+
+			// get all skils in aiskillsenabled for this scenario and embed them
+			Collection<MultiValued> skills = archive.query("aiskillenabled").exact("automationscenario", scenario.getId()).search();
+			for (Iterator iterator2 = skills.iterator(); iterator2.hasNext();)
+			{
+				MultiValued skill = (MultiValued) iterator2.next();
+				String aiskillid = skill.get("aiskill");
+			}
+		}
+	}
+
 }

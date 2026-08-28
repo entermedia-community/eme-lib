@@ -2914,6 +2914,7 @@ td .emgridcell a i.module-icon {
 .entity-header {
 	padding: 12px 16px;
 	background: var(--themed-navbar-primary);
+	color: var(--themed-navbar-primary-text);
 	border-top-left-radius: 8px;
 	border-top-right-radius: 8px;
 }

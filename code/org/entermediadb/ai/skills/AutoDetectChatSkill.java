@@ -16,7 +16,7 @@ import org.openedit.MultiValued;
 import org.openedit.OpenEditException;
 
 public class AutoDetectChatSkill extends BaseSkill
-{ 
+{
 	private static final Log log = LogFactory.getLog(AutoDetectChatSkill.class);
 
 	@Override
@@ -36,8 +36,9 @@ public class AutoDetectChatSkill extends BaseSkill
 		{
 			inAgentContext.put("userquery", query);
 
-			Collection<Data> toplevelfunctions = getMediaArchive().query("aifunction").exact("toplevel", true).search();
-			inAgentContext.put("toplevelfunctions", toplevelfunctions);
+			// Collection<Data> toplevelfunctions = getMediaArchive().query("aifunction").exact("toplevel",
+			// true).search();
+			// inAgentContext.put("toplevelfunctions", toplevelfunctions);
 
 			LlmConnection llmconnection = getMediaArchive().getLlmConnection("thinking");
 
