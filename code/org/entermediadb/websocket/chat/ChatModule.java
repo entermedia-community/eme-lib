@@ -664,7 +664,11 @@ public class ChatModule extends BaseMediaModule
 			channelsearcher.saveData(currentchannel);
 
 			inReq.putPageValue("currentchannel", currentchannel);
-			return;
+
+			if (!"finished".equals(currentchannel.get("channelstatus")))
+			{
+				return;
+			}
 		}
 
 		// Create New Channel

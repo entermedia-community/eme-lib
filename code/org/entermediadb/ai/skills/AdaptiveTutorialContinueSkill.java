@@ -1,9 +1,11 @@
 package org.entermediadb.ai.skills;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 import org.entermediadb.ai.AgentContext;
 import org.entermediadb.ai.TutorMessageContext;
 import org.entermediadb.ai.llm.AgentEnabled;
@@ -23,13 +25,31 @@ public class AdaptiveTutorialContinueSkill extends AdaptiveTutorialBaseSkill
 		String sectionid = (String) tutorMessageContext.getMessageAgentContext("sectionid");
 		String componentid = (String) tutorMessageContext.getMessageAgentContext("componentid");
 
-		Collection<Data> answeredQuestions = getMediaArchive().query("tutoranswer").exact("sectionid", sectionid).exact("user", tutorMessageContext.getUserProfile().getUser().getId()).search();
-		Collection<String> questionIds = answeredQuestions.stream().map(a -> a.get("entityquestion")).toList();
+		Collection<String> questionIds = Collections.emptyList();
+		if (sectionid != null)
+		{
+			Collection<Data> answeredQuestions = getMediaArchive().query("tutoranswer").exact("sectionid", sectionid).exact("user", tutorMessageContext.getUserProfile().getUser().getId()).search();
+			questionIds = answeredQuestions.stream().map(a -> a.get("entityquestion")).toList();
+		}
+
+		int questionspersection = 1;
+		String qpsStr = getMediaArchive().getCatalogSettingValue("questions-per-section");
+		if (qpsStr != null && !qpsStr.trim().isEmpty())
+		{
+			try
+			{
+				questionspersection = Integer.parseInt(qpsStr.trim());
+			}
+			catch (Exception e)
+			{
+				questionspersection = 1;
+			}
+		}
 
 		while (true)
 		{
 
-			Map<String, Data> next = getNextSectionAndComponent(tutorialid, sectionid, componentid, questionIds);
+			Map<String, Data> next = getNextSectionAndComponent(tutorialid, sectionid, componentid, questionIds, questionspersection);
 			if (next == null)
 			{
 				endTutorial(tutorMessageContext);
@@ -158,7 +178,7 @@ public class AdaptiveTutorialContinueSkill extends AdaptiveTutorialBaseSkill
 			sectionid = topsection.getId();
 			componentid = topcomponent.getId();
 
-			Map<String, Data> hasNext = getNextSectionAndComponent(tutorialid, sectionid, componentid, questionIds);
+			Map<String, Data> hasNext = getNextSectionAndComponent(tutorialid, sectionid, componentid, questionIds, questionspersection);
 			if (hasNext == null)
 			{
 				endTutorial(tutorMessageContext);
@@ -178,7 +198,7 @@ public class AdaptiveTutorialContinueSkill extends AdaptiveTutorialBaseSkill
 		}
 	}
 
-	public Map<String, Data> getNextSectionAndComponent(String tutorialid, String sectionid, String componentid, Collection<String> questionIds)
+	public Map<String, Data> getNextSectionAndComponent(String tutorialid, String sectionid, String componentid, Collection<String> questionIds, int questionspersection)
 	{
 		Data currentsection = null;
 		if (sectionid != null)
@@ -204,6 +224,18 @@ public class AdaptiveTutorialContinueSkill extends AdaptiveTutorialBaseSkill
 			.moreThan("ordering", currentSectionOrdering)
 			.sort("ordering")
 			.searchOne();
+
+		if (nextSection != null)
+		{
+			Collection<Data> currentSecComponents = getMediaArchive().query("componentcontent").exact("componentsectionid", currentsection.getId()).sort("ordering").search();
+			Collection<String> currentSecQuestionIds = currentSecComponents.stream().filter(data -> data.get("questionid") != null).map(data -> data.get("questionid")).collect(Collectors.toList());
+			Collection<Data> answers = getMediaArchive().query("tutoranswer").orgroup("entityquestion", currentSecQuestionIds).search();
+
+			if (answers.size() >= questionspersection)
+			{
+				return getNextSectionAndComponent(tutorialid, nextSection.getId(), null, questionIds, questionspersection);
+			}
+		}
 
 		Data nextcomponent = null;
 		if (componentid != null)
@@ -233,7 +265,7 @@ public class AdaptiveTutorialContinueSkill extends AdaptiveTutorialBaseSkill
 			}
 			else
 			{
-				return getNextSectionAndComponent(tutorialid, nextSection.getId(), null, questionIds);
+				return getNextSectionAndComponent(tutorialid, nextSection.getId(), null, questionIds, questionspersection);
 			}
 		}
 

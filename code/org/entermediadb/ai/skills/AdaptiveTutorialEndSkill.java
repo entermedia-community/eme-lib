@@ -4,6 +4,7 @@ import java.util.Date;
 import org.entermediadb.ai.AgentContext;
 import org.entermediadb.ai.TutorMessageContext;
 import org.entermediadb.ai.llm.AgentEnabled;
+import org.openedit.Data;
 import org.openedit.MultiValued;
 
 public class AdaptiveTutorialEndSkill extends AdaptiveTutorialBaseSkill
@@ -26,6 +27,10 @@ public class AdaptiveTutorialEndSkill extends AdaptiveTutorialBaseSkill
 		tutorMessageContext.setMessageAgentContext("tutorialid", tutorialid);
 		tutorMessageContext.setMessageAgentContext("sectionid", null);
 		tutorMessageContext.setMessageAgentContext("componentid", null);
+
+		Data channel = tutorMessageContext.getChannel();
+		channel.setValue("channelstatus", "finished");
+		getMediaArchive().getSearcher("channel").saveData(channel, null);
 
 		AgentEnabled skillEnabled = tutorMessageContext.getCurrentAgentEnable();
 		tutorMessageContext.fireStatusComplete(skillEnabled);
