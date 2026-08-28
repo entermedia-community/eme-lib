@@ -116,11 +116,7 @@ public class AutomationModule extends BaseMediaModule
 		String currentskkillenabled = inReq.findValue("skillenabledid");
 		UserProfile userProfile = inReq.getUserProfile();
 
-		String applicationid = (String) inReq.findValue("applicationid");
-
 		Map parameters = (Map) inReq.getParameterMap();
-		parameters.put("triggerapplicationid", applicationid);
-
 		manager.runScenario(id, userProfile, parameters, currentskkillenabled, logger);
 	}
 

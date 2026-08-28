@@ -241,7 +241,6 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 					channel.setValue("date", new Date());
 					channel.setValue("refreshdate", new Date());
 					// String siteid = PathUtilities.extractDirectoryPath(getMediaArchive().getCatalogId());
-					channel.setValue("chatapplicationid", applicationId);
 					getMediaArchive().saveData("channel", channel);
 				}
 
@@ -289,7 +288,7 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 	{
 		MediaArchive archive = getMediaArchive();
 
-		String applicationid = inChannel.get("chatapplicationid");
+		String applicationid = getMediaArchive().getCatalogSettingValue("mediadbappid");
 		ChatMessageContext chatMessageContext = loadChatContext(applicationid, inChannel);
 
 		ChatServer server = (ChatServer) archive.getBean("chatServer");
@@ -403,7 +402,7 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 		// chatMessageContext.putContextValue("aisearchparams", chatMessageContext.getAiSearchParams() );
 		// // ??
 
-		String apphome = "/" + channel.get("chatapplicationid");
+		String apphome = "/" + getMediaArchive().getCatalogSettingValue("mediadbappid");
 		chatMessageContext.putContextValue("apphome", apphome);
 
 		// LlmResponse response = null;

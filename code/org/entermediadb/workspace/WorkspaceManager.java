@@ -385,7 +385,7 @@ public class WorkspaceManager
 		request.put("message", "What is this all about?");
 
 		String siteid = PathUtilities.extractDirectoryPath(inCatalogId);
-		request.put("chatapplicationid", siteid + "/find");
+		// request.put("chatapplicationid", siteid + "/find");
 		request.put("entityname", entity.getName());
 		request.put("entityid", entity.getId());
 		request.put("entitymoduleid", entitymodule.getId());

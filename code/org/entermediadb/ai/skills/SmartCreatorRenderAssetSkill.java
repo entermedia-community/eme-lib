@@ -24,7 +24,7 @@ public class SmartCreatorRenderAssetSkill extends BaseSkill
 		{
 			// render html and save to asset
 			MultiValued entitymodule = inContext.getCurrentEntityModule();
-			String applicationid = (String) inContext.getContextValue("triggerapplicationid");
+			String applicationid = getMediaArchive().getCatalogSettingValue("mediadbappid");
 			String cdnprefix = (String) inContext.getContextValue("triggersiteroot");
 			String html = getSmartCreatorSkill().renderToHtml(cdnprefix, applicationid, entitymodule, entity);
 			getSmartCreatorSkill().exportAsAsset(inContext, entitymodule, entity, html);

@@ -690,9 +690,6 @@ public class ChatModule extends BaseMediaModule
 		currentchannel.setValue("dataid", entityid);
 
 		currentchannel.setValue("user", user.getUserName());
-
-		String applicationid = inReq.findValue("applicationid");
-		currentchannel.setValue("chatapplicationid", applicationid);
 		currentchannel.setValue("channeltype", channeltype);
 
 		Calendar now = Calendar.getInstance();

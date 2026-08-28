@@ -471,18 +471,23 @@ button[type="submit"] {
 }
 
 .form-submit-btns {
-	background-color: rgba(255, 255, 255, 0.5);
+	background-color: rgba(240, 240, 240, 0.5);
+	padding: 8px;
 }
-
+.entitydialog .form-submit-btns {
+	background-color: rgba(255, 255, 255, 0.5);
+	padding: 0;
+}
 .form-submit-btns.sticky {
+	background-color: rgba(240, 240, 240, 0.5);
 	backdrop-filter: blur(3px);
 	position: sticky;
-	bottom: 2px;
+	bottom: 0;
 	left: 0px;
 	z-index: 30000;
-	margin: 0 0 1px 2px;
+	margin: 0 0 1px;
 	padding: 8px;
-	width: calc(100% - 2px);
+	width: 100%;
 	overflow-x: hidden;
 }
 #mediaviewer .form-submit-btns {

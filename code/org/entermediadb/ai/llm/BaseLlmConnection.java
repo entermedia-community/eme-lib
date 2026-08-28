@@ -282,16 +282,7 @@ public class BaseLlmConnection implements LlmConnection
 
 	public LlmResponse renderLocalAction(AgentContext agentcontext, String inTemplateName)
 	{
-		Data channel = agentcontext.getChannel();
-		String apphome;
-		if (channel != null)
-		{
-			apphome = "/" + channel.get("chatapplicationid");
-		}
-		else
-		{
-			apphome = "/mediadb";
-		}
+		String apphome = "/" + getMediaArchive().getCatalogSettingValue("mediadbappid");
 
 		String templatepath = apphome + "/views/agentresponses/" + inTemplateName + ".html";
 

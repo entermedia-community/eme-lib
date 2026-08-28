@@ -3003,9 +3003,11 @@ td .emgridcell a i.module-icon {
 }
 .entity-metadata,
 .financesdashboard {
-	padding: 25px 20px 30px;
-	overflow-y: auto;
+	padding: 25px 20px 0px;
 	height: 100%;
+}
+.entitydialog .entity-metadata{
+	margin-bottom: 30px;
 }
 .tab-content .entity-metadata {
 	padding: 8px;

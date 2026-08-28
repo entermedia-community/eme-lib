@@ -674,16 +674,8 @@ public class EmbeddingManager extends BaseAiManager
 		inAgentContext.addContext("raganswer", answer);
 		LlmConnection llmconnection = getMediaArchive().getLlmConnection("embedding"); // agentChat
 
-		Data channel = inAgentContext.getChannel();
-		String apphome;
-		if (channel != null)
-		{
-			apphome = "/" + channel.get("chatapplicationid");
-		}
-		else
-		{
-			apphome = "/mediadb";
-		}
+		String apphome = "/" + getMediaArchive().getCatalogSettingValue("mediadbappid");
+
 		String templatepath = apphome + "/views/agentresponses/ragresponse.html";
 		String responsetext = llmconnection.loadInputFromTemplate(inAgentContext, templatepath);
 

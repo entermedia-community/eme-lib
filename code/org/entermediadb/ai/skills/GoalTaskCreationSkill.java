@@ -31,7 +31,7 @@ public class GoalTaskCreationSkill extends BaseSkill
 			getMediaArchive().saveData("projectgoal", goal);
 
 			BasicLlmResponse response = new BasicLlmResponse();
-			response.setNextSkillEnabled("emechat_responder_welcome");
+			response.setNextSkillEnabled("emeteamchat_responder_respond");
 
 			inContext.putContextValue("messagereload", true);
 			inContext.setLastResponse(response);
@@ -53,6 +53,7 @@ public class GoalTaskCreationSkill extends BaseSkill
 
 		}
 		getMediaArchive().saveData("projectgoal", tosave);
+
 		log.info("Completed processing goals and creating tasks");
 		super.process(inContext);
 

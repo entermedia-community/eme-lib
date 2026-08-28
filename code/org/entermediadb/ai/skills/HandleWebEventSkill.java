@@ -35,8 +35,6 @@ public class HandleWebEventSkill extends BaseSkill
 				}
 			}
 
-			String triggerapplicationid = (String) request.getPageValue("triggerapplicationid");
-			inContext.put("triggerapplicationid", triggerapplicationid);
 			inContext.put("triggersiteroot", request.getSiteRoot());
 
 			inContext.setUserProfile(request.getUserProfile());
