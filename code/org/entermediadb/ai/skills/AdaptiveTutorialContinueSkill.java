@@ -158,7 +158,7 @@ public class AdaptiveTutorialContinueSkill extends AdaptiveTutorialBaseSkill
 			sectionid = topsection.getId();
 			componentid = topcomponent.getId();
 
-			Map<String, Data> hasNext = getNextSectionAndComponent(tutorialid, sectionid, componentid);
+			Map<String, Data> hasNext = getNextSectionAndComponent(tutorialid, sectionid, componentid, questionIds);
 			if (hasNext == null)
 			{
 				endTutorial(tutorMessageContext);

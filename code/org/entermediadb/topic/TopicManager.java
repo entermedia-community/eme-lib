@@ -20,6 +20,9 @@ public class TopicManager extends BaseMediaModule
 
 		Collection<Map<String, Object>> data = new ArrayList<>();
 
+		int absoluteTotal = 0;
+		int absoluteCompleted = 0;
+
 		for (MultiValued topic : topics)
 		{
 			Map<String, Object> topicmap = new HashMap<>();
@@ -38,8 +41,12 @@ public class TopicManager extends BaseMediaModule
 			double competentProgress = 0;
 			double expertProgress = 0;
 
+			int totalSections = 0;
+			int completedSections = 0;
+
 			for (MultiValued tutorial : tutorials)
 			{
+
 				MultiValued progress = (MultiValued) mediaArchive.query("tutorialprogress").exact("entitytutorial", tutorial.getId()).exact("user", inReq.getUser().getId()).searchOne();
 
 				if (progress == null)
@@ -62,6 +69,12 @@ public class TopicManager extends BaseMediaModule
 				{
 					expertProgress += ep;
 				}
+
+				Collection<MultiValued> sections = mediaArchive.query("componentsection").exact("playbackentitymoduleid", "entitytutorial").exact("playbackentityid", tutorial.getId()).search();
+				totalSections += sections.size();
+
+				Collection<MultiValued> completed = mediaArchive.query("tutorcompletedsection").exact("entitytutorial", tutorial.getId()).exact("user", inReq.getUser().getId()).search();
+				completedSections += completed.size();
 			}
 
 			Map<String, Double> progressMap = new HashMap<>();
@@ -79,10 +92,17 @@ public class TopicManager extends BaseMediaModule
 			}
 
 			topicmap.put("progress", progressMap);
+
+			topicmap.put("totalsections", totalSections);
+			topicmap.put("completedsections", completedSections);
 			data.add(topicmap);
 
+			absoluteTotal += totalSections;
+			absoluteCompleted += completedSections;
 		}
 		inReq.putPageValue("data", data);
+		inReq.putPageValue("absolutetotal", absoluteTotal);
+		inReq.putPageValue("absolutecompleted", absoluteCompleted);
 	}
 
 	public void getTopicTutorials(WebPageRequest inReq)
@@ -101,6 +121,15 @@ public class TopicManager extends BaseMediaModule
 			MultiValued progress = (MultiValued) mediaArchive.query("tutorialprogress").exact("entitytutorial", tutorial.getId()).exact("user", inReq.getUser().getId()).searchOne();
 			Map<String, Double> progressMap = createProgressMap(progress);
 			tutorialmap.put("progress", progressMap);
+
+			Collection<MultiValued> sections = mediaArchive.query("componentsection").exact("playbackentitymoduleid", "entitytutorial").exact("playbackentityid", tutorial.getId()).search();
+			int totalSections = sections.size();
+
+			Collection<MultiValued> completed = mediaArchive.query("tutorcompletedsection").exact("entitytutorial", tutorial.getId()).exact("user", inReq.getUser().getId()).search();
+			int completedSections = completed.size();
+
+			tutorialmap.put("totalsections", totalSections);
+			tutorialmap.put("completedsections", completedSections);
 			data.add(tutorialmap);
 		}
 		inReq.putPageValue("data", data);
