@@ -5,6 +5,7 @@ import org.openedit.WebPageRequest;
 
 public class TopicModule extends BaseAiManager
 {
+
 	public TopicManager getTopicManager()
 	{
 		return (TopicManager) getMediaArchive().getBean("topicManager");
@@ -26,6 +27,12 @@ public class TopicModule extends BaseAiManager
 	{
 		TopicManager topicManager = getTopicManager();
 		topicManager.loadTutorial(inReq);
+	}
+
+	public void loadTutorialHistory(WebPageRequest inReq)
+	{
+		TopicManager topicManager = getTopicManager();
+		topicManager.loadTutorialHistory(inReq);
 	}
 
 }

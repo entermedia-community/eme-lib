@@ -12,6 +12,7 @@ import org.entermediadb.asset.MediaArchive;
 import org.entermediadb.asset.modules.BaseMediaModule;
 import org.openedit.Data;
 import org.openedit.MultiValued;
+import org.openedit.OpenEditException;
 import org.openedit.WebPageRequest;
 
 public class TopicManager extends BaseMediaModule
@@ -96,11 +97,7 @@ public class TopicManager extends BaseMediaModule
 		Collection<MultiValued> allSections = null;
 		if (!tutorialIds.isEmpty())
 		{
-			allSections = mediaArchive.query("componentsection")
-				.orgroup("playbackentityid", tutorialIds)
-				.exact("playbackentitymoduleid", "entitytutorial")
-				.sort("ordering")
-				.search(inReq);
+			allSections = mediaArchive.query("componentsection").orgroup("playbackentityid", tutorialIds).exact("playbackentitymoduleid", "entitytutorial").sort("ordering").search(inReq);
 		}
 		if (allSections == null)
 		{
@@ -125,9 +122,7 @@ public class TopicManager extends BaseMediaModule
 		Collection<MultiValued> allComponents = null;
 		if (!sectionIds.isEmpty())
 		{
-			allComponents = mediaArchive.query("componentcontent")
-				.orgroup("componentsectionid", sectionIds)
-				.search(inReq);
+			allComponents = mediaArchive.query("componentcontent").orgroup("componentsectionid", sectionIds).search(inReq);
 		}
 		if (allComponents == null)
 		{
@@ -147,10 +142,7 @@ public class TopicManager extends BaseMediaModule
 		Map<String, MultiValued> progressByTutorialId = new HashMap<>();
 		if (userid != null && !tutorialIds.isEmpty())
 		{
-			Collection<MultiValued> allProgress = mediaArchive.query("tutorialprogress")
-				.orgroup("entitytutorial", tutorialIds)
-				.exact("user", userid)
-				.search(inReq);
+			Collection<MultiValued> allProgress = mediaArchive.query("tutorialprogress").orgroup("entitytutorial", tutorialIds).exact("user", userid).search(inReq);
 			if (allProgress != null)
 			{
 				for (MultiValued p : allProgress)
@@ -339,11 +331,7 @@ public class TopicManager extends BaseMediaModule
 		Collection<MultiValued> allSections = null;
 		if (!tutorialIds.isEmpty())
 		{
-			allSections = mediaArchive.query("componentsection")
-				.orgroup("playbackentityid", tutorialIds)
-				.exact("playbackentitymoduleid", "entitytutorial")
-				.sort("ordering")
-				.search(inReq);
+			allSections = mediaArchive.query("componentsection").orgroup("playbackentityid", tutorialIds).exact("playbackentitymoduleid", "entitytutorial").sort("ordering").search(inReq);
 		}
 		if (allSections == null)
 		{
@@ -368,9 +356,7 @@ public class TopicManager extends BaseMediaModule
 		Collection<MultiValued> allComponents = null;
 		if (!sectionIds.isEmpty())
 		{
-			allComponents = mediaArchive.query("componentcontent")
-				.orgroup("componentsectionid", sectionIds)
-				.search(inReq);
+			allComponents = mediaArchive.query("componentcontent").orgroup("componentsectionid", sectionIds).search(inReq);
 		}
 		if (allComponents == null)
 		{
@@ -390,10 +376,7 @@ public class TopicManager extends BaseMediaModule
 		Map<String, MultiValued> progressByTutorialId = new HashMap<>();
 		if (userid != null && !tutorialIds.isEmpty())
 		{
-			Collection<MultiValued> allProgress = mediaArchive.query("tutorialprogress")
-				.orgroup("entitytutorial", tutorialIds)
-				.exact("user", userid)
-				.search(inReq);
+			Collection<MultiValued> allProgress = mediaArchive.query("tutorialprogress").orgroup("entitytutorial", tutorialIds).exact("user", userid).search(inReq);
 			if (allProgress != null)
 			{
 				for (MultiValued p : allProgress)
@@ -490,5 +473,61 @@ public class TopicManager extends BaseMediaModule
 		return progressMap;
 	}
 
-}
+	public void loadTutorialHistory(WebPageRequest inReq)
+	{
+		MediaArchive mediaArchive = getMediaArchive(inReq);
+		MultiValued currentchannel;
+		MultiValued activechannel;
+		String dataid = inReq.getRequestParameter("dataid");
+		String channelid = inReq.getRequestParameter("channel");
+		if (channelid != null)
+		{
+			currentchannel = (MultiValued) mediaArchive.query("channel").exact("searchtype", "entitytutorial").id(channelid).exact("user", inReq.getUser().getId()).searchOne();
+			if (currentchannel == null)
+			{
+				throw new OpenEditException("Channel not found: " + channelid + " for user " + inReq.getUser().getId());
+			}
+			if ("finished".equals(currentchannel.get("channelstatus")))
+			{
+				activechannel = (MultiValued) mediaArchive.query("channel").exact("searchtype", "entitytutorial").exact("dataid", dataid).not("channelstatus", "finished").sort("dateDown").searchOne();
+			}
+			else
+			{
+				activechannel = currentchannel;
+			}
+		}
+		else
+		{
+			activechannel = (MultiValued) mediaArchive.query("channel")
+				.exact("searchtype", "entitytutorial")
+				.exact("dataid", dataid)
+				.exact("user", inReq.getUser())
+				.not("channelstatus", "finished")
+				.sort("dateDown")
+				.searchOne();
+			if (activechannel == null)
+			{
+				throw new OpenEditException("Channel not found for user " + inReq.getUser().getId());
+			}
+			currentchannel = activechannel;
+		}
+		inReq.putPageValue("currentchannel", currentchannel);
+		inReq.putPageValue("activechannel", activechannel);
 
+		Collection<MultiValued> history = mediaArchive.query("channel")
+			.exact("searchtype", "entitytutorial")
+			.exact("dataid", dataid)
+			.exact("user", inReq.getUser().getId())
+			.exact("channelstatus", "finished")
+			.sort("dateDown")
+			.search();
+		inReq.putPageValue("channelhistory", history);
+
+		Collection<MultiValued> messages = mediaArchive.query("chatterbox").exact("channel", currentchannel.getId()).orgroup("user", inReq.getUser().getId() + ",agent").sort("dateUp").search();
+		inReq.putPageValue("messages", messages);
+
+		Collection<MultiValued> answers = mediaArchive.query("tutoranswer").exact("channel", currentchannel.getId()).exact("user", inReq.getUser().getId()).sort("dateUp").search();
+		inReq.putPageValue("answers", answers);
+	}
+
+}
