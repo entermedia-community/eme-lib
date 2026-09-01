@@ -14,7 +14,7 @@ import org.openedit.Data;
 import org.openedit.MultiValued;
 import org.openedit.hittracker.HitTracker;
 
-public class GoalProcessorSkill extends BaseSkill
+public class TaskCreateChannelSkill extends BaseSkill
 {
 
 	// Monitor open Goals and send them to the Goal Planner

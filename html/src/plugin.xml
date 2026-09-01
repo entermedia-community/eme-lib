@@ -2736,7 +2736,7 @@
 		</property>
 	</bean>
 	
-	<bean id="goalProcessorSkill" class="org.entermediadb.ai.skills.GoalProcessorSkill" scope="prototype">
+	<bean id="taskCreateChannelSkill" class="org.entermediadb.ai.skills.TaskCreateChannelSkill" scope="prototype">
 		<property name="moduleManager">
 			<ref bean="moduleManager" />
 		</property>
@@ -3196,12 +3196,6 @@
 	</bean>
 
 	<bean id="imapMailSenderSkill" class="org.entermediadb.ai.skills.ImapMailSenderSkill" lazy-init="default" scope="prototype">
-		<property name="moduleManager">
-			<ref bean="moduleManager" />
-		</property>
-	</bean>
-
-	<bean id="goalManagerSkill" class="org.entermediadb.ai.skills.GoalManagerSkill" lazy-init="default" scope="prototype">
 		<property name="moduleManager">
 			<ref bean="moduleManager" />
 		</property>
