@@ -3219,6 +3219,18 @@
 		</property>
 	</bean>
 
+	<bean id="webContentExtractorSkill" class="org.entermediadb.ai.skills.WebContentExtractorSkill" lazy-init="default" scope="prototype">
+		<property name="moduleManager">
+			<ref bean="moduleManager" />
+		</property>
+	</bean>
+
+	<bean id="fileOperationSkill" class="org.entermediadb.ai.skills.FileOperationSkill" lazy-init="default" scope="prototype">
+		<property name="moduleManager">
+			<ref bean="moduleManager" />
+		</property>
+	</bean>
+
 	<bean id="informaticsContext" class="org.entermediadb.ai.informatics.InformaticsContext" lazy-init="default" scope="prototype">
 		<property name="moduleManager">
 			<ref bean="moduleManager" />
