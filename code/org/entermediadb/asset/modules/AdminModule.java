@@ -1835,6 +1835,7 @@ public class AdminModule extends BaseMediaModule
 			request.setHeader("Access-Control-Allow-Methods", VALID_METHODS);
 			request.setHeader("Access-Control-Allow-Headers", VALID_HEADERS);
 			request.setHeader("Access-Control-Max-Age", "3600");
+
 			if (isoptions)
 			{
 				inReq.setHasRedirected(true);
@@ -1857,6 +1858,13 @@ public class AdminModule extends BaseMediaModule
 
 		}
 
+	}
+
+	public void setCrossOriginPolicy(WebPageRequest inReq)
+	{
+		HttpServletResponse request = inReq.getResponse();
+		request.setHeader("Cross-Origin-Opener-Policy", "same-origin");
+		request.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
 	}
 
 }
