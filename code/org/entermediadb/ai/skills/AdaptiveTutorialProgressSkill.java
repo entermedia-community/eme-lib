@@ -19,7 +19,7 @@ public class AdaptiveTutorialProgressSkill extends AdaptiveTutorialBaseSkill
 		TutorMessageContext tutorMessageContext = (TutorMessageContext) inAgentContext;
 
 		String userid = tutorMessageContext.getUserProfile().getUser().getId();
-		String tutorialid = tutorMessageContext.getTutorialId();
+		String tutorialid = (String) tutorMessageContext.getMessageAgentContext("tutorialid");
 		String channelid = tutorMessageContext.getChannel().getId();
 
 		if (tutorialid == null || userid == null || channelid == null)

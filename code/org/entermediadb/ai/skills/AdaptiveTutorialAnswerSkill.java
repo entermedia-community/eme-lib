@@ -6,10 +6,12 @@ import org.entermediadb.ai.AgentContext;
 import org.entermediadb.ai.TutorMessageContext;
 import org.entermediadb.ai.automation.RunningScenario;
 import org.entermediadb.ai.llm.AgentEnabled;
+import org.entermediadb.ai.llm.BasicLlmResponse;
 import org.entermediadb.ai.llm.LlmConnection;
 import org.entermediadb.ai.llm.LlmResponse;
 import org.json.simple.JSONObject;
 import org.openedit.Data;
+import org.openedit.MultiValued;
 import org.openedit.data.Searcher;
 
 public class AdaptiveTutorialAnswerSkill extends AdaptiveTutorialBaseSkill
@@ -20,9 +22,9 @@ public class AdaptiveTutorialAnswerSkill extends AdaptiveTutorialBaseSkill
 		TutorMessageContext tutorMessageContext = (TutorMessageContext) inAgentContext;
 
 		String channelid = tutorMessageContext.getChannel().getId();
-		String questionid = (String) tutorMessageContext.getContextValue("questionid");
-		String confidence = (String) tutorMessageContext.getContextValue("confidence");
-		String selectedoption = (String) tutorMessageContext.getContextValue("selectedoption");
+		String questionid = (String) tutorMessageContext.getMessageAgentContext("questionid");
+		String confidence = (String) tutorMessageContext.getMessageAgentContext("confidence");
+		String selectedoption = (String) tutorMessageContext.getMessageAgentContext("selectedoption");
 
 		if (channelid == null || questionid == null || selectedoption == null)
 		{
@@ -76,33 +78,19 @@ public class AdaptiveTutorialAnswerSkill extends AdaptiveTutorialBaseSkill
 
 		JSONObject feedback = response.getMessageStructured();
 		String feedbackText = (String) feedback.get("message");
+		if (feedbackText == null)
+		{
+			tutorMessageContext.error("No feedback " + feedbackText);
+			return;
+		}
 
-		tutorMessageContext.setLastResponse(response);
-		tutorMessageContext.log("sent" + response.getMessagePlain());
+		LlmResponse llmResponse = new BasicLlmResponse();
+		llmResponse.setMessage(feedbackText);
 
-		tutorMessageContext.setMessageAgentContext("sectionid", tutorMessageContext.getMessageAgentContext("sectionid"));
-		tutorMessageContext.setMessageAgentContext("componentid", tutorMessageContext.getMessageAgentContext("componentid"));
-
-		tutorMessageContext.setMessageAgentContext("componentcontent", feedbackText);
-		tutorMessageContext.setMessageAgentContext("selectedoption", selectedoption);
-		tutorMessageContext.setMessageAgentContext("confidence", confidence);
-		tutorMessageContext.setMessageAgentContext("answerid", answer.getId());
-		tutorMessageContext.setMessageAgentContext("messagetype", "answereval");
-		tutorMessageContext.setMessageAgentContext("iscorrect", iscorrect);
+		tutorMessageContext.setLastResponse(llmResponse);
 
 		AgentEnabled skillEnabled = tutorMessageContext.getCurrentAgentEnable();
 		tutorMessageContext.fireStatusComplete(skillEnabled);
 
-		Data agentmessage = tutorMessageContext.getAgentMessage();
-
-		agentmessage.setValue("id", tutorMessageContext.getTutorialId() + "_progressupdate");
-		agentmessage.setValue("messagetype", "system");
-
-		RunningScenario scenario = tutorMessageContext.getCurrentScenario();
-
-		AgentEnabled nextAgentEnabled = scenario.findEnabled("chat_tutor_progress");
-		TutorMessageContext nextContext = (TutorMessageContext) scenario.createAgentContext(tutorMessageContext, nextAgentEnabled);
-
-		scenario.runProcess(nextAgentEnabled, nextContext, true);
 	}
 }

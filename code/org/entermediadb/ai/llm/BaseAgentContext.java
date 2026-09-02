@@ -359,6 +359,16 @@ public class BaseAgentContext extends BaseData implements CatalogEnabled, AgentC
 	public void putContextValue(String inKey, Object inValue)
 	{
 		getContext().put(inKey, inValue); // Track what is changed locally..
+		AgentContext ctx = getParentContext();
+		while (ctx != null)
+		{
+			ctx.getContext().remove(inKey);
+			ctx = ctx.getParentContext();
+		}
+		if ("selectedoption".equals(inKey))
+		{
+			String option = String.valueOf(inValue);
+		}
 		getRootContext().getContext().put(inKey, inValue); // Make sure everyone is updated
 	}
 

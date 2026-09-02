@@ -243,6 +243,7 @@ public class AgentModule extends BaseMediaModule
 		}
 
 		Collection<String> params = inReq.getParameterMap().keySet();
+		// boolean context
 		for (Iterator iterator = params.iterator(); iterator.hasNext();)
 		{
 			String key = (String) iterator.next();
@@ -252,11 +253,11 @@ public class AgentModule extends BaseMediaModule
 				if (value != null)
 				{
 					String keyName = key.substring("context_".length());
-					chatAgentContext.setMessageAgentContext(keyName, value);
-
+					chatAgentContext.putContextValue(keyName, value);
 				}
 			}
 		}
+
 		mediaArchive.saveData("agentcontext", chatAgentContext);
 		// assistantManager.sendSystemMessage(chatAgentContext, inReq.getUserName(), functionname);
 		assistantManager.sendSystemMessage(chatAgentContext, inReq.getUserName(), null, functionname);

@@ -11,13 +11,4 @@ public class TutorMessageContext extends ChatMessageContext
 		// TODO Auto-generated constructor stub
 	}
 
-	public void setTutorialId(String inTutorialId)
-	{
-		setMessageAgentContext("tutorialid", inTutorialId);
-	}
-
-	public String getTutorialId()
-	{
-		return (String) getMessageAgentContext("tutorialid");
-	}
 }

@@ -397,7 +397,7 @@ public class ChatServer
 		String catalogid = (String) inMap.get("catalogid");
 		MediaArchive archive = (MediaArchive) getModuleManager().getBean(catalogid, "mediaArchive");
 
-		Searcher chats = archive.getSearcher("chatterbox");
+		Searcher chatsearcher = archive.getSearcher("chatterbox");
 		Data channel = loadChannel(archive, inMap);
 
 		String userid = (String) inMap.get("user").toString();
@@ -409,7 +409,7 @@ public class ChatServer
 
 		ValuesMap values = new ValuesMap(inMap);
 
-		Data chat = chats.createNewData();
+		Data chat = chatsearcher.createNewData();
 		chat.setValue("date", new Date());
 		chat.setValue("user", userid);
 		chat.setValue("channel", channel.getId());
@@ -442,7 +442,13 @@ public class ChatServer
 		chat.setValue("messagetype", messagetype);
 		chat.setValue("replytoid", values.getString("replytoid"));
 
-		chats.saveData(chat);
+		String agentContext = (String) inMap.get("agentcontext");
+		if (agentContext != null)
+		{
+			chat.setValue("agentcontextvalues", agentContext);
+		}
+
+		chatsearcher.saveData(chat);
 
 		channel.setValue("refreshdate", new Date());
 		archive.saveData("channel", channel);
