@@ -186,7 +186,11 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 			return chatMessageContext;
 		}
 
-		for (Iterator<MultiValued> iterator = messages.iterator(); iterator.hasNext();)
+		List<MultiValued> sorted = new ArrayList<>();
+		sorted.addAll(messages);
+		Collections.reverse(sorted);
+
+		for (Iterator<MultiValued> iterator = sorted.iterator(); iterator.hasNext();)
 		{
 			MultiValued message = iterator.next();
 			String agentcontextvalues = message.get("agentcontextvalues");
