@@ -13,6 +13,7 @@ import org.entermediadb.ai.llm.LlmConnection;
 import org.entermediadb.ai.llm.LlmResponse;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.openedit.MultiValued;
 
 public class AdaptiveTutorialUserCommentSkill extends AdaptiveTutorialBaseSkill
 {
@@ -24,8 +25,8 @@ public class AdaptiveTutorialUserCommentSkill extends AdaptiveTutorialBaseSkill
 		TutorMessageContext tutorMessageContext = (TutorMessageContext) inAgentContext;
 
 		String channelid = tutorMessageContext.getChannel().getId();
-		String tutorialid = (String) tutorMessageContext.getMessageAgentContext("tutorialid");
-		String sectionid = (String) tutorMessageContext.getMessageAgentContext("sectionid");
+		String tutorialid = (String) tutorMessageContext.getContextValue("tutorialid");
+		String sectionid = (String) tutorMessageContext.getContextValue("sectionid");
 		String usermessage = (String) tutorMessageContext.getUserMessage().get("message");
 		String userId = tutorMessageContext.getUserProfile().getUser().getId();
 
@@ -63,6 +64,8 @@ public class AdaptiveTutorialUserCommentSkill extends AdaptiveTutorialBaseSkill
 		llmResponse.setMessage(answer);
 
 		tutorMessageContext.setLastResponse(llmResponse);
+
+		tutorMessageContext.putContextValue("messagerendertype", "agentcomment");
 
 		AgentEnabled skillEnabled = tutorMessageContext.getCurrentAgentEnable();
 		tutorMessageContext.fireStatusComplete(skillEnabled);

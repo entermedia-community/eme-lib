@@ -4,14 +4,12 @@ import java.util.Date;
 import java.util.Map;
 import org.entermediadb.ai.AgentContext;
 import org.entermediadb.ai.TutorMessageContext;
-import org.entermediadb.ai.automation.RunningScenario;
 import org.entermediadb.ai.llm.AgentEnabled;
 import org.entermediadb.ai.llm.BasicLlmResponse;
 import org.entermediadb.ai.llm.LlmConnection;
 import org.entermediadb.ai.llm.LlmResponse;
 import org.json.simple.JSONObject;
 import org.openedit.Data;
-import org.openedit.MultiValued;
 import org.openedit.data.Searcher;
 
 public class AdaptiveTutorialAnswerSkill extends AdaptiveTutorialBaseSkill
@@ -22,9 +20,9 @@ public class AdaptiveTutorialAnswerSkill extends AdaptiveTutorialBaseSkill
 		TutorMessageContext tutorMessageContext = (TutorMessageContext) inAgentContext;
 
 		String channelid = tutorMessageContext.getChannel().getId();
-		String questionid = (String) tutorMessageContext.getMessageAgentContext("questionid");
-		String confidence = (String) tutorMessageContext.getMessageAgentContext("confidence");
-		String selectedoption = (String) tutorMessageContext.getMessageAgentContext("selectedoption");
+		String questionid = (String) tutorMessageContext.getContextValue("questionid");
+		String confidence = (String) tutorMessageContext.getContextValue("confidence");
+		String selectedoption = (String) tutorMessageContext.getContextValue("selectedoption");
 
 		if (channelid == null || questionid == null || selectedoption == null)
 		{

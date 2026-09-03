@@ -186,24 +186,13 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 			return chatMessageContext;
 		}
 
-		Map<String, Boolean> seen = new HashMap<>();
-
 		for (Iterator<MultiValued> iterator = messages.iterator(); iterator.hasNext();)
 		{
 			MultiValued message = iterator.next();
-			JSONObject agentcontextvalues = message.getJSONValue("agentcontextvalues");
+			String agentcontextvalues = message.get("agentcontextvalues");
 			if (agentcontextvalues != null)
 			{
-				for (Object key : agentcontextvalues.keySet())
-				{
-					if (seen.containsKey(key))
-					{
-						continue;
-					}
-					Object value = agentcontextvalues.get(key);
-					chatMessageContext.putContextValue((String) key, value);
-					seen.put((String) key, true);
-				}
+				chatMessageContext.loadContextFromJson(agentcontextvalues);
 			}
 		}
 
@@ -1130,6 +1119,9 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 			agentmessage.setValue("functionname", inAgentEnabled.getEnabledId());
 			agentmessage.setValue("nextfunctionname", nextFunctionName);
 			agentmessage.setValue("chatmessagestatus", "completed");
+
+			agentmessage.setValue("agentcontextvalues", inContext.toJSONString());
+
 			getMediaArchive().saveData("chatterbox", agentmessage);
 
 			Map<String, String> functionMessageUpdate = new HashMap<>();
@@ -1149,6 +1141,7 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 			functionMessageUpdate.put("functionname", inAgentEnabled.getEnabledId());
 			functionMessageUpdate.put("date", DateStorageUtil.getStorageUtil().getJsonFormat().format(new Date()));
 			Boolean messagereload = (Boolean) inContext.getContextValue("messagereload");
+
 			if (messagereload != null && messagereload.booleanValue())
 			{
 				functionMessageUpdate.put("command", "messagereload");

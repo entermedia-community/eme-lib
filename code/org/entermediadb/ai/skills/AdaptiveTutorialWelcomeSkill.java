@@ -33,9 +33,9 @@ public class AdaptiveTutorialWelcomeSkill extends AdaptiveTutorialBaseSkill
 		tutorMessageContext.setLastResponse(response);
 		tutorMessageContext.log("sent" + response.getMessagePlain());
 
-		tutorMessageContext.setMessageAgentContext("sectionid", null);
-		tutorMessageContext.setMessageAgentContext("componentid", null);
-		tutorMessageContext.setMessageAgentContext("messagetype", "welcome");
+		tutorMessageContext.putContextValue("sectionid", null);
+		tutorMessageContext.putContextValue("componentid", null);
+		tutorMessageContext.putContextValue("messagerendertype", "welcome");
 
 		AgentEnabled skillEnabled = tutorMessageContext.getCurrentAgentEnable();
 		tutorMessageContext.fireStatusComplete(skillEnabled);

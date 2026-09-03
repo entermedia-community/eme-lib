@@ -19,7 +19,7 @@ public class AdaptiveTutorialProgressSkill extends AdaptiveTutorialBaseSkill
 		TutorMessageContext tutorMessageContext = (TutorMessageContext) inAgentContext;
 
 		String userid = tutorMessageContext.getUserProfile().getUser().getId();
-		String tutorialid = (String) tutorMessageContext.getMessageAgentContext("tutorialid");
+		String tutorialid = (String) tutorMessageContext.getContextValue("tutorialid");
 		String channelid = tutorMessageContext.getChannel().getId();
 
 		if (tutorialid == null || userid == null || channelid == null)
@@ -154,11 +154,11 @@ public class AdaptiveTutorialProgressSkill extends AdaptiveTutorialBaseSkill
 		Data agentmessage = tutorMessageContext.getAgentMessage();
 		agentmessage.setValue("messagetype", "system");
 
-		tutorMessageContext.setMessageAgentContext("messagetype", "progressupdate");
-		tutorMessageContext.setMessageAgentContext("tutorialid", tutorialid);
-		tutorMessageContext.setMessageAgentContext("beginnerprogress", String.format("%.4f", average_beginnerpoints));
-		tutorMessageContext.setMessageAgentContext("competentprogress", String.format("%.4f", average_competentpoints));
-		tutorMessageContext.setMessageAgentContext("expertprogress", String.format("%.4f", average_expertpoints));
+		tutorMessageContext.putContextValue("messagerendertype", "progressupdate");
+		tutorMessageContext.putContextValue("tutorialid", tutorialid);
+		tutorMessageContext.putContextValue("beginnerprogress", String.format("%.4f", average_beginnerpoints));
+		tutorMessageContext.putContextValue("competentprogress", String.format("%.4f", average_competentpoints));
+		tutorMessageContext.putContextValue("expertprogress", String.format("%.4f", average_expertpoints));
 
 		agentmessage.setValue("message", "Progress updated for tutorial " + tutorialid);
 

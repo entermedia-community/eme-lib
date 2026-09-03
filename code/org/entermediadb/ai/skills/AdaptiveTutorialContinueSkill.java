@@ -21,9 +21,9 @@ public class AdaptiveTutorialContinueSkill extends AdaptiveTutorialBaseSkill
 	{
 		TutorMessageContext tutorMessageContext = (TutorMessageContext) inAgentContext;
 
-		String tutorialid = tutorMessageContext.getTutorialId();
-		String sectionid = (String) tutorMessageContext.getMessageAgentContext("sectionid");
-		String componentid = (String) tutorMessageContext.getMessageAgentContext("componentid");
+		String tutorialid = (String) tutorMessageContext.getContextValue("tutorialid");
+		String sectionid = (String) tutorMessageContext.getContextValue("sectionid");
+		String componentid = (String) tutorMessageContext.getContextValue("componentid");
 
 		Collection<String> questionIds = Collections.emptyList();
 		if (sectionid != null)
@@ -70,12 +70,12 @@ public class AdaptiveTutorialContinueSkill extends AdaptiveTutorialBaseSkill
 				throw new IllegalStateException("Next component is the same as the current component. This should not happen.");
 			}
 
-			tutorMessageContext.setMessageAgentContext("sectionid", topsection.getId());
-			tutorMessageContext.setMessageAgentContext("componentid", topcomponent.getId());
+			tutorMessageContext.putContextValue("sectionid", topsection.getId());
+			tutorMessageContext.putContextValue("componentid", topcomponent.getId());
 
-			tutorMessageContext.setMessageAgentContext("componentcontent", topcomponent.get("content"));
-			tutorMessageContext.setMessageAgentContext("componenttype", topcomponent.get("componenttype"));
-			tutorMessageContext.setMessageAgentContext("contentrole", topcomponent.get("contentrole"));
+			tutorMessageContext.putContextValue("componentcontent", topcomponent.get("content"));
+			tutorMessageContext.putContextValue("componenttype", topcomponent.get("componenttype"));
+			tutorMessageContext.putContextValue("contentrole", topcomponent.get("contentrole"));
 
 			if ("mcq".equals(topcomponent.get("componenttype")))
 			{
@@ -98,10 +98,10 @@ public class AdaptiveTutorialContinueSkill extends AdaptiveTutorialBaseSkill
 					questionjson.put("correctoption", question.get("correctoption"));
 					questionjson.put("rationale", question.get("rationale"));
 					questionjson.put("mcqcognitivelevel", question.get("mcqcognitivelevel"));
-					tutorMessageContext.setMessageAgentContext("question", questionjson);
+					tutorMessageContext.putContextValue("question", questionjson);
 				}
-				tutorMessageContext.setMessageAgentContext("messagetype", "question");
-				tutorMessageContext.setMessageAgentContext("interactive", "yes");
+				tutorMessageContext.putContextValue("messagerendertype", "question");
+				tutorMessageContext.putContextValue("interactive", "yes");
 			}
 			else if ("asset".equals(topcomponent.get("componenttype")))
 			{
@@ -156,14 +156,14 @@ public class AdaptiveTutorialContinueSkill extends AdaptiveTutorialBaseSkill
 							String asseturl = siteroot + getMediaArchive().asLinkToPreview(asset, "image3000x3000");
 							assetMap.put("url", asseturl);
 						}
-						tutorMessageContext.setMessageAgentContext("asset", assetMap);
+						tutorMessageContext.putContextValue("asset", assetMap);
 					}
 				}
-				tutorMessageContext.setMessageAgentContext("messagetype", "asset");
+				tutorMessageContext.putContextValue("messagerendertype", "asset");
 			}
 			else
 			{
-				tutorMessageContext.setMessageAgentContext("messagetype", "text");
+				tutorMessageContext.putContextValue("messagerendertype", "text");
 			}
 
 			AgentEnabled skillEnabled = tutorMessageContext.getCurrentAgentEnable();
@@ -186,15 +186,15 @@ public class AdaptiveTutorialContinueSkill extends AdaptiveTutorialBaseSkill
 			}
 
 			MultiValued newMessage = (MultiValued) getMediaArchive().getSearcher("chatterbox").createNewData();
-			newMessage.setJSONValue("agentcontextvalues", tutorMessageContext.getMessageAgentContext());
+			newMessage.setJSONValue("agentcontextvalues", tutorMessageContext.toJSON());
 			newMessage.setValue("date", new Date());
 			newMessage.setValue("channel", tutorMessageContext.getChannel().getId());
 			newMessage.setValue("user", "agent");
 
 			tutorMessageContext.setAgentMessage(newMessage);
-			tutorMessageContext.setMessageAgentContext("sectionid", sectionid);
-			tutorMessageContext.setMessageAgentContext("componentid", componentid);
-			tutorMessageContext.setMessageAgentContext("tutorialid", tutorialid);
+			tutorMessageContext.putContextValue("sectionid", sectionid);
+			tutorMessageContext.putContextValue("componentid", componentid);
+			tutorMessageContext.putContextValue("tutorialid", tutorialid);
 		}
 	}
 

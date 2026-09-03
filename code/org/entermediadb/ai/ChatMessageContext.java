@@ -64,36 +64,4 @@ public class ChatMessageContext extends BaseAgentContext
 	// {
 	// return (String) getContextValue("lastcomponentid");
 	// }
-
-	public void setMessageAgentContext(String inKey, Object inValue)
-	{
-		if (!(inValue instanceof String) && !(inValue instanceof Number) && !(inValue instanceof Boolean) && !(inValue instanceof JSONObject) && inValue != null)
-		{
-			log("Value cannot be saved");
-			return;
-		}
-
-		putContextValue(inKey, inValue);
-		getAgentMessage().setJSONValue("agentcontextvalues", inKey, inValue);
-	}
-
-	public Object getMessageAgentContext(String inKey)
-	{
-		Object ctx = getAgentMessage().getJSONValue("agentcontextvalues", inKey);
-		if (ctx == null)
-		{
-			ctx = getContextValue(inKey);
-		}
-		return ctx;
-	}
-
-	public JSONObject getMessageAgentContext()
-	{
-		Object values = getAgentMessage().getJSONValue("agentcontextvalues");
-		if (values instanceof JSONObject)
-		{
-			return (JSONObject) values;
-		}
-		return new JSONObject();
-	}
 }

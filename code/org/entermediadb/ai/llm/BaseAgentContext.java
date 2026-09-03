@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import org.entermediadb.ai.AgentContext;
 import org.entermediadb.ai.SkillStatusListener;
@@ -15,20 +16,43 @@ import org.entermediadb.ai.automation.RunningScenario;
 import org.entermediadb.ai.creator.AiSmartCreatorSteps;
 import org.entermediadb.ai.knn.RankedResult;
 import org.entermediadb.scripts.ScriptLogger;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.openedit.CatalogEnabled;
 import org.openedit.Data;
 import org.openedit.ModuleManager;
 import org.openedit.MultiValued;
 import org.openedit.data.BaseData;
+import org.openedit.data.SearcherManager;
 import org.openedit.profile.UserProfile;
 import org.openedit.users.User;
+import org.openedit.util.JSONParser;
 
 public class BaseAgentContext extends BaseData implements CatalogEnabled, AgentContext
 {
 	protected ScriptLogger fieldScriptLogger;
 
 	Collection<SkillStatusListener> fieldStatusListeners;
+
+	protected SearcherManager fieldSearcherManager;
+
+	public SearcherManager getSearcherManager()
+	{
+		if (fieldSearcherManager == null && getParentContext() != null)
+		{
+			return getParentContext().getSearcherManager();
+		}
+		if (fieldSearcherManager == null)
+		{
+			fieldSearcherManager = (SearcherManager) getModuleManager().getBean("searcherManager");
+		}
+		return fieldSearcherManager;
+	}
+
+	public void setSearcherManager(SearcherManager inSearcherManager)
+	{
+		fieldSearcherManager = inSearcherManager;
+	}
 
 	public Collection<SkillStatusListener> getStatusListeners()
 	{
@@ -665,6 +689,162 @@ public class BaseAgentContext extends BaseData implements CatalogEnabled, AgentC
 	public void setLastResponse(LlmResponse inLastResponse)
 	{
 		putContextValue("lastresponse", inLastResponse);
+	}
+
+	public JSONObject toJSON()
+	{
+		Map<String, Object> context = getContext();
+
+		JSONObject out = new JSONObject();
+
+		for (String key : context.keySet())
+		{
+			Object inValue = getJSONCompatibleObject(context.get(key));
+			if (inValue != null)
+			{
+				out.put(key, inValue);
+			}
+		}
+		return out;
+	}
+
+	public String toJSONString()
+	{
+		return toJSON().toJSONString();
+	}
+
+	protected Object getJSONCompatibleObject(Object inValue)
+	{
+		if (inValue instanceof Data)
+		{
+
+			Data d = (Data) inValue;
+			String sourcetype = d.get("entitysourcetype");
+			if (sourcetype == null)
+			{
+				return null;
+			}
+
+			Map data = new HashMap<>();
+			data.put("id", d.getId());
+			data.put("searchtype", sourcetype);
+			return data;
+		}
+		if (inValue instanceof String || inValue instanceof Number || inValue instanceof Boolean)
+		{
+			return inValue;
+		}
+		if (inValue instanceof Collection)
+		{
+			JSONArray jsonArray = new JSONArray();
+			for (Object item : (Collection) inValue)
+			{
+				Object data = getJSONCompatibleObject(item);
+				if (data != null)
+				{
+					jsonArray.add(data);
+				}
+			}
+			return jsonArray;
+		}
+		if (inValue instanceof Map)
+		{
+			JSONObject jsonObject = new JSONObject();
+			for (Map.Entry<?, ?> entry : ((Map<?, ?>) inValue).entrySet())
+			{
+				Object data = getJSONCompatibleObject(entry.getValue());
+				if (data != null)
+				{
+					jsonObject.put(String.valueOf(entry.getKey()), data);
+				}
+			}
+			return jsonObject;
+		}
+		return null;
+	}
+
+	@Override
+	public void loadContextFromJson(String inJsonString)
+	{
+		if (inJsonString == null || inJsonString.trim().isEmpty())
+		{
+			return;
+		}
+		try
+		{
+			JSONObject json = (JSONObject) new JSONParser().parse(inJsonString);
+			if (json != null)
+			{
+				for (Object keyObj : json.keySet())
+				{
+					String key = String.valueOf(keyObj);
+					Object hydrated = fromJSONCompatibleObject(json.get(keyObj));
+					if (hydrated != null)
+					{
+						putContextValue(key, hydrated);
+					}
+				}
+			}
+		}
+		catch (Exception ex)
+		{
+			getScriptLogger().error("Could not parse context json: " + inJsonString, ex);
+		}
+	}
+
+	protected Object fromJSONCompatibleObject(Object inValue)
+	{
+		if (inValue == null)
+		{
+			return null;
+		}
+		if (inValue instanceof Map)
+		{
+			Map<?, ?> map = (Map<?, ?>) inValue;
+			Object idObj = map.get("id");
+			Object searchTypeObj = map.get("searchtype");
+
+			if (idObj instanceof String && searchTypeObj instanceof String && map.size() == 2)
+			{
+				if (getSearcherManager() != null && getCatalogId() != null)
+				{
+					Data data = (Data) getSearcherManager().getCachedData(getCatalogId(), (String) searchTypeObj, (String) idObj);
+					if (data != null)
+					{
+						return data;
+					}
+				}
+			}
+
+			Map<String, Object> hydratedMap = new HashMap<>();
+			for (Map.Entry<?, ?> entry : map.entrySet())
+			{
+				Object val = fromJSONCompatibleObject(entry.getValue());
+				if (val != null)
+				{
+					hydratedMap.put(String.valueOf(entry.getKey()), val);
+				}
+			}
+			return hydratedMap;
+		}
+		if (inValue instanceof Collection)
+		{
+			List<Object> list = new ArrayList<>();
+			for (Object item : (Collection<?>) inValue)
+			{
+				Object hydrated = fromJSONCompatibleObject(item);
+				if (hydrated != null)
+				{
+					list.add(hydrated);
+				}
+			}
+			return list;
+		}
+		if (inValue instanceof String || inValue instanceof Number || inValue instanceof Boolean)
+		{
+			return inValue;
+		}
+		return inValue;
 	}
 
 }

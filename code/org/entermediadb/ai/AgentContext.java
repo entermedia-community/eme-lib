@@ -5,15 +5,17 @@ import java.util.Map;
 import org.entermediadb.ai.assistant.AiCreation;
 import org.entermediadb.ai.assistant.AiSearch;
 import org.entermediadb.ai.automation.RunningScenario;
-import org.entermediadb.ai.knn.RankedResult;
 import org.entermediadb.ai.creator.AiSmartCreatorSteps;
+import org.entermediadb.ai.knn.RankedResult;
 import org.entermediadb.ai.llm.AgentEnabled;
 import org.entermediadb.ai.llm.LlmResponse;
 import org.entermediadb.ai.llm.LogEntry;
 import org.entermediadb.scripts.ScriptLogger;
+import org.json.simple.JSONObject;
 import org.openedit.Data;
 import org.openedit.ModuleManager;
 import org.openedit.MultiValued;
+import org.openedit.data.SearcherManager;
 import org.openedit.profile.UserProfile;
 import org.openedit.users.User;
 
@@ -155,5 +157,13 @@ public interface AgentContext extends Data
 	public void fireStatusComplete(AgentEnabled inAgentEnabled);
 
 	void putContextValues(Map params);
+
+	JSONObject toJSON();
+
+	String toJSONString();
+
+	void loadContextFromJson(String inJsonString);
+
+	public SearcherManager getSearcherManager();
 
 }

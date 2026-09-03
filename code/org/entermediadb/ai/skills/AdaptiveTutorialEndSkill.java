@@ -23,10 +23,10 @@ public class AdaptiveTutorialEndSkill extends AdaptiveTutorialBaseSkill
 		newMessage.setValue("messagetype", "system");
 		tutorMessageContext.setAgentMessage(newMessage);
 
-		tutorMessageContext.setMessageAgentContext("messagetype", "end");
-		tutorMessageContext.setMessageAgentContext("tutorialid", tutorialid);
-		tutorMessageContext.setMessageAgentContext("sectionid", null);
-		tutorMessageContext.setMessageAgentContext("componentid", null);
+		tutorMessageContext.putContextValue("messagerendertype", "end");
+		tutorMessageContext.putContextValue("tutorialid", tutorialid);
+		tutorMessageContext.putContextValue("sectionid", null);
+		tutorMessageContext.putContextValue("componentid", null);
 
 		Data channel = tutorMessageContext.getChannel();
 		channel.setValue("channelstatus", "finished");

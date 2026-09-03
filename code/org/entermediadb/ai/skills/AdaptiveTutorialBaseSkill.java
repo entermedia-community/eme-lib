@@ -62,11 +62,11 @@ public class AdaptiveTutorialBaseSkill extends BaseSkill
 			{
 				continue;
 			}
-			if ("usercomment".equals(agentContext.get("messagetype")) || "answereval".equals(agentContext.get("messagetype")))
+			if ("usercomment".equals(agentContext.get("messagerendertype")) || "answereval".equals(agentContext.get("messagerendertype")))
 			{
 				releaventMessages.add(message);
 			}
-			else if ("question".equals(agentContext.get("messagetype")))
+			else if ("question".equals(agentContext.get("messagerendertype")))
 			{
 				releaventMessages.add(message);
 				break;
@@ -100,7 +100,7 @@ public class AdaptiveTutorialBaseSkill extends BaseSkill
 
 	protected void buildHistoryFromAgentContext(JSONObject agentContext, JSONArray chatHistory)
 	{
-		if ("question".equals(agentContext.get("messagetype")))
+		if ("question".equals(agentContext.get("messagerendertype")))
 		{
 			StringBuilder ctx = new StringBuilder();
 
@@ -142,7 +142,7 @@ public class AdaptiveTutorialBaseSkill extends BaseSkill
 
 			chatHistory.add(historyItem);
 		}
-		else if ("answereval".equals(agentContext.get("messagetype")))
+		else if ("answereval".equals(agentContext.get("messagerendertype")))
 		{
 			StringBuilder ctx = new StringBuilder();
 
@@ -173,7 +173,7 @@ public class AdaptiveTutorialBaseSkill extends BaseSkill
 
 			chatHistory.add(historyItem);
 		}
-		else if ("usercomment".equals(agentContext.get("messagetype")))
+		else if ("usercomment".equals(agentContext.get("messagerendertype")))
 		{
 			String content = (String) agentContext.get("componentcontent");
 

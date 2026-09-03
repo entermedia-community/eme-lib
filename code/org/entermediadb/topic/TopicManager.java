@@ -8,12 +8,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.entermediadb.asset.MediaArchive;
 import org.entermediadb.asset.modules.BaseMediaModule;
 import org.openedit.Data;
 import org.openedit.MultiValued;
 import org.openedit.OpenEditException;
 import org.openedit.WebPageRequest;
+import org.openedit.data.Searcher;
 
 public class TopicManager extends BaseMediaModule
 {
@@ -528,6 +530,28 @@ public class TopicManager extends BaseMediaModule
 
 		Collection<MultiValued> answers = mediaArchive.query("tutoranswer").exact("channel", currentchannel.getId()).exact("user", inReq.getUser().getId()).sort("dateUp").search();
 		inReq.putPageValue("answers", answers);
+	}
+
+	public void resetTutorial(WebPageRequest inReq)
+	{
+		Searcher channelSearcher = getMediaArchive(inReq).getSearcher("channel");
+		Collection<Data> channels = channelSearcher.query().exact("channeltype", "agenttutorchat").search();
+		Collection<String> channelIds = channels.stream().map(d -> d.getId()).collect(Collectors.toList());
+		Collection<String> tutorialIds = channels.stream().map(d -> d.get("dataid")).collect(Collectors.toList());
+
+		channelSearcher.deleteAll(channels, null);
+
+		Searcher chatterboxSearcher = getMediaArchive(inReq).getSearcher("chatterbox");
+		Collection<Data> chatterboxMessages = chatterboxSearcher.query().orgroup("channel", channelIds).search();
+		chatterboxSearcher.deleteAll(chatterboxMessages, null);
+
+		Searcher tutoranswerSearcher = getMediaArchive(inReq).getSearcher("tutoranswer");
+		Collection<Data> tutoranswers = tutoranswerSearcher.query().orgroup("channel", channelIds).search();
+		tutoranswerSearcher.deleteAll(tutoranswers, null);
+
+		Searcher tutorprogressSearcher = getMediaArchive(inReq).getSearcher("tutorprogress");
+		Collection<Data> tutorprogresses = tutorprogressSearcher.query().orgroup("entitytutorial", tutorialIds).search();
+		tutorprogressSearcher.deleteAll(tutorprogresses, null);
 	}
 
 }
