@@ -1,8 +1,10 @@
 package org.entermediadb.topic;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -16,6 +18,7 @@ import org.openedit.MultiValued;
 import org.openedit.OpenEditException;
 import org.openedit.WebPageRequest;
 import org.openedit.data.Searcher;
+import org.openedit.util.DateStorageUtil;
 
 public class TopicManager extends BaseMediaModule
 {
@@ -530,6 +533,90 @@ public class TopicManager extends BaseMediaModule
 
 		Collection<MultiValued> answers = mediaArchive.query("tutoranswer").exact("channel", currentchannel.getId()).exact("user", inReq.getUser().getId()).sort("dateUp").search();
 		inReq.putPageValue("answers", answers);
+	}
+
+	public void loadDailyChallenge(WebPageRequest inReq)
+	{
+		MediaArchive mediaArchive = getMediaArchive(inReq);
+		Searcher dailychallengeSearcher = mediaArchive.getSearcher("tutordailychallenge");
+		Searcher channelSearcher = mediaArchive.getSearcher("channel");
+		Data currentchannel = null;
+
+		Date today = DateStorageUtil.getStorageUtil().getToday();
+		String dateStr = inReq.getRequestParameter("date");
+		Date date = today;
+		if (dateStr != null)
+		{
+			date = DateStorageUtil.getStorageUtil().truncateDate(DateStorageUtil.getStorageUtil().parseFromStorage(dateStr));
+		}
+
+		Data dailychallenge = dailychallengeSearcher.query().exact("challengedate", date).searchOne();
+
+		if (dailychallenge != null)
+		{
+			currentchannel = channelSearcher.query().id(dailychallenge.get("channel")).searchOne();
+		}
+		else
+		{
+			if (date.equals(today))
+			{
+				currentchannel = channelSearcher.createNewData();
+				currentchannel.setName("Daily Challenge: " + dateStr);
+				currentchannel.setValue("searchtype", "tutordailychallenge");
+				currentchannel.setValue("channeltype", "agenttutorchat");
+				currentchannel.setValue("user", inReq.getUser().getId());
+				currentchannel.setValue("dataid", dateStr);
+
+				Calendar now = Calendar.getInstance();
+				now.add(Calendar.SECOND, -1);
+				currentchannel.setValue("refreshdate", now.getTime());
+
+				channelSearcher.saveData(currentchannel);
+
+				inReq.putPageValue("currentchannel", currentchannel);
+
+				Collection<Data> answeredQuestions = mediaArchive.query("tutoranswer").exact("user", inReq.getUser().getId()).sort("datecreatedDown").search();
+				List<String> answeredQuestionIds = answeredQuestions.stream().map(d -> d.get("entityquestion")).collect(Collectors.toList());
+
+				Collection<Data> unAnsweredQuestions = mediaArchive.query("entityquestion").notgroup("id", answeredQuestionIds).search();
+				Collection<String> unAnsweredQuestionIds = unAnsweredQuestions.stream().map(d -> d.getId()).collect(Collectors.toList());
+
+				if (unAnsweredQuestionIds.isEmpty() && !answeredQuestionIds.isEmpty())
+				{
+					unAnsweredQuestionIds.add(answeredQuestionIds.get(0));
+				}
+
+				Data questionComponent = mediaArchive.query("componentcontent").orgroup("questionid", unAnsweredQuestionIds).searchOne();
+
+				String sectionId = questionComponent.get("componentsectionid");
+
+				dailychallenge = dailychallengeSearcher.createNewData();
+				dailychallenge.setValue("challengedate", today);
+				dailychallenge.setValue("sectionid", sectionId);
+				dailychallenge.setValue("user", inReq.getUser().getId());
+				dailychallenge.setValue("channel", currentchannel.getId());
+				dailychallengeSearcher.saveData(dailychallenge);
+			}
+			else
+			{
+				return;
+			}
+		}
+
+		inReq.putPageValue("activechannel", currentchannel);
+
+		Collection<Data> previousChallenges = dailychallengeSearcher.query().before("challengedate", today).exact("user", inReq.getUser().getId()).search();
+		Collection<String> prevChannels = previousChallenges.stream().map(d -> d.get("channel")).collect(Collectors.toList());
+
+		Collection<Data> history = channelSearcher.query().ids(prevChannels).sort("dateDown").search();
+		inReq.putPageValue("channelhistory", history);
+
+		Collection<MultiValued> messages = mediaArchive.query("chatterbox").exact("channel", currentchannel.getId()).orgroup("user", inReq.getUser().getId() + ",agent").sort("dateUp").search();
+		inReq.putPageValue("messages", messages);
+
+		Collection<MultiValued> answers = mediaArchive.query("tutoranswer").exact("channel", currentchannel.getId()).exact("user", inReq.getUser().getId()).sort("dateUp").search();
+		inReq.putPageValue("answers", answers);
+
 	}
 
 	public void resetTutorial(WebPageRequest inReq)

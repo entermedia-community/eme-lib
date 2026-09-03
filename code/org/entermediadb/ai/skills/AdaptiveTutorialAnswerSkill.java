@@ -87,6 +87,8 @@ public class AdaptiveTutorialAnswerSkill extends AdaptiveTutorialBaseSkill
 
 		tutorMessageContext.setLastResponse(llmResponse);
 
+		tutorMessageContext.putContextValue("messagerendertype", "answereval");
+
 		AgentEnabled skillEnabled = tutorMessageContext.getCurrentAgentEnable();
 		tutorMessageContext.fireStatusComplete(skillEnabled);
 

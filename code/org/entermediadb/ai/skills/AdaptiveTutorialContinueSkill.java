@@ -24,11 +24,12 @@ public class AdaptiveTutorialContinueSkill extends AdaptiveTutorialBaseSkill
 		String tutorialid = (String) tutorMessageContext.getContextValue("tutorialid");
 		String sectionid = (String) tutorMessageContext.getContextValue("sectionid");
 		String componentid = (String) tutorMessageContext.getContextValue("componentid");
+		String dailychallenge = (String) tutorMessageContext.getContextValue("dailychallenge");
 
 		Collection<String> questionIds = Collections.emptyList();
 		if (sectionid != null)
 		{
-			Collection<Data> answeredQuestions = getMediaArchive().query("tutoranswer").exact("sectionid", sectionid).exact("user", tutorMessageContext.getUserProfile().getUser().getId()).search();
+			Collection<Data> answeredQuestions = getMediaArchive().query("tutoranswer").exact("user", tutorMessageContext.getUserProfile().getUser().getId()).search();
 			questionIds = answeredQuestions.stream().map(a -> a.get("entityquestion")).toList();
 		}
 

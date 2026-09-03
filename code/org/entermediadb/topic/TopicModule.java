@@ -39,6 +39,12 @@ public class TopicModule extends BaseAiManager
 		topicManager.loadTutorialHistory(inReq);
 	}
 
+	public void loadDailyChallenge(WebPageRequest inReq)
+	{
+		TopicManager topicManager = getTopicManager();
+		topicManager.loadDailyChallenge(inReq);
+	}
+
 	// FOR TESTING
 	public void resetTutorial(WebPageRequest inReq)
 	{
