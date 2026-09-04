@@ -6,6 +6,7 @@ import org.entermediadb.ai.AgentContext;
 import org.entermediadb.ai.TutorMessageContext;
 import org.entermediadb.ai.automation.RunningScenario;
 import org.entermediadb.ai.llm.AutomationStep;
+import org.entermediadb.ai.llm.BasicLlmResponse;
 import org.entermediadb.ai.llm.LlmConnection;
 import org.entermediadb.ai.llm.LlmResponse;
 import org.json.simple.JSONObject;
@@ -94,7 +95,7 @@ public class AdaptiveTutorialAnswerSkill extends AdaptiveTutorialBaseSkill
 
 		Data agentmessage = tutorMessageContext.getAgentMessage();
 
-		agentmessage.setValue("id", tutorMessageContext.getTutorialId() + "_progressupdate");
+		agentmessage.setValue("id", tutorMessageContext.getContextValue("tutorialid") + "_progressupdate");
 		agentmessage.setValue("messagetype", "system");
 
 		RunningScenario scenario = tutorMessageContext.getCurrentScenario();

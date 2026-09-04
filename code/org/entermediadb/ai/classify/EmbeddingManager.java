@@ -1,23 +1,21 @@
 package org.entermediadb.ai.classify;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.entermediadb.ai.BaseAiManager;
-import org.entermediadb.ai.creator.SmartCreatorSession;
-import org.entermediadb.ai.skills.ChatSmartCreatorConfirmationSkill;
-import org.entermediadb.ai.informatics.InformaticsContext;
 import org.entermediadb.ai.AgentContext;
+import org.entermediadb.ai.BaseAiManager;
+import org.entermediadb.ai.informatics.InformaticsContext;
 import org.entermediadb.ai.llm.LlmConnection;
 import org.entermediadb.ai.llm.LlmResponse;
+import org.entermediadb.ai.skills.ChatSmartCreatorConfirmationSkill;
 import org.entermediadb.asset.Asset;
-import org.entermediadb.asset.MediaArchive;
 import org.entermediadb.markdown.MarkdownUtil;
 import org.entermediadb.scripts.ScriptLogger;
 import org.json.simple.JSONArray;
@@ -654,7 +652,8 @@ public class EmbeddingManager extends BaseAiManager
 
 		if (!answer.equalsIgnoreCase("Empty Response"))
 		{
-			return response;
+			return Arrays.asList(answer.split(","));
+
 		}
 
 		return null;
