@@ -9,7 +9,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.entermediadb.ai.AgentContext;
 import org.entermediadb.ai.Skill;
-import org.entermediadb.ai.llm.AgentEnabled;
+import org.entermediadb.ai.llm.AutomationStep;
 import org.entermediadb.ai.llm.LlmResponse;
 import org.entermediadb.manager.BaseMediaObject;
 import org.json.simple.JSONObject;
@@ -21,7 +21,7 @@ public class RunningScenario extends BaseMediaObject implements CatalogEnabled
 {
 	private static final Log log = LogFactory.getLog(RunningScenario.class);
 
-	Collection<AgentEnabled> fieldAgentsEnabled;
+	Collection<AutomationStep> fieldAgentsEnabled;
 
 	public String fieldId;
 
@@ -35,12 +35,12 @@ public class RunningScenario extends BaseMediaObject implements CatalogEnabled
 		fieldId = inId;
 	}
 
-	public Collection<AgentEnabled> getAgentsEnabled()
+	public Collection<AutomationStep> getAgentsEnabled()
 	{
 		return fieldAgentsEnabled;
 	}
 
-	public void setAgentsEnabled(Collection<AgentEnabled> agentsEnabled)
+	public void setAgentsEnabled(Collection<AutomationStep> agentsEnabled)
 	{
 		fieldAgentsEnabled = agentsEnabled;
 	}
@@ -62,12 +62,12 @@ public class RunningScenario extends BaseMediaObject implements CatalogEnabled
 		return fieldScenarioData;
 	}
 
-	public boolean runProcess(AgentEnabled inSkillEnabled, AgentContext inContext)
+	public boolean runProcess(AutomationStep inSkillEnabled, AgentContext inContext)
 	{
 		return runProcess(inSkillEnabled, inContext, false);
 	}
 
-	public boolean runProcess(AgentEnabled inSkillEnabled, AgentContext inContext, boolean skipStatusStart)
+	public boolean runProcess(AutomationStep inSkillEnabled, AgentContext inContext, boolean skipStatusStart)
 	{
 		inContext.setCurrentAgentEnable(inSkillEnabled);
 		Skill agent = inSkillEnabled.getAgent();
@@ -123,7 +123,7 @@ public class RunningScenario extends BaseMediaObject implements CatalogEnabled
 	public boolean runProcess(String inEnabledId, AgentContext inContext)
 	{
 
-		AgentEnabled enabled = findEnabled(getEnabledAgents(), inEnabledId);
+		AutomationStep enabled = findEnabled(getEnabledAgents(), inEnabledId);
 
 		if (enabled == null)
 		{
@@ -136,21 +136,21 @@ public class RunningScenario extends BaseMediaObject implements CatalogEnabled
 		return runProcess(enabled, inCurrentContext);
 	}
 
-	public AgentEnabled findEnabled(String inEnabledId)
+	public AutomationStep findEnabled(String inEnabledId)
 	{
-		AgentEnabled found = findEnabled(getEnabledAgents(), inEnabledId);
+		AutomationStep found = findEnabled(getEnabledAgents(), inEnabledId);
 		return found;
 	}
 
-	public AgentEnabled findEnabled(Collection<AgentEnabled> agents, String inEnabledId)
+	public AutomationStep findEnabled(Collection<AutomationStep> agents, String inEnabledId)
 	{
-		for (AgentEnabled enabled : agents)
+		for (AutomationStep enabled : agents)
 		{
 			if (enabled.getEnabledId().equals(inEnabledId))
 			{
 				return enabled;
 			}
-			AgentEnabled found = findEnabled(enabled.getChildren(), inEnabledId);
+			AutomationStep found = findEnabled(enabled.getChildren(), inEnabledId);
 			if (found != null)
 			{
 				return found;
@@ -159,23 +159,23 @@ public class RunningScenario extends BaseMediaObject implements CatalogEnabled
 		return null;
 	}
 
-	public Collection<AgentEnabled> getEnabledAgents()
+	public Collection<AutomationStep> getEnabledAgents()
 	{
 		String inId = getId();
 
-		getMediaArchive().getCacheManager().put("agentsenabled", inId, new ArrayList<AgentEnabled>()); // Clear the cache to force reload
+		getMediaArchive().getCacheManager().put("agentsenabled", inId, new ArrayList<AutomationStep>()); // Clear the cache to force reload
 
-		Collection<AgentEnabled> cached = (Collection<AgentEnabled>) getMediaArchive().getCacheManager().get("agentsenabled", inId);
+		Collection<AutomationStep> cached = (Collection<AutomationStep>) getMediaArchive().getCacheManager().get("agentsenabled", inId);
 
 		if (cached == null || cached.isEmpty())
 		{
-			Collection found = getMediaArchive().query("aiskillenabled").exact("automationscenario", inId).exact("enabled", true).search();
-			Map<String, AgentEnabled> allparents = new HashMap();
+			Collection found = getMediaArchive().query("automationstep").exact("automationscenario", inId).exact("enabled", true).search();
+			Map<String, AutomationStep> allparents = new HashMap();
 			for (Iterator iterator = found.iterator(); iterator.hasNext();)
 			{
 				MultiValued agentenableddata = (MultiValued) iterator.next();
-				AgentEnabled enabled = new AgentEnabled();
-				enabled.setAutomationEnabledData(agentenableddata);
+				AutomationStep enabled = new AutomationStep();
+				enabled.setAutomationStepData(agentenableddata);
 				String agentid = agentenableddata.get("aiskill");
 				MultiValued agentdata = (MultiValued) getMediaArchive().getCachedData("aiskill", agentid);
 				enabled.setAgentData(agentdata);
@@ -202,9 +202,9 @@ public class RunningScenario extends BaseMediaObject implements CatalogEnabled
 			cached = new ArrayList();
 			for (Iterator iterator = allparents.values().iterator(); iterator.hasNext();)
 			{
-				AgentEnabled childAgent = (AgentEnabled) iterator.next();
+				AutomationStep childAgent = (AutomationStep) iterator.next();
 				String myparent = childAgent.getParentAgent();
-				AgentEnabled parentAgent = allparents.get(myparent);
+				AutomationStep parentAgent = allparents.get(myparent);
 				if (myparent == null || parentAgent == null)
 				{
 					cached.add(childAgent);
@@ -235,12 +235,12 @@ public class RunningScenario extends BaseMediaObject implements CatalogEnabled
 		return Agent;
 	}
 
-	public AgentContext createAgentContext(AgentEnabled inEnabled)
+	public AgentContext createAgentContext(AutomationStep inEnabled)
 	{
 		return createAgentContext(null, inEnabled);
 	}
 
-	public AgentContext createAgentContext(AgentContext inParentContext, AgentEnabled inEnabled)
+	public AgentContext createAgentContext(AgentContext inParentContext, AutomationStep inEnabled)
 	{
 		String contextbeanname = inEnabled.getAgentData().get("contextbean");
 
@@ -257,19 +257,19 @@ public class RunningScenario extends BaseMediaObject implements CatalogEnabled
 		return childContext;
 	}
 
-	private void addContextValues(AgentEnabled inAgentEnabled)
+	private void addContextValues(AutomationStep inAutomationStep)
 	{
-		MultiValued automationEnabledData = (MultiValued) inAgentEnabled.getAutomationEnabledData();
+		MultiValued automationEnabledData = (MultiValued) inAutomationStep.getAutomationStepData();
 		String text = automationEnabledData.get("contextvalues");
-		if (text == null && inAgentEnabled.getAgentData() != null)
+		if (text == null && inAutomationStep.getAgentData() != null)
 		{
-			text = inAgentEnabled.getAgentData().get("contextvalues");
+			text = inAutomationStep.getAgentData().get("contextvalues");
 		}
 		if (text != null)
 		{
 			JSONParser fieldJsonParser = new JSONParser();
 			JSONObject json = (JSONObject) fieldJsonParser.parse(text);
-			inAgentEnabled.setExtraContextValues(json);
+			inAutomationStep.setExtraContextValues(json);
 		}
 	}
 }

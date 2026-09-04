@@ -2,7 +2,7 @@ package org.entermediadb.ai.skills;
 
 import org.entermediadb.ai.AgentContext;
 import org.entermediadb.ai.TutorMessageContext;
-import org.entermediadb.ai.llm.AgentEnabled;
+import org.entermediadb.ai.llm.AutomationStep;
 import org.entermediadb.ai.llm.LlmConnection;
 import org.entermediadb.ai.llm.LlmResponse;
 import org.openedit.Data;
@@ -52,7 +52,7 @@ public class AdaptiveTutorialWelcomeSkill extends AdaptiveTutorialBaseSkill
 		tutorMessageContext.putContextValue("componentid", null);
 		tutorMessageContext.putContextValue("messagerendertype", "welcome");
 
-		AgentEnabled skillEnabled = tutorMessageContext.getCurrentAgentEnable();
+		AutomationStep skillEnabled = tutorMessageContext.getCurrentAgentEnable();
 		tutorMessageContext.fireStatusComplete(skillEnabled);
 	}
 

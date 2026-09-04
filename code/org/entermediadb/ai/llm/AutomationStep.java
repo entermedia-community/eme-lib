@@ -2,28 +2,27 @@ package org.entermediadb.ai.llm;
 
 import java.util.ArrayList;
 import java.util.Collection;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.entermediadb.ai.AgentContext;
 import org.entermediadb.ai.Skill;
-import org.entermediadb.ai.automation.RunningScenario;
 import org.json.simple.JSONObject;
 import org.openedit.MultiValued;
 
-public class AgentEnabled
+public class AutomationStep
 {
-	private static final Log log = LogFactory.getLog(AgentEnabled.class);
+	private static final Log log = LogFactory.getLog(AutomationStep.class);
 
-	AgentEnabled fieldParentAgentEnabled;
+	AutomationStep fieldParentAutomationStep;
 
-	public AgentEnabled getParentAgentEnabled()
+	public AutomationStep getParentAutomationStep()
 	{
-		return fieldParentAgentEnabled;
+		return fieldParentAutomationStep;
 	}
 
-	public void setParentAgentEnabled(AgentEnabled inParentAgentEnabled)
+	public void setParentAutomationStep(AutomationStep inParentAutomationStep)
 	{
-		fieldParentAgentEnabled = inParentAgentEnabled;
+		fieldParentAutomationStep = inParentAutomationStep;
 	}
 
 	MultiValued fieldAgentData;
@@ -35,7 +34,7 @@ public class AgentEnabled
 
 	public Object getValue(String inField)
 	{
-		Object value = getAutomationEnabledData().getValue(inField);
+		Object value = getAutomationStepData().getValue(inField);
 		if (value == null)
 		{
 			value = getAgentData().getValue(inField);
@@ -45,7 +44,7 @@ public class AgentEnabled
 
 	public String get(String inField)
 	{
-		String value = getAutomationEnabledData().get(inField);
+		String value = getAutomationStepData().get(inField);
 		if (value == null)
 		{
 			value = getAgentData().get(inField);
@@ -58,16 +57,16 @@ public class AgentEnabled
 		fieldAgentData = inAgentData;
 	}
 
-	MultiValued fieldAutomationEnabledData;
+	MultiValued fieldAutomationStepData;
 
-	public MultiValued getAutomationEnabledData()
+	public MultiValued getAutomationStepData()
 	{
-		return fieldAutomationEnabledData;
+		return fieldAutomationStepData;
 	}
 
-	public void setAutomationEnabledData(MultiValued inAutomationEnabledData)
+	public void setAutomationStepData(MultiValued inAutomationStepData)
 	{
-		fieldAutomationEnabledData = inAutomationEnabledData;
+		fieldAutomationStepData = inAutomationStepData;
 	}
 
 	public Skill getAgent()
@@ -84,13 +83,13 @@ public class AgentEnabled
 
 	public String getParentAgent()
 	{
-		String runafter = getAutomationEnabledData().get("runafter");
+		String runafter = getAutomationStepData().get("runafter");
 		return runafter;
 	}
 
-	Collection<AgentEnabled> fieldChildren;
+	Collection<AutomationStep> fieldChildren;
 
-	public Collection<AgentEnabled> getChildren()
+	public Collection<AutomationStep> getChildren()
 	{
 		if (fieldChildren == null)
 		{
@@ -99,15 +98,15 @@ public class AgentEnabled
 		return fieldChildren;
 	}
 
-	public void setChildren(Collection<AgentEnabled> inChildren)
+	public void setChildren(Collection<AutomationStep> inChildren)
 	{
 		fieldChildren = inChildren;
 	}
 
-	public AgentEnabled getChildren(String inId)
+	public AutomationStep getChildren(String inId)
 	{
-		AgentEnabled selected = null;
-		for (AgentEnabled child : getChildren())
+		AutomationStep selected = null;
+		for (AutomationStep child : getChildren())
 		{
 			String id = child.get("id");
 			if (id.equals(inId))
@@ -119,10 +118,10 @@ public class AgentEnabled
 		return selected;
 	}
 
-	public void addChild(AgentEnabled inChildAgent)
+	public void addChild(AutomationStep inChildAgent)
 	{
 		getChildren().add(inChildAgent);
-		inChildAgent.setParentAgentEnabled(this);
+		inChildAgent.setParentAutomationStep(this);
 	}
 
 	@Override
@@ -169,10 +168,10 @@ public class AgentEnabled
 
 	public String getEnabledId()
 	{
-		return getAutomationEnabledData().getId();
+		return getAutomationStepData().getId();
 	}
 
-	public AgentEnabled getNextAgentEnabled()
+	public AutomationStep getNextAutomationStep()
 	{
 		if (getChildren() != null && getChildren().size() > 0)
 		{

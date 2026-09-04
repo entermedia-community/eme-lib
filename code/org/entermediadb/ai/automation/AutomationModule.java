@@ -67,7 +67,7 @@ public class AutomationModule extends BaseMediaModule
 		Data scenario = archive.query("automationscenario").exact("id", scenarioid).searchOne();
 		inReq.putPageValue("scenario", scenario);
 
-		Searcher agentEnabledSearcher = archive.getSearcher("aiskillenabled");
+		Searcher agentEnabledSearcher = archive.getSearcher("automationstep");
 		inReq.putPageValue("agentenabledsearcher", agentEnabledSearcher);
 
 		Collection<MultiValued> agents = agentEnabledSearcher.query().exact("automationscenario", scenario.getId()).search();
@@ -86,7 +86,7 @@ public class AutomationModule extends BaseMediaModule
 	 * Data scenario = archive.query("automationscenario").exact("id", scenarioid).searchOne();
 	 * inReq.putPageValue("scenario", scenario);
 	 * 
-	 * Searcher agentEnabledSearcher = archive.getSearcher("aiskillenabled");
+	 * Searcher agentEnabledSearcher = archive.getSearcher("automationstep");
 	 * inReq.putPageValue("agentenabledsearcher", agentEnabledSearcher);
 	 * 
 	 * Collection<MultiValued> agents = agentEnabledSearcher.query().exact("automationscenario",
@@ -137,7 +137,7 @@ public class AutomationModule extends BaseMediaModule
 
 		agentEnabledData.setValue("agenttype", agent.get("agenttype"));
 
-		archive.saveData("aiskillenabled", agentEnabledData);
+		archive.saveData("automationstep", agentEnabledData);
 
 		AutomationManager manager = getAutomationManager(inReq);
 		manager.generateParams(agentEnabledData);
@@ -163,7 +163,7 @@ public class AutomationModule extends BaseMediaModule
 			return;
 		}
 
-		Searcher agentEnabledSearcher = getMediaArchive(inReq).getSearcher("aiskillenabled");
+		Searcher agentEnabledSearcher = getMediaArchive(inReq).getSearcher("automationstep");
 		for (Iterator iterator = data.iterator(); iterator.hasNext();)
 		{
 			JSONObject agentdata = (JSONObject) iterator.next();
@@ -264,7 +264,7 @@ public class AutomationModule extends BaseMediaModule
 
 		if (agentIds.size() > 0)
 		{
-			Searcher agentSearcher = archive.getSearcher("aiskillenabled");
+			Searcher agentSearcher = archive.getSearcher("automationstep");
 			Collection<Data> agents = agentSearcher.query().ids(agentIds).search();
 			agentSearcher.deleteAll(agents, inReq.getUser());
 		}
@@ -335,7 +335,7 @@ public class AutomationModule extends BaseMediaModule
 			String description = scenario.get("longdescription");
 
 			// get all skils in aiskillsenabled for this scenario and embed them
-			Collection<MultiValued> skills = archive.query("aiskillenabled").exact("automationscenario", scenario.getId()).search();
+			Collection<MultiValued> skills = archive.query("automationstep").exact("automationscenario", scenario.getId()).search();
 			for (Iterator iterator2 = skills.iterator(); iterator2.hasNext();)
 			{
 				MultiValued skill = (MultiValued) iterator2.next();

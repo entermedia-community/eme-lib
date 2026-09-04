@@ -23,7 +23,7 @@ public class SmartCreatorProcessPendingSkill extends BaseSkill
 	public void process(AgentContext inContext)
 	{
 
-		Collection<String> values = inContext.getCurrentAgentEnable().getAutomationEnabledData().getValues("searchtypes");
+		Collection<String> values = inContext.getCurrentAgentEnable().getAutomationStepData().getValues("searchtypes");
 		if (values == null)
 		{
 			inContext.error("No Agents Enabled");
@@ -38,16 +38,16 @@ public class SmartCreatorProcessPendingSkill extends BaseSkill
 			if (module == null)
 			{
 				// inContext.error("No module found " +
-				// inContext.getCurrentAgentEnable().getAutomationEnabledData());
+				// inContext.getCurrentAgentEnable().getAutomationStepData());
 				continue;
 			}
 			// Find pending then process each one
 			Collection found = getMediaArchive().query(module.getId()).exact("processingstatus", "new").search();
 			// Then save?
 
-			String llmprompt = inContext.getCurrentAgentEnable().getAutomationEnabledData().get("llmprompt");
+			String llmprompt = inContext.getCurrentAgentEnable().getAutomationStepData().get("llmprompt");
 
-			inContext.info("Found " + found.size() + " records in " + inContext.getCurrentAgentEnable().getAutomationEnabledData());
+			inContext.info("Found " + found.size() + " records in " + inContext.getCurrentAgentEnable().getAutomationStepData());
 
 			for (Iterator iterator = found.iterator(); iterator.hasNext();)
 			{

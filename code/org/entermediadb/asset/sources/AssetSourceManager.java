@@ -144,7 +144,7 @@ public class AssetSourceManager implements CatalogEnabled
 		// Now make sure they are on the ui. Enabled or not
 		String defaultscenerio = "asset_hotfolder_scanning";
 		// HitTracker existingagentsenabled =
-		// getMediaArchive().query("aiskillenabled").exact("automationscenario",defaultscenerio).search();
+		// getMediaArchive().query("automationstep").exact("automationscenario",defaultscenerio).search();
 		// Collection existingids = existingagentsenabled.collectValues("id");
 		Collection tosaveeanbled = new ArrayList();
 		String previousid = "asset_holfoder_scanning_start";
@@ -152,10 +152,10 @@ public class AssetSourceManager implements CatalogEnabled
 		{
 			MultiValued agent = (MultiValued) iterator.next();
 			String uid = "ahc_" + agent.getId();
-			MultiValued agentsenabled = (MultiValued) getMediaArchive().getData("aiskillenabled", uid);
+			MultiValued agentsenabled = (MultiValued) getMediaArchive().getData("automationstep", uid);
 			if (agentsenabled == null)
 			{
-				agentsenabled = (MultiValued) getMediaArchive().getSearcher("aiskillenabled").createNewData();
+				agentsenabled = (MultiValued) getMediaArchive().getSearcher("automationstep").createNewData();
 				agentsenabled.setValue("enabled", true);
 				agentsenabled.setId(uid);
 			}
@@ -167,7 +167,7 @@ public class AssetSourceManager implements CatalogEnabled
 			tosaveeanbled.add(agentsenabled);
 			previousid = uid;
 		}
-		getMediaArchive().saveData("aiskillenabled", tosaveeanbled);
+		getMediaArchive().saveData("automationstep", tosaveeanbled);
 	}
 
 	public void setAssetSources(Collection inAssetSources)

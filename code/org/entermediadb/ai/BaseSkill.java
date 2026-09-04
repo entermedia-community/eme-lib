@@ -3,7 +3,7 @@ package org.entermediadb.ai;
 import java.util.ArrayList;
 import java.util.Collection;
 import org.entermediadb.ai.assistant.AssistantManager;
-import org.entermediadb.ai.llm.AgentEnabled;
+import org.entermediadb.ai.llm.AutomationStep;
 import org.openedit.CatalogEnabled;
 import org.openedit.Data;
 
@@ -16,7 +16,7 @@ public class BaseSkill extends BaseAiManager implements Skill, CatalogEnabled
 		{
 			return;
 		}
-		AgentEnabled skillEnabled = inContext.getCurrentAgentEnable();
+		AutomationStep skillEnabled = inContext.getCurrentAgentEnable();
 		inContext.fireStatusStarting(skillEnabled);
 
 	}
@@ -32,12 +32,12 @@ public class BaseSkill extends BaseAiManager implements Skill, CatalogEnabled
 	@Override
 	public void process(AgentContext inContext)
 	{
-		AgentEnabled skillEnabled = inContext.getCurrentAgentEnable();
+		AutomationStep skillEnabled = inContext.getCurrentAgentEnable();
 		inContext.fireStatusComplete(skillEnabled);
 
-		Collection<AgentEnabled> children = inContext.getCurrentAgentEnable().getChildren();
+		Collection<AutomationStep> children = inContext.getCurrentAgentEnable().getChildren();
 
-		for (AgentEnabled agentEnabled : children)
+		for (AutomationStep agentEnabled : children)
 		{
 			AgentContext childContext = inContext.getCurrentScenario().createAgentContext(inContext, agentEnabled);
 

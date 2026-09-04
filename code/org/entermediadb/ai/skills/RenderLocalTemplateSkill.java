@@ -5,7 +5,7 @@ import org.apache.commons.logging.LogFactory;
 import org.entermediadb.ai.AgentContext;
 import org.entermediadb.ai.BaseSkill;
 import org.entermediadb.ai.ChatMessageContext;
-import org.entermediadb.ai.llm.AgentEnabled;
+import org.entermediadb.ai.llm.AutomationStep;
 import org.entermediadb.ai.llm.LlmConnection;
 import org.entermediadb.ai.llm.LlmResponse;
 
@@ -34,7 +34,7 @@ public class RenderLocalTemplateSkill extends BaseSkill
 		messageContext.setLastResponse(response);
 		// messageContext.log("sent" + response.getMessagePlain());
 
-		AgentEnabled skillEnabled = messageContext.getCurrentAgentEnable();
+		AutomationStep skillEnabled = messageContext.getCurrentAgentEnable();
 		messageContext.fireStatusComplete(skillEnabled);
 	}
 

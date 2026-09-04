@@ -2,7 +2,7 @@ package org.entermediadb.ai.skills;
 
 import org.entermediadb.ai.BaseSkill;
 import org.entermediadb.ai.AgentContext;
-import org.entermediadb.ai.llm.AgentEnabled;
+import org.entermediadb.ai.llm.AutomationStep;
 import org.entermediadb.mcp.client.McpClient;
 import org.openedit.Data;
 
@@ -14,7 +14,7 @@ public class McpClientSkill extends BaseSkill
         // fieldClient = new McpClient("un.org");
     }
 
-    public McpClient getClient(AgentEnabled inEnabledAgent)
+    public McpClient getClient(AutomationStep inEnabledAgent)
     {
         if (fieldClient == null)
         {

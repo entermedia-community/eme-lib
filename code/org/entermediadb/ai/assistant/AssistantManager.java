@@ -20,7 +20,7 @@ import org.entermediadb.ai.SkillStatusListener;
 import org.entermediadb.ai.automation.AutomationManager;
 import org.entermediadb.ai.automation.RunningScenario;
 import org.entermediadb.ai.classify.EmbeddingManager;
-import org.entermediadb.ai.llm.AgentEnabled;
+import org.entermediadb.ai.llm.AutomationStep;
 import org.entermediadb.ai.llm.BaseAgentContext;
 import org.entermediadb.ai.llm.LlmResponse;
 import org.entermediadb.asset.MediaArchive;
@@ -1001,7 +1001,7 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 		getMediaArchive().saveData("automationscenario", tosave);
 	}
 
-	public void handleStatusStarting(AgentContext inContext, AgentEnabled inAgentEnabled)
+	public void handleStatusStarting(AgentContext inContext, AutomationStep inAutomationStep)
 	{
 		if (!(inContext instanceof ChatMessageContext))
 		{
@@ -1018,7 +1018,7 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 			return;
 		}
 
-		MultiValued function = inAgentEnabled.getAutomationEnabledData();
+		MultiValued function = inAutomationStep.getAutomationStepData();
 
 		JsonUtil jsonUtil = (JsonUtil) getMediaArchive().getBean("jsonUtil");
 
@@ -1052,7 +1052,7 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 
 	}
 
-	public void handleStatusComplete(AgentContext inContext, AgentEnabled inAgentEnabled)
+	public void handleStatusComplete(AgentContext inContext, AutomationStep inAutomationStep)
 	{
 
 		MultiValued agentmessage = (MultiValued) inContext.getContextValue("agentmessage");
@@ -1113,14 +1113,14 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 
 			if (nextFunctionName == null)
 			{
-				AgentEnabled nextEnabled = inAgentEnabled.getNextAgentEnabled();
+				AutomationStep nextEnabled = inAutomationStep.getNextAutomationStep();
 				if (nextEnabled != null)
 				{
 					nextFunctionName = nextEnabled.getEnabledId();
 				}
 			}
 
-			agentmessage.setValue("functionname", inAgentEnabled.getEnabledId());
+			agentmessage.setValue("functionname", inAutomationStep.getEnabledId());
 			agentmessage.setValue("nextfunctionname", nextFunctionName);
 			agentmessage.setValue("chatmessagestatus", "completed");
 
@@ -1142,7 +1142,7 @@ public class AssistantManager extends BaseAiManager implements SkillStatusListen
 			functionMessageUpdate.put("agentcontextvalues", agentmessage.get("agentcontextvalues"));
 			functionMessageUpdate.put("messageplain", messageplain);
 			functionMessageUpdate.put("nextfunctionname", nextFunctionName);
-			functionMessageUpdate.put("functionname", inAgentEnabled.getEnabledId());
+			functionMessageUpdate.put("functionname", inAutomationStep.getEnabledId());
 			functionMessageUpdate.put("date", DateStorageUtil.getStorageUtil().getJsonFormat().format(new Date()));
 			Boolean messagereload = (Boolean) inContext.getContextValue("messagereload");
 

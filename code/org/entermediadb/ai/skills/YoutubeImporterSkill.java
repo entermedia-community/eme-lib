@@ -10,7 +10,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.entermediadb.ai.BaseSkill;
 import org.entermediadb.ai.AgentContext;
-import org.entermediadb.ai.llm.AgentEnabled;
+import org.entermediadb.ai.llm.AutomationStep;
 import org.entermediadb.asset.Asset;
 import org.entermediadb.asset.MediaArchive;
 import org.entermediadb.asset.fetch.YoutubeMetadataSnippet;
@@ -29,7 +29,7 @@ public class YoutubeImporterSkill extends BaseSkill
 	@Override
 	public void process(AgentContext inContext)
 	{
-		AgentEnabled currentEnabled = inContext.getCurrentAgentEnable();
+		AutomationStep currentEnabled = inContext.getCurrentAgentEnable();
 
 		User user = getMediaArchive().getUser("agent");
 		importFromUrl(inContext, user);

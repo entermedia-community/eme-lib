@@ -11,7 +11,7 @@ import org.entermediadb.ai.Schema;
 import org.entermediadb.ai.assistant.AssistantManager;
 import org.entermediadb.ai.assistant.GuideStatus;
 import org.entermediadb.ai.classify.EmbeddingManager;
-import org.entermediadb.ai.llm.AgentEnabled;
+import org.entermediadb.ai.llm.AutomationStep;
 import org.entermediadb.ai.llm.LlmConnection;
 import org.entermediadb.ai.llm.LlmResponse;
 import org.entermediadb.asset.Asset;
@@ -69,7 +69,7 @@ public class QuestionsSkill extends BaseSkill
 			response.setNextSkillEnabled("question_ask");
 			messageContext.setLastResponse(response);
 			messageContext.setWaitTime(null);
-			AgentEnabled skillEnabled = messageContext.getCurrentAgentEnable();
+			AutomationStep skillEnabled = messageContext.getCurrentAgentEnable();
 			messageContext.fireStatusComplete(skillEnabled);
 
 		}

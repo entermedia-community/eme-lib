@@ -2718,6 +2718,20 @@
 		</property>
 	</bean>
 
+	<bean id="agentJobCreatorSkill" class="org.entermediadb.ai.skills.AgentJobCreatorSkill" scope="prototype">
+		<property name="moduleManager">
+			<ref bean="moduleManager" />
+		</property>
+	</bean>
+
+	<bean id="agentJobRunnerSkill" class="org.entermediadb.ai.skills.AgentJobRunnerSkill" scope="prototype">
+		<property name="moduleManager">
+			<ref bean="moduleManager" />
+		</property>
+	</bean>
+
+
+
 	<bean id="emeChatRespondSkill" class="org.entermediadb.ai.skills.EmeChatRespondSkill" scope="prototype">
 		<property name="moduleManager">
 			<ref bean="moduleManager" />
@@ -3244,6 +3258,9 @@
 		<property name="xmlArchive">
 			<ref bean="xmlArchive" />
 		</property>
+	</bean>
+
+	<bean id="agentjob" class="org.entermediadb.catalog.AgentJob" lazy-init="default" scope="prototype">
 	</bean>
 
 

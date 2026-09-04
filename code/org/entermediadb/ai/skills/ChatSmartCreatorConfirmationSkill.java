@@ -10,7 +10,7 @@ import org.entermediadb.ai.AgentContext;
 import org.entermediadb.ai.BaseSkill;
 import org.entermediadb.ai.ChatMessageContext;
 import org.entermediadb.ai.creator.AiSmartCreatorSteps;
-import org.entermediadb.ai.llm.AgentEnabled;
+import org.entermediadb.ai.llm.AutomationStep;
 import org.entermediadb.ai.llm.BasicLlmResponse;
 import org.entermediadb.ai.llm.LlmConnection;
 import org.entermediadb.ai.llm.LlmResponse;
@@ -70,7 +70,7 @@ public class ChatSmartCreatorConfirmationSkill extends BaseSkill
 			res.setRunSkillEnabled("chat_smartcreator_renderoutline");
 			messageContext.setLastResponse(res);
 
-			// AgentEnabled skillEnabled = messageContext.getCurrentAgentEnable();
+			// AutomationStep skillEnabled = messageContext.getCurrentAgentEnable();
 			// messageContext.fireStatusComplete(skillEnabled);
 			return res;
 		}

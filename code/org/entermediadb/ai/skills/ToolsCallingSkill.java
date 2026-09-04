@@ -5,7 +5,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.entermediadb.ai.BaseSkill;
 import org.entermediadb.ai.AgentContext;
-import org.entermediadb.ai.llm.AgentEnabled;
+import org.entermediadb.ai.llm.AutomationStep;
 import org.entermediadb.ai.llm.LlmConnection;
 import org.entermediadb.ai.llm.LlmResponse;
 import org.json.simple.JSONObject;
@@ -21,12 +21,12 @@ public class ToolsCallingSkill extends BaseSkill
 
 		JSONParser parser = new JSONParser();
 
-		AgentEnabled currentEnabled = inContext.getCurrentAgentEnable();
-		Collection<AgentEnabled> enabledChildren = currentEnabled.getChildren();
+		AutomationStep currentEnabled = inContext.getCurrentAgentEnable();
+		Collection<AutomationStep> enabledChildren = currentEnabled.getChildren();
 
-		for (AgentEnabled enabled : enabledChildren)
+		for (AutomationStep enabled : enabledChildren)
 		{
-			String paramstructure = enabled.getAutomationEnabledData().get("parameterstructure");
+			String paramstructure = enabled.getAutomationStepData().get("parameterstructure");
 			if (paramstructure != null)
 			{
 				Collection paramstructurejson = parser.parseCollection(paramstructure);
@@ -40,7 +40,7 @@ public class ToolsCallingSkill extends BaseSkill
 			if (enabledChildren.size() == 1)
 			{
 				// check if a param call is necessary
-				AgentEnabled enabled = enabledChildren.iterator().next();
+				AutomationStep enabled = enabledChildren.iterator().next();
 				Collection<JSONObject> paramstructure = enabled.getAgentParameterStructure();
 				if (paramstructure == null || paramstructure.size() == 0)
 				{
@@ -68,7 +68,7 @@ public class ToolsCallingSkill extends BaseSkill
 
 			String selectedagentid = (String) res.getRunSkillEnabled();
 
-			AgentEnabled selectedenabled = currentEnabled.getChildren(selectedagentid);
+			AutomationStep selectedenabled = currentEnabled.getChildren(selectedagentid);
 			if (selectedenabled != null)
 			{
 				JSONObject params = (JSONObject) res.getFunctionArguments();

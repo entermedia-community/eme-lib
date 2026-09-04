@@ -7,13 +7,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.entermediadb.ai.AgentContext;
 import org.entermediadb.ai.TutorMessageContext;
-import org.entermediadb.ai.llm.AgentEnabled;
+import org.entermediadb.ai.llm.AutomationStep;
 import org.entermediadb.ai.llm.BasicLlmResponse;
 import org.entermediadb.ai.llm.LlmConnection;
 import org.entermediadb.ai.llm.LlmResponse;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.openedit.MultiValued;
 
 public class AdaptiveTutorialUserCommentSkill extends AdaptiveTutorialBaseSkill
 {
@@ -67,7 +66,7 @@ public class AdaptiveTutorialUserCommentSkill extends AdaptiveTutorialBaseSkill
 
 		tutorMessageContext.putContextValue("messagerendertype", "agentcomment");
 
-		AgentEnabled skillEnabled = tutorMessageContext.getCurrentAgentEnable();
+		AutomationStep skillEnabled = tutorMessageContext.getCurrentAgentEnable();
 		tutorMessageContext.fireStatusComplete(skillEnabled);
 	}
 }

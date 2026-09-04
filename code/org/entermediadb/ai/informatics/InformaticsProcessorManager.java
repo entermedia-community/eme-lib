@@ -15,7 +15,7 @@ import org.apache.commons.logging.LogFactory;
 import org.entermediadb.ai.BaseSkill;
 import org.entermediadb.ai.BaseAiManager;
 import org.entermediadb.ai.AgentContext;
-import org.entermediadb.ai.llm.AgentEnabled;
+import org.entermediadb.ai.llm.AutomationStep;
 import org.entermediadb.asset.Asset;
 import org.entermediadb.scripts.ScriptLogger;
 import org.openedit.Data;

@@ -9,7 +9,7 @@ import org.openedit.Data;
 import org.openedit.MultiValued;
 import org.openedit.hittracker.HitTracker;
 
-public class TaskCreateChannelSkill extends BaseSkill
+public class AgentJobRunnerSkill extends BaseSkill
 {
 
 	// Monitor open Goals and send them to the Goal Planner
@@ -17,10 +17,10 @@ public class TaskCreateChannelSkill extends BaseSkill
 	public void process(AgentContext inContext)
 	{
 
-		// Search the DB for any open goals and send them to the Goal Planner
-		HitTracker all = getMediaArchive().query("projectgoal").exact("projectstatus", "open").sort("creationdate").search();
+		// Search the DB for any open jobs
+		HitTracker all = getMediaArchive().query("job").exact("status", "open").sort("startdate").search();
 
-		// Looo over all tasks that are not
+		// catch up to the tasks that are associated with this job. One task per skill or workflow
 
 		// requested
 		Collection<String> goalids = all.collectValues("id");

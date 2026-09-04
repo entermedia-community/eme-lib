@@ -4,8 +4,8 @@ import java.util.Date;
 import java.util.Map;
 import org.entermediadb.ai.AgentContext;
 import org.entermediadb.ai.TutorMessageContext;
-import org.entermediadb.ai.llm.AgentEnabled;
-import org.entermediadb.ai.llm.BasicLlmResponse;
+import org.entermediadb.ai.automation.RunningScenario;
+import org.entermediadb.ai.llm.AutomationStep;
 import org.entermediadb.ai.llm.LlmConnection;
 import org.entermediadb.ai.llm.LlmResponse;
 import org.json.simple.JSONObject;
@@ -89,8 +89,19 @@ public class AdaptiveTutorialAnswerSkill extends AdaptiveTutorialBaseSkill
 
 		tutorMessageContext.putContextValue("messagerendertype", "answereval");
 
-		AgentEnabled skillEnabled = tutorMessageContext.getCurrentAgentEnable();
+		AutomationStep skillEnabled = tutorMessageContext.getCurrentAgentEnable();
 		tutorMessageContext.fireStatusComplete(skillEnabled);
 
+		Data agentmessage = tutorMessageContext.getAgentMessage();
+
+		agentmessage.setValue("id", tutorMessageContext.getTutorialId() + "_progressupdate");
+		agentmessage.setValue("messagetype", "system");
+
+		RunningScenario scenario = tutorMessageContext.getCurrentScenario();
+
+		AutomationStep nextAutomationStep = scenario.findEnabled("chat_tutor_progress");
+		TutorMessageContext nextContext = (TutorMessageContext) scenario.createAgentContext(tutorMessageContext, nextAutomationStep);
+
+		scenario.runProcess(nextAutomationStep, nextContext, true);
 	}
 }

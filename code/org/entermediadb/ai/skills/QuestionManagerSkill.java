@@ -2,7 +2,7 @@ package org.entermediadb.ai.skills;
 
 import org.entermediadb.ai.classify.EmbeddingManager;
 import org.entermediadb.ai.AgentContext;
-import org.entermediadb.ai.llm.AgentEnabled;
+import org.entermediadb.ai.llm.AutomationStep;
 import org.entermediadb.ai.llm.LlmConnection;
 import org.entermediadb.ai.llm.LlmResponse;
 import org.json.simple.JSONArray;
@@ -13,7 +13,7 @@ public class QuestionManagerSkill extends ToolsCallingSkill
     @Override
     public void process(AgentContext inContext)
     {
-        AgentEnabled currentEnabled = inContext.getCurrentAgentEnable();
+        AutomationStep currentEnabled = inContext.getCurrentAgentEnable();
         JSONObject params = currentEnabled.getAgentParameterValues();
 
         if (params != null)

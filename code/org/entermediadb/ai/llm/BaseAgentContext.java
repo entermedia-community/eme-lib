@@ -78,20 +78,20 @@ public class BaseAgentContext extends BaseData implements CatalogEnabled, AgentC
 		getStatusListeners().add(inListener);
 	}
 
-	public void fireStatusStarting(AgentEnabled inAgentEnabled)
+	public void fireStatusStarting(AutomationStep inAutomationStep)
 	{
 		for (SkillStatusListener listener : getStatusListeners())
 		{
-			listener.handleStatusStarting(this, inAgentEnabled);
+			listener.handleStatusStarting(this, inAutomationStep);
 		}
 	}
 
 	@Override
-	public void fireStatusComplete(AgentEnabled inAgentEnabled)
+	public void fireStatusComplete(AutomationStep inAutomationStep)
 	{
 		for (SkillStatusListener listener : getStatusListeners())
 		{
-			listener.handleStatusComplete(this, inAgentEnabled);
+			listener.handleStatusComplete(this, inAutomationStep);
 		}
 	}
 
@@ -194,9 +194,9 @@ public class BaseAgentContext extends BaseData implements CatalogEnabled, AgentC
 		}
 	}
 
-	protected AgentEnabled fieldCurrentAgentEnable;
+	protected AutomationStep fieldCurrentAgentEnable;
 
-	public AgentEnabled getCurrentAgentEnable()
+	public AutomationStep getCurrentAgentEnable()
 	{
 		if (fieldCurrentAgentEnable == null && getParentContext() != null)
 		{
@@ -205,7 +205,7 @@ public class BaseAgentContext extends BaseData implements CatalogEnabled, AgentC
 		return fieldCurrentAgentEnable;
 	}
 
-	public void setCurrentAgentEnable(AgentEnabled inCurrentAgentEnable)
+	public void setCurrentAgentEnable(AutomationStep inCurrentAgentEnable)
 	{
 		fieldCurrentAgentEnable = inCurrentAgentEnable;
 		if (inCurrentAgentEnable != null)
@@ -591,7 +591,7 @@ public class BaseAgentContext extends BaseData implements CatalogEnabled, AgentC
 		entry.setDate(new Date());
 		if (getCurrentAgentEnable() != null)
 		{
-			entry.setCurrentAgentEnabledData(getCurrentAgentEnable().getAutomationEnabledData());
+			entry.setCurrentAutomationStepData(getCurrentAgentEnable().getAutomationStepData());
 			entry.setAgentData(getCurrentAgentEnable().getAgentData());
 		}
 		getLogs().add(entry);

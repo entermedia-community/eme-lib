@@ -38,7 +38,7 @@ public class NamedEntityRecognitionManager extends ClassifyManager
 	{
 		Collection<PropertyDetail> autocreatefields = getMediaArchive().getSearcher(inModuleId).getPropertyDetails().findAiAutoCreatedProperties();
 
-		// TODO: Load the right AgentEnabled and config for this context
+		// TODO: Load the right AutomationStep and config for this context
 		MultiValued inConfig = inContext.getCurrentAgentEnable().getAgentData();
 		// Validate tables
 		if (autocreatefields.isEmpty())

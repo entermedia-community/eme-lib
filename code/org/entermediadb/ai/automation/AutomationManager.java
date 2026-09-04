@@ -11,7 +11,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.entermediadb.ai.AgentContext;
 import org.entermediadb.ai.BaseAiManager;
-import org.entermediadb.ai.llm.AgentEnabled;
+import org.entermediadb.ai.llm.AutomationStep;
 import org.entermediadb.ai.llm.BaseAgentContext;
 import org.entermediadb.ai.llm.LlmConnection;
 import org.entermediadb.ai.llm.LlmResponse;
@@ -115,7 +115,7 @@ public class AutomationManager extends BaseAiManager implements WebEventListener
 		RunningScenario running = (RunningScenario) getMediaArchive().getBean("runningscenario", false);
 		running.setId(id);
 
-		AgentEnabled enabled = null;
+		AutomationStep enabled = null;
 		if (currentskkillenabled != null)
 		{
 			enabled = running.findEnabled(currentskkillenabled);
@@ -156,7 +156,7 @@ public class AutomationManager extends BaseAiManager implements WebEventListener
 	{
 		inContext.setCurrentScenario(running);
 
-		AgentEnabled enabled = inContext.getCurrentAgentEnable();
+		AutomationStep enabled = inContext.getCurrentAgentEnable();
 		if (enabled == null)
 		{
 			enabled = running.getEnabledAgents().iterator().next();
@@ -209,12 +209,12 @@ public class AutomationManager extends BaseAiManager implements WebEventListener
 	}
 	// public Map<String,MultiValued> getEnabledPositions(String inScenario)
 	// {
-	// Collection<AgentEnabled> found = getEnabledAgents(inScenario);
+	// Collection<AutomationStep> found = getEnabledAgents(inScenario);
 	// Map<String,MultiValued> map = new HashMap(found.size());
 	// for (Iterator iterator2 = found.iterator(); iterator2.hasNext();)
 	// {
-	// AgentEnabled agentEnabled = (AgentEnabled) iterator2.next();
-	// String enabledid = agentEnabled.getAutomationEnabledData().getId();
+	// AutomationStep agentEnabled = (AutomationStep) iterator2.next();
+	// String enabledid = agentEnabled.getAutomationStepData().getId();
 	// MultiValued data = getAllPositions().get(enabledid);
 	// map.put(enabledid, data);
 	// }
@@ -321,9 +321,9 @@ public class AutomationManager extends BaseAiManager implements WebEventListener
 		// Save events xconfs
 	}
 
-	public void generateParams(Data inAgentEnabledConfig)
+	public void generateParams(Data inAutomationStepConfig)
 	{
-		String argumentString = inAgentEnabledConfig.get("parameterstructure");
+		String argumentString = inAutomationStepConfig.get("parameterstructure");
 
 		Collection agentArguments = null;
 		if (argumentString != null)
@@ -339,7 +339,7 @@ public class AutomationManager extends BaseAiManager implements WebEventListener
 
 		if (agentArguments == null)
 		{
-			String skilloverview = inAgentEnabledConfig.get("skilloverview");
+			String skilloverview = inAutomationStepConfig.get("skilloverview");
 
 			if (skilloverview != null)
 			{
@@ -358,9 +358,9 @@ public class AutomationManager extends BaseAiManager implements WebEventListener
 					if (arguments != null)
 					{
 						argumentString = arguments.toJSONString();
-						inAgentEnabledConfig.setValue("parameterstructure", argumentString);
-						getMediaArchive().saveData("aiskillenabled", inAgentEnabledConfig);
-						getMediaArchive().getCacheManager().remove("agentsenabled", inAgentEnabledConfig.get("automationscenario"));
+						inAutomationStepConfig.setValue("parameterstructure", argumentString);
+						getMediaArchive().saveData("automationstep", inAutomationStepConfig);
+						getMediaArchive().getCacheManager().remove("agentsenabled", inAutomationStepConfig.get("automationscenario"));
 					}
 				}
 			}
@@ -410,7 +410,7 @@ public class AutomationManager extends BaseAiManager implements WebEventListener
 		if (cached == null)
 		{
 			cached = new HashSet();
-			Collection found = getMediaArchive().query("aiskillenabled").exact("runoperation", inEvent).exact("enabled", true).search();
+			Collection found = getMediaArchive().query("automationstep").exact("runoperation", inEvent).exact("enabled", true).search();
 			if (found != null)
 			{
 				for (Iterator iterator = found.iterator(); iterator.hasNext();)

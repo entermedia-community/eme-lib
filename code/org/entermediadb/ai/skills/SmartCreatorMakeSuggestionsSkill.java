@@ -5,7 +5,7 @@ import java.util.Collection;
 import org.entermediadb.ai.AgentContext;
 import org.entermediadb.ai.BaseSkill;
 import org.entermediadb.ai.creator.AiSmartCreatorSteps;
-import org.entermediadb.ai.llm.AgentEnabled;
+import org.entermediadb.ai.llm.AutomationStep;
 import org.entermediadb.ai.llm.LlmConnection;
 import org.entermediadb.ai.llm.LlmResponse;
 import org.openedit.Data;
@@ -77,7 +77,7 @@ public class SmartCreatorMakeSuggestionsSkill extends BaseSkill
 		// response.setNextSkillEnabled("smartcreator_parse"); chat_smartcreator_parse_user_prompt
 		messageContext.setLastResponse(response);
 
-		AgentEnabled skillEnabled = messageContext.getCurrentAgentEnable();
+		AutomationStep skillEnabled = messageContext.getCurrentAgentEnable();
 		messageContext.fireStatusComplete(skillEnabled);
 		return;
 	}

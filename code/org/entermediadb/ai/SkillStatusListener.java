@@ -1,10 +1,10 @@
 package org.entermediadb.ai;
 
-import org.entermediadb.ai.llm.AgentEnabled;
+import org.entermediadb.ai.llm.AutomationStep;
 
 public interface SkillStatusListener
 {
-	void handleStatusStarting(AgentContext inContext, AgentEnabled inAgentEnabled);
+	void handleStatusStarting(AgentContext inContext, AutomationStep inAutomationStep);
 
-	void handleStatusComplete(AgentContext inContext, AgentEnabled inAgentEnabled);
+	void handleStatusComplete(AgentContext inContext, AutomationStep inAutomationStep);
 }

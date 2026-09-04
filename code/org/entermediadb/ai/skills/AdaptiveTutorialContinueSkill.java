@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import org.entermediadb.ai.AgentContext;
 import org.entermediadb.ai.TutorMessageContext;
-import org.entermediadb.ai.llm.AgentEnabled;
+import org.entermediadb.ai.llm.AutomationStep;
 import org.entermediadb.asset.Asset;
 import org.json.simple.JSONObject;
 import org.openedit.Data;
@@ -181,7 +181,7 @@ public class AdaptiveTutorialContinueSkill extends AdaptiveTutorialBaseSkill
 				tutorMessageContext.putContextValue("messagerendertype", "text");
 			}
 
-			AgentEnabled skillEnabled = tutorMessageContext.getCurrentAgentEnable();
+			AutomationStep skillEnabled = tutorMessageContext.getCurrentAgentEnable();
 			tutorMessageContext.fireStatusComplete(skillEnabled);
 
 			if (shouldPause(topcomponent))

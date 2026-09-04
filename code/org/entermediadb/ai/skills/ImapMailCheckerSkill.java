@@ -4,7 +4,7 @@ import java.util.Collection;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.entermediadb.ai.AgentContext;
-import org.entermediadb.ai.llm.AgentEnabled;
+import org.entermediadb.ai.llm.AutomationStep;
 import org.entermediadb.email.ImapMailbox;
 import org.entermediadb.email.ImapMessage;
 import org.json.simple.JSONObject;
@@ -16,7 +16,7 @@ public class ImapMailCheckerSkill extends ToolsCallingSkill
   @Override
   public void process(AgentContext inContext)
   {
-    AgentEnabled currentEnabled = inContext.getCurrentAgentEnable();
+    AutomationStep currentEnabled = inContext.getCurrentAgentEnable();
 
     String server = (String) inContext.getContextValue("mailserver");
     int serverport = ((Long) inContext.getContextValue("mailport")).intValue();
