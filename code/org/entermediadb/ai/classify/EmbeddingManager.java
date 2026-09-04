@@ -185,6 +185,10 @@ public class EmbeddingManager extends BaseAiManager
 			Collection pages = getMediaArchive().query(inModuleId + "page").exact(inModuleId, inEntity.getId()).search();
 			embedDocumentData(inLogger, inEntity, pages, inModuleId);
 		}
+		else if ("aiskill".equals(inModuleId) || "automationscenario".equals(inModuleId))
+		{
+			embedAIAgentData(inLogger, inEntity, inModuleId);
+		}
 		else
 		{
 			embedEntityData(inLogger, inEntity, inModuleId);
@@ -228,6 +232,53 @@ public class EmbeddingManager extends BaseAiManager
 	 * embedData(inLogger, inEntity, documentdata); }
 	 * 
 	 */
+
+	private void embedAIAgentData(ScriptLogger inLogger, MultiValued inEntity, String searchtype)
+	{
+		String entityembeddingstatus = inEntity.get("entityembeddingstatus");
+		if (entityembeddingstatus == null || !"embedded".equals(entityembeddingstatus))
+		{
+			JSONObject entitydata = new JSONObject();
+			entitydata.put("file_name", inEntity.getName());
+			entitydata.put("creation_date", inEntity.get("entity_date"));
+			entitydata.put("doc_id", searchtype + "page_" + inEntity.getId());
+			entitydata.put("file_type", "text/plain");
+
+			JSONObject pagedata = new JSONObject();
+			pagedata.put("page_id", searchtype + "_" + inEntity.getId());
+			pagedata.put("page_label", inEntity.getName());
+
+			String fieldToEmbed;
+			if ("aiskill".equals(searchtype))
+			{
+				fieldToEmbed = "skilloverview";
+			}
+			else
+			{
+				fieldToEmbed = "longdescription";
+			}
+
+			PropertyDetail detail = getMediaArchive().getSearcher(searchtype).getDetail(fieldToEmbed);
+			if (detail != null)
+			{
+				String content = inEntity.get(fieldToEmbed);
+				if (content == null || content.isEmpty())
+				{
+					inLogger.info("No " + fieldToEmbed + " found " + inEntity.getName());
+					inEntity.setValue("entityembeddingstatus", "failed");
+					return;
+				}
+				pagedata.put("text", content);
+
+				Collection allpages = new ArrayList(1);
+				allpages.add(pagedata);
+
+				entitydata.put("pages", allpages);
+
+				embedData(inLogger, inEntity, entitydata);
+			}
+		}
+	}
 
 	protected void embedHtmlData(ScriptLogger inLogger, Data inEntity, String searchtype)
 	{
