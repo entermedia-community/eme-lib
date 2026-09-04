@@ -241,7 +241,7 @@ public class EmbeddingManager extends BaseAiManager
 			JSONObject entitydata = new JSONObject();
 			entitydata.put("file_name", inEntity.getName());
 			entitydata.put("creation_date", inEntity.get("entity_date"));
-			entitydata.put("doc_id", searchtype + "page_" + inEntity.getId());
+			entitydata.put("doc_id", searchtype + "_" + inEntity.getId());
 			entitydata.put("file_type", "text/plain");
 
 			JSONObject pagedata = new JSONObject();
