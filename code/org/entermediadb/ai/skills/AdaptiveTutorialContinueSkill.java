@@ -24,7 +24,21 @@ public class AdaptiveTutorialContinueSkill extends AdaptiveTutorialBaseSkill
 		String tutorialid = (String) tutorMessageContext.getContextValue("tutorialid");
 		String sectionid = (String) tutorMessageContext.getContextValue("sectionid");
 		String componentid = (String) tutorMessageContext.getContextValue("componentid");
-		String dailychallenge = (String) tutorMessageContext.getContextValue("dailychallenge");
+
+		Object _isDailyChallenge = tutorMessageContext.getContextValue("isdailychallenge");
+		Boolean isDailyChallenge = null;
+		if (_isDailyChallenge instanceof String)
+		{
+			isDailyChallenge = Boolean.parseBoolean((String) _isDailyChallenge);
+		}
+		else
+		{
+			isDailyChallenge = (Boolean) _isDailyChallenge;
+		}
+		if (isDailyChallenge == null)
+		{
+			isDailyChallenge = false;
+		}
 
 		Collection<String> questionIds = Collections.emptyList();
 		if (sectionid != null)
@@ -50,7 +64,7 @@ public class AdaptiveTutorialContinueSkill extends AdaptiveTutorialBaseSkill
 		while (true)
 		{
 
-			Map<String, Data> next = getNextSectionAndComponent(tutorialid, sectionid, componentid, questionIds, questionspersection);
+			Map<String, Data> next = getNextSectionAndComponent(tutorialid, sectionid, componentid, questionIds, questionspersection, isDailyChallenge);
 			if (next == null)
 			{
 				endTutorial(tutorMessageContext);
@@ -179,7 +193,7 @@ public class AdaptiveTutorialContinueSkill extends AdaptiveTutorialBaseSkill
 			sectionid = topsection.getId();
 			componentid = topcomponent.getId();
 
-			Map<String, Data> hasNext = getNextSectionAndComponent(tutorialid, sectionid, componentid, questionIds, questionspersection);
+			Map<String, Data> hasNext = getNextSectionAndComponent(tutorialid, sectionid, componentid, questionIds, questionspersection, isDailyChallenge);
 			if (hasNext == null)
 			{
 				endTutorial(tutorMessageContext);
@@ -199,7 +213,7 @@ public class AdaptiveTutorialContinueSkill extends AdaptiveTutorialBaseSkill
 		}
 	}
 
-	public Map<String, Data> getNextSectionAndComponent(String tutorialid, String sectionid, String componentid, Collection<String> questionIds, int questionspersection)
+	public Map<String, Data> getNextSectionAndComponent(String tutorialid, String sectionid, String componentid, Collection<String> questionIds, int questionspersection, boolean isDailyChallenge)
 	{
 		Data currentsection = null;
 		if (sectionid != null)
@@ -219,12 +233,16 @@ public class AdaptiveTutorialContinueSkill extends AdaptiveTutorialBaseSkill
 		MultiValued currentSectionMv = (MultiValued) currentsection;
 		int currentSectionOrdering = currentSectionMv.getInt("ordering");
 
-		Data nextSection = getMediaArchive().query("componentsection")
-			.exact("playbackentitymoduleid", "entitytutorial")
-			.exact("playbackentityid", tutorialid)
-			.moreThan("ordering", currentSectionOrdering)
-			.sort("ordering")
-			.searchOne();
+		Data nextSection = null;
+		if (!isDailyChallenge)
+		{
+			nextSection = getMediaArchive().query("componentsection")
+				.exact("playbackentitymoduleid", "entitytutorial")
+				.exact("playbackentityid", tutorialid)
+				.moreThan("ordering", currentSectionOrdering)
+				.sort("ordering")
+				.searchOne();
+		}
 
 		if (nextSection != null)
 		{
@@ -234,7 +252,7 @@ public class AdaptiveTutorialContinueSkill extends AdaptiveTutorialBaseSkill
 
 			if (answers.size() >= questionspersection)
 			{
-				return getNextSectionAndComponent(tutorialid, nextSection.getId(), null, questionIds, questionspersection);
+				return getNextSectionAndComponent(tutorialid, nextSection.getId(), null, questionIds, questionspersection, isDailyChallenge);
 			}
 		}
 
@@ -266,7 +284,7 @@ public class AdaptiveTutorialContinueSkill extends AdaptiveTutorialBaseSkill
 			}
 			else
 			{
-				return getNextSectionAndComponent(tutorialid, nextSection.getId(), null, questionIds, questionspersection);
+				return getNextSectionAndComponent(tutorialid, nextSection.getId(), null, questionIds, questionspersection, isDailyChallenge);
 			}
 		}
 

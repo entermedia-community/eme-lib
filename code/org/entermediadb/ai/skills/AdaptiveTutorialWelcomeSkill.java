@@ -5,6 +5,7 @@ import org.entermediadb.ai.TutorMessageContext;
 import org.entermediadb.ai.llm.AgentEnabled;
 import org.entermediadb.ai.llm.LlmConnection;
 import org.entermediadb.ai.llm.LlmResponse;
+import org.openedit.Data;
 import org.openedit.MultiValued;
 import org.openedit.hittracker.HitTracker;
 
@@ -22,7 +23,22 @@ public class AdaptiveTutorialWelcomeSkill extends AdaptiveTutorialBaseSkill
 			return;
 		}
 
-		String tutorialid = (String) tutorMessageContext.getContextValue("tutorialid");
+		String tutorialid = null;
+
+		Boolean isdailychallenge = Boolean.parseBoolean((String) tutorMessageContext.getContextValue("isdailychallenge"));
+
+		if (isdailychallenge == null || !isdailychallenge)
+		{
+			tutorMessageContext.putContextValue("sectionid", null);
+			tutorialid = (String) tutorMessageContext.getContextValue("tutorialid");
+		}
+		else
+		{
+			String sectionid = (String) tutorMessageContext.getContextValue("sectionid");
+			Data section = getMediaArchive().query("componentsection").exact("id", sectionid).searchOne();
+			tutorialid = section.get("playbackentityid");
+			inAgentContext.putContextValue("isdailychallenge", true);
+		}
 
 		MultiValued tutorial = (MultiValued) getMediaArchive().query("entitytutorial").exact("id", tutorialid).searchOne();
 
@@ -33,7 +49,6 @@ public class AdaptiveTutorialWelcomeSkill extends AdaptiveTutorialBaseSkill
 		tutorMessageContext.setLastResponse(response);
 		tutorMessageContext.log("sent" + response.getMessagePlain());
 
-		tutorMessageContext.putContextValue("sectionid", null);
 		tutorMessageContext.putContextValue("componentid", null);
 		tutorMessageContext.putContextValue("messagerendertype", "welcome");
 

@@ -597,12 +597,16 @@ public class TopicManager extends BaseMediaModule
 				dailychallenge.setValue("channel", currentchannel.getId());
 				dailychallengeSearcher.saveData(dailychallenge);
 			}
-			else
-			{
-				return;
-			}
 		}
 
+		if (currentchannel == null)
+		{
+			return;
+		}
+
+		inReq.putPageValue("dailychallenge", dailychallenge);
+
+		inReq.putPageValue("currentchannel", currentchannel);
 		inReq.putPageValue("activechannel", currentchannel);
 
 		Collection<Data> previousChallenges = dailychallengeSearcher.query().before("challengedate", today).exact("user", inReq.getUser().getId()).search();
@@ -639,6 +643,11 @@ public class TopicManager extends BaseMediaModule
 		Searcher tutorprogressSearcher = getMediaArchive(inReq).getSearcher("tutorprogress");
 		Collection<Data> tutorprogresses = tutorprogressSearcher.query().orgroup("entitytutorial", tutorialIds).search();
 		tutorprogressSearcher.deleteAll(tutorprogresses, null);
+
+		Searcher dailySearcher = getMediaArchive(inReq).getSearcher("tutordailychallenge");
+		Collection<Data> dailychallenges = dailySearcher.query().orgroup("channel", channelIds).search();
+		dailySearcher.deleteAll(dailychallenges, null);
+
 	}
 
 }
