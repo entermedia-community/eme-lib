@@ -216,7 +216,7 @@ public class InformaticsProcessorManager extends BaseAiManager
 				}
 			}
 
-			if (assetid != null || entity.get("markdowncontent") != null || entity.get("longcaption") != null || entity.get("collectivedescription") != null)
+			if (assetid != null || entity.get("markdowncontent") != null || entity.get("longcaption") != null || entity.get("longdescription") != null || entity.get("collectivedescription") != null)
 			{
 				valid.add(entity);
 			}
